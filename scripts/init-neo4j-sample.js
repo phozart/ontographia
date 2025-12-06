@@ -76,6 +76,13 @@ async function main() {
 
     for (const n of nodes) {
       const attributesJson = JSON.stringify(n.attributes || {});
+      const params = {
+        id: n.id,
+        name: n.name,
+        type: n.type,
+        layer: n.layer,
+        attributesJson,
+      };
       await session.run(
         `
         MERGE (e:Entity {id: $id})
@@ -84,7 +91,7 @@ async function main() {
             e.layer = $layer,
             e.attributes = $attributesJson
         `,
-        { ...n, attributesJson }
+        params
       );
     }
 
