@@ -1,0 +1,12 @@
+
+services:
+  web:
+    command: npm run dev
+    environment:
+      NODE_ENV: development
+      CHOKIDAR_USEPOLLING: "1"
+    volumes:
+      - .:/app
+      # keep .next inside the container to avoid host permission issues
+      - /app/.next
+      - /app/node_modules

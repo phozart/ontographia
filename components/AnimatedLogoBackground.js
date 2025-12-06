@@ -1,0 +1,40 @@
+export default function AnimatedLogoBackground() {
+  return (
+    <svg
+      className="bg-logo"
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="-30 -42 65 75"
+      aria-hidden
+      preserveAspectRatio="xMidYMid meet"
+      role="img"
+    >
+      <defs>
+        <style>
+          {`
+            .node { fill: currentColor; stroke: none; }
+            .edge { stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+          `}
+        </style>
+      </defs>
+      <g className="edge">
+        <line x1="0" y1="-38" x2="30" y2="-8" />
+        <line x1="30" y1="-8" x2="24" y2="24" />
+        <line x1="24" y1="24" x2="-26" y2="26" />
+        <line x1="0" y1="-38" x2="10" y2="4" />
+        <line x1="0" y1="-38" x2="-14" y2="0" />
+        <line x1="30" y1="-8" x2="10" y2="4" />
+        <line x1="-26" y1="26" x2="-14" y2="0" />
+        <line x1="24" y1="24" x2="10" y2="4" />
+        <line x1="-14" y1="0" x2="10" y2="4" />
+      </g>
+      <g className="node">
+        <circle cx="0" cy="-38" r="4.8" />
+        <circle cx="30" cy="-8" r="4.8" />
+        <circle cx="24" cy="24" r="4.8" />
+        <circle cx="-26" cy="26" r="4.8" />
+        <circle cx="10" cy="4" r="4" />
+        <circle cx="-14" cy="0" r="4" />
+      </g>
+    </svg>
+  );
+}
