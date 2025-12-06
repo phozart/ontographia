@@ -14,15 +14,18 @@ export default function DataElementsTree({
   const idToPath = new Map();
   const idMap = new WeakMap();
   let counter = 0;
+  const visitedNodes = new Set();
   const treeUid = `tree-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
 
   const renderNode = (node, path, visited) => {
     if (!node) return null;
     const nodeId = node.id != null ? String(node.id) : String(path);
+    if (visitedNodes.has(nodeId)) return null; // guard cycles
     const itemId = `${treeUid}::${nodeId || 'node'}::${path}-${counter++}`;
     const isTypeLevel = path.startsWith('root-') && path.split('-').length === 2;
     if (visited.has(itemId)) return null;
     visited.add(itemId);
+    visitedNodes.add(nodeId);
     if (!idToPath.has(nodeId)) {
       idToPath.set(nodeId, itemId);
     }
