@@ -75,15 +75,16 @@ async function main() {
     await session.run('CREATE CONSTRAINT IF NOT EXISTS FOR (n:Entity) REQUIRE n.id IS UNIQUE');
 
     for (const n of nodes) {
+      const attributesJson = JSON.stringify(n.attributes || {});
       await session.run(
         `
         MERGE (e:Entity {id: $id})
         SET e.name = $name,
             e.type = $type,
             e.layer = $layer,
-            e.attributes = $attributes
+            e.attributes = $attributesJson
         `,
-        n
+        { ...n, attributesJson }
       );
     }
 
