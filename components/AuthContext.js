@@ -86,7 +86,7 @@ export function useRouteGuard() {
   const router = useRouter();
 
   const allowedRoutes = useMemo(() => {
-    if (!role) return ['/login'];
+    if (!role) return ['/', '/login'];
     const studioRoutes = ['/studio', '/graphnavigator'];
     const modelRoutes = ['/semanticmodelbrowser', '/user-view'];
     const homeRoute = ['/home'];
@@ -99,6 +99,10 @@ export function useRouteGuard() {
   const enforceRoute = () => {
     if (!router?.pathname || !hydrated) return;
     const path = router.pathname;
+    if (role && path === '/') {
+      router.replace('/home');
+      return;
+    }
     if (!allowedRoutes.includes(path)) {
       const dest = role ? '/home' : '/login';
       router.replace(dest);

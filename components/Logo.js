@@ -92,14 +92,15 @@ export function LogoWordmark({ width = 220, height, color = '#0B2545', className
   );
 }
 
-export function LogoSpinner({ size = 48, color = '#0B2545', label }) {
+export function LogoSpinner({ size = 48, color = '#0B2545', label, theme }) {
+  const spinColor = theme === 'dark' ? '#ffffff' : color;
   return (
     <div className="logo-spinner" role="status" aria-live="polite">
       <LogoMark
         size={size}
-        color={color}
+        color={spinColor}
         className="logo-spinner__svg"
-        style={{ '--logo-spinner-color': color }}
+        style={{ '--logo-spinner-color': spinColor }}
       />
       {label && <div className="logo-spinner__label">{label}</div>}
     </div>

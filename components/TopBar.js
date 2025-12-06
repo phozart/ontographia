@@ -54,10 +54,10 @@ export default function TopBar({ theme, onThemeChange }) {
             style={{
               fontFamily: '"Inter", system-ui, -apple-system, "Segoe UI", sans-serif',
               display: 'block',
-              alignSelf: 'center',
-            }}
-          />
-        </Link>
+            alignSelf: 'center',
+          }}
+        />
+      </Link>
         {user && (
           <nav className="topbar-nav">
             <Link href="/semanticmodelbrowser" className={isActive('/semanticmodelbrowser', '/user-view') ? 'active' : ''}>Model Browser</Link>

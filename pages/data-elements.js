@@ -64,6 +64,25 @@ export default function DataElementsPage() {
 
   const selectedElement = selectedId ? elementMap.get(selectedId) : null;
 
+  const selectedRelationships = useMemo(() => {
+    if (!selectedId) return [];
+    return (rels || [])
+      .filter(r => r && (r.sourceId === selectedId || r.targetId === selectedId))
+      .map(r => {
+        const isOut = r.sourceId === selectedId;
+        const otherId = isOut ? r.targetId : r.sourceId;
+        const otherNode = elementMap.get(otherId);
+        return {
+          ...r,
+          direction: isOut ? 'out' : 'in',
+          otherId,
+          otherName: otherNode?.label || otherNode?.name || otherId,
+          sourceName: elementMap.get(r.sourceId)?.label || elementMap.get(r.sourceId)?.name,
+          targetName: elementMap.get(r.targetId)?.label || elementMap.get(r.targetId)?.name,
+        };
+      });
+  }, [rels, selectedId, elementMap]);
+
   return (
     <Box sx={{ display: 'flex', gap: 2, height: 'calc(100vh - 120px)', minHeight: 400, p: 2 }}>
       <Paper
@@ -88,7 +107,11 @@ export default function DataElementsPage() {
       </Paper>
       <Grid item xs display="flex">
         <Box sx={{ flex: 1, overflow: 'auto' }}>
-          <DataElementDetails element={selectedElement} onEdit={canEdit ? () => {} : null} />
+          <DataElementDetails
+            element={selectedElement}
+            relationships={selectedRelationships}
+            onEdit={canEdit ? () => {} : null}
+          />
         </Box>
       </Grid>
     </Box>

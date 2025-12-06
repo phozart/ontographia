@@ -29,7 +29,7 @@ function Row({ label, value }) {
   );
 }
 
-export default function DataElementDetails({ element, onEdit }) {
+export default function DataElementDetails({ element, onEdit, relationships = [] }) {
   if (!element) {
     return (
       <Box p={2} aria-label="No element selected">
@@ -77,6 +77,27 @@ export default function DataElementDetails({ element, onEdit }) {
           <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
             No metadata defined yet.
           </Typography>
+        )}
+        <Divider sx={{ my: 2 }} />
+        <Typography variant="subtitle2" sx={{ mb: 1 }}>
+          Relationships ({relationships.length})
+        </Typography>
+        {relationships.length === 0 ? (
+          <Typography variant="body2" color="text.secondary">
+            No relationships for this node.
+          </Typography>
+        ) : (
+          <Stack spacing={0.75}>
+            {relationships.map(rel => {
+              const dir = rel.direction === 'out' ? '→' : '←';
+              const other = rel.otherName || rel.otherId || rel.sourceId === element.id ? rel.targetName : rel.sourceName;
+              return (
+                <Typography key={rel.id || `${rel.sourceId}-${rel.type}-${rel.targetId}`} variant="body2">
+                  {rel.type} {dir} {other || ''}
+                </Typography>
+              );
+            })}
+          </Stack>
         )}
       </CardContent>
     </Card>

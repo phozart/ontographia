@@ -8,7 +8,7 @@ export default function HomePage() {
   const canEdit = role === 'admin' || role === 'editor';
 
   return (
-    <Box sx={{ maxWidth: 1100, margin: '0 auto', width: '100%', py: 1.5 }}>
+    <Box sx={{ maxWidth: 1100, margin: '0 auto', width: '100%', py:0 }}>
       <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
         <BrandPoster width={300} />
         <Box sx={{ width: '100%', maxWidth: 440, borderBottom: '1px solid var(--border)' }} />

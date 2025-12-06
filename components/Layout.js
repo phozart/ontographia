@@ -72,7 +72,7 @@ export default function Layout({ theme, onThemeChange, children }) {
         </div>
         {routeLoading && (
           <div className="route-loader" aria-live="polite" role="status">
-            <LogoSpinner label="Loading..." />
+            <LogoSpinner label="Loading..." theme={theme} />
           </div>
         )}
         <div className="global-footer">

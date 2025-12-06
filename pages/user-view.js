@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+﻿import { useEffect, useMemo, useRef, useState } from 'react';
 import { Box, Paper, Card, CardHeader, CardContent, Stack, Typography, Grid } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
@@ -235,24 +235,29 @@ export default function UserViewPage() {
   const idMap = useRef(new WeakMap());
   const pathCounter = useRef(0);
   const treeUid = useRef(`tree-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`);
+  const renderCount = useRef(0);
 
-  const renderBranch = (node, path, visited = new Set()) => {
+  const renderBranch = (node, path, visited = new Set(), depth = 0) => {
     if (!node) return null;
+    if (depth > 200) return null; // depth guard
+    renderCount.current += 1;
+    if (renderCount.current > 2000) return null; // global guard against runaway
     const nodeId = node.id ? String(node.id) : path;
+    if (!nodeId || visited.has(nodeId)) return null;
     const itemId = `${treeUid.current}::${nodeId || 'node'}::${path}-${pathCounter.current++}`;
-    if (visited.has(itemId)) return null;
-    visited.add(itemId);
+    visited.add(nodeId);
     if (!idToPath.current.has(nodeId)) idToPath.current.set(nodeId, itemId);
-    const kids = linkMap.get(node.id) || [];
+    const kids = (linkMap.get(node.id) || []).filter(child => child && child.id && String(child.id) !== nodeId);
     return (
       <TreeItem key={itemId} itemId={itemId} label={node.label || node.name}>
-        {kids.map((child, idx) => renderBranch(child, `${path}-${idx}`, new Set(visited)))}
+        {kids.map((child, idx) => renderBranch(child, `${path}-${idx}`, new Set(visited), depth + 1))}
       </TreeItem>
     );
   };
 
   idToPath.current = new Map();
   pathCounter.current = 0;
+  renderCount.current = 0;
 
   const treeItems = typeGroups
     .filter(group => {
@@ -262,16 +267,37 @@ export default function UserViewPage() {
     .map(group => {
       const typeItemId = `${treeUid.current}::type::${group.typeId || 'unknown'}`;
       return (
-          <TreeItem key={typeItemId} itemId={typeItemId} label={group.label}>
-            {group.items.map((node, idx) => renderBranch(node, `${group.typeId}-${idx}`, new Set()))}
-          </TreeItem>
-        );
-      });
+        <TreeItem key={typeItemId} itemId={typeItemId} label={group.label}>
+          {group.items.map((node, idx) => renderBranch(node, `${group.typeId}-${idx}`, new Set(), 0))}
+        </TreeItem>
+      );
+    });
+
+  const rootItemIds = treeItems.map(item => item?.props?.itemId).filter(Boolean);
 
   const selectedPath =
     selectedNodeId && idToPath.current.has(String(selectedNodeId))
       ? idToPath.current.get(String(selectedNodeId))
       : null;
+
+  const selectedRelationships = useMemo(() => {
+    if (!selectedNodeId) return [];
+    return (rels || [])
+      .filter(r => r && (r.sourceId === selectedNodeId || r.targetId === selectedNodeId))
+      .map(r => {
+        const isOut = r.sourceId === selectedNodeId;
+        const otherId = isOut ? r.targetId : r.sourceId;
+        const otherNode = nodeById.get(otherId);
+        return {
+          ...r,
+          direction: isOut ? 'out' : 'in',
+          otherId,
+          otherName: otherNode?.name || otherNode?.label || otherId,
+          sourceName: nodeById.get(r.sourceId)?.name || nodeById.get(r.sourceId)?.label,
+          targetName: nodeById.get(r.targetId)?.name || nodeById.get(r.targetId)?.label,
+        };
+      });
+  }, [rels, selectedNodeId, nodeById]);
 
   const getItemId = item => {
     if (item?.props?.itemId) return item.props.itemId;
@@ -359,7 +385,7 @@ export default function UserViewPage() {
                 <SimpleTreeView
                   aria-label="Nodes"
                   selectedItems={selectedPath ? [selectedPath] : []}
-                  defaultExpandedItems={typeGroups.map(g => `type::${g.typeId || 'unknown'}`)}
+                  defaultExpandedItems={rootItemIds}
                   onSelectedItemsChange={(_, ids) => {
                     const last = Array.isArray(ids) ? ids[ids.length - 1] : ids;
                     if (last) {
@@ -386,6 +412,7 @@ export default function UserViewPage() {
               <Grid item xs={12} md={8}>
                 <NodeDetailCard
                   node={selectedNodeId ? nodeById.get(selectedNodeId) : null}
+                  relationships={selectedRelationships}
                   onEdit={id => {
                     if (id) openEditModal(id);
                   }}
@@ -491,7 +518,8 @@ export default function UserViewPage() {
   );
 }
 
-function NodeDetailCard({ node, onEdit }) {
+
+function NodeDetailCard({ node, onEdit, relationships = [] }) {
   const { role } = useAuth();
   const canEdit = role === 'admin' || role === 'editor';
   if (!node) {
@@ -507,6 +535,7 @@ function NodeDetailCard({ node, onEdit }) {
   }
 
   const attrs = node.attributes || {};
+  const rels = relationships || [];
 
   return (
     <Card elevation={2} sx={{ height: '100%', boxShadow: '0 10px 30px rgba(15,23,42,0.12)' }}>
@@ -529,7 +558,7 @@ function NodeDetailCard({ node, onEdit }) {
                 fontSize: 16,
               }}
             >
-              ✎
+              Edit
             </button>
           ) : null
         }
@@ -539,10 +568,10 @@ function NodeDetailCard({ node, onEdit }) {
         <Stack spacing={1.5}>
           <DetailRow label="Data flow element" value={node.label || node.name} />
           <DetailRow label="Type" value={node.typeLabel || node.typeName || node.typeId} />
-          <DetailRow label="Layer" value={node.layer || '—'} />
-          <DetailRow label="Color" value={node.color || '—'} />
+          <DetailRow label="Layer" value={node.layer || '-'} />
+          <DetailRow label="Color" value={node.color || '-'} />
         </Stack>
-        {(!attrs || Object.keys(attrs).length === 0) ? (
+        {!attrs || Object.keys(attrs).length === 0 ? (
           <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
             No attributes defined yet.
           </Typography>
@@ -553,6 +582,29 @@ function NodeDetailCard({ node, onEdit }) {
               {Object.entries(attrs).map(([k, v]) => (
                 <DetailRow key={k} label={k} value={String(v)} />
               ))}
+            </Stack>
+          </Box>
+        )}
+        {rels && rels.length > 0 && (
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="subtitle2" sx={{ mb: 0.5 }}>Relationships</Typography>
+            <Stack spacing={0.5}>
+              {rels.map(rel => {
+                const dir = rel.direction === 'out' ? '->' : '<-';
+                const other =
+                  rel.otherName ||
+                  rel.otherId ||
+                  rel.otherNodeName ||
+                  rel.otherNodeId ||
+                  (rel.direction === 'out' ? rel.targetName || rel.targetId : rel.sourceName || rel.sourceId);
+                return (
+                  <DetailRow
+                    key={rel.id || `${rel.sourceId}-${rel.type}-${rel.targetId}`}
+                    label={rel.type}
+                    value={`${dir} ${other || ''}`}
+                  />
+                );
+              })}
             </Stack>
           </Box>
         )}
@@ -570,7 +622,7 @@ function DetailRow({ label, value }) {
         </Typography>
       </Grid>
       <Grid item xs={8}>
-        <Typography variant="body2">{value || '—'}</Typography>
+        <Typography variant="body2">{value || '-'}</Typography>
       </Grid>
     </Grid>
   );
