@@ -58,6 +58,7 @@ function MyApp({ Component, pageProps }) {
       <FilterProvider>
         <ThemeProvider theme={muiTheme}>
           <CssBaseline />
+          <ServiceWorkerRegister />
           <Guard>
             <Layout theme={theme} onThemeChange={handleThemeChange}>
               <Component {...pageProps} />
@@ -70,3 +71,15 @@ function MyApp({ Component, pageProps }) {
 }
 
 export default MyApp;
+
+function ServiceWorkerRegister() {
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') return;
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker
+        .register('/sw.js')
+        .catch(err => console.warn('SW registration failed', err));
+    }
+  }, []);
+  return null;
+}

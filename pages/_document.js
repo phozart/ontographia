@@ -11,6 +11,9 @@ class MyDocument extends Document {
             href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
             rel="stylesheet"
           />
+          <link rel="manifest" href="/manifest.json" />
+          <meta name="theme-color" content="#0b2545" />
+          <link rel="apple-touch-icon" href="/icons/icon-192.png" />
         </Head>
         <body>
           <Main />

@@ -75,6 +75,8 @@ export default function Layout({ theme, onThemeChange, children }) {
           content="Ontographia Knowledge Graph Studio lets you explore semantic models, navigate relationships, and understand domain structures."
         />
         <link rel="icon" href="/constellation-icon.svg" />
+        <link rel="manifest" href="/manifest.json" />
+<meta name="theme-color" content="#000000" />
       </Head>
       <div className={`app app--${theme}`}>
         <TopBar theme={theme} onThemeChange={onThemeChange} />
