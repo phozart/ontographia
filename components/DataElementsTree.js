@@ -12,27 +12,23 @@ export default function DataElementsTree({
   getLabel,
 }) {
   const idToPath = new Map();
-  const idMap = new WeakMap();
   let counter = 0;
-  const visitedNodes = new Set();
+  const visitedIds = new Set();
   const treeUid = `tree-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
 
-  const renderNode = (node, path, visited) => {
+  const renderNode = (node, path) => {
     if (!node) return null;
     const nodeId = node.id != null ? String(node.id) : String(path);
-    if (visitedNodes.has(nodeId)) return null; // guard cycles
+    if (!nodeId || visitedIds.has(nodeId)) return null; // guard cycles/empties
+    visitedIds.add(nodeId);
     const itemId = `${treeUid}::${nodeId || 'node'}::${path}-${counter++}`;
     const isTypeLevel = path.startsWith('root-') && path.split('-').length === 2;
-    if (visited.has(itemId)) return null;
-    visited.add(itemId);
-    visitedNodes.add(nodeId);
     if (!idToPath.has(nodeId)) {
       idToPath.set(nodeId, itemId);
     }
     const kids = (childrenMap.get(node.id) || []).filter(child => {
-      if (!child) return false;
-      const cid = child.id != null ? String(child.id) : '';
-      return cid && !visitedNodes.has(cid);
+      if (!child || child.id == null) return false;
+      return !visitedIds.has(String(child.id));
     });
     const label = (
       <Box display="flex" alignItems="center" gap={1}>
@@ -44,20 +40,13 @@ export default function DataElementsTree({
     );
     return (
       <TreeItem key={itemId} itemId={itemId} label={label}>
-        {kids.map((child, idx) => renderNode(child, `${path}-${idx}`, visited))}
+        {kids.map((child, idx) => renderNode(child, `${path}-${idx}`))}
       </TreeItem>
     );
   };
 
-  const treeItems = (elements || []).map((n, idx) => renderNode(n, `root-${idx}`, new Set()));
+  const treeItems = (elements || []).map((n, idx) => renderNode(n, `root-${idx}`));
   const selectedPath = selectedId && idToPath.get(String(selectedId));
-  const getItemId = item => {
-    if (item?.props?.itemId) return item.props.itemId;
-    if (idMap.has(item)) return idMap.get(item);
-    const gen = `auto-${counter++}`;
-    idMap.set(item, gen);
-    return gen;
-  };
 
   return (
     <SimpleTreeView
@@ -67,11 +56,11 @@ export default function DataElementsTree({
       onSelectedItemsChange={(_, ids) => {
         const last = Array.isArray(ids) ? ids[ids.length - 1] : ids;
         if (last) {
-          const nodeId = String(last).split('::')[0];
-          onSelect(nodeId);
+          const parts = String(last).split('::');
+          const nodeId = parts[1] || parts[0];
+          if (nodeId) onSelect(nodeId);
         }
       }}
-      getItemId={getItemId}
       slots={{
         collapseIcon: ExpandMore,
         expandIcon: ChevronRight,
