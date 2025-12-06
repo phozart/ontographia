@@ -50,13 +50,6 @@ export default function GraphView({
     loadGraph();
   }, [reloadKey, typeFilters, themeDark]);
 
-  useEffect(() => {
-    if (cyRef.current) {
-      const layout = cyRef.current.layout(layoutPresets[layoutName] || layoutPresets.breadthfirst);
-      layout.run();
-    }
-  }, [layoutName]);
-
   async function loadGraph() {
     try {
       initialFitDoneRef.current = false;
@@ -117,17 +110,6 @@ export default function GraphView({
         }));
 
       setElements([...cyNodes, ...cyEdges]);
-      if (cyRef.current) {
-        const layout = cyRef.current.layout(layoutPresets[layoutName] || layoutPresets.breadthfirst);
-        layout.run();
-        layout.once('layoutstop', () => {
-          if (!initialFitDoneRef.current) {
-            cyRef.current.fit(cyRef.current.nodes(), 60);
-            initialFitDoneRef.current = true;
-          }
-          playIntroAnimation();
-        });
-      }
     } catch (e) {
       console.error('Error loading graph', e);
     }
@@ -483,6 +465,21 @@ export default function GraphView({
       node.animate({ position: pos }, { duration: 520, easing: 'ease-out-cubic' });
     });
   }
+
+  // Run layout when elements or layout selection change
+  useEffect(() => {
+    const cy = cyRef.current;
+    if (!cy || cy.elements().length === 0) return;
+    const layout = cy.layout(layoutPresets[layoutName] || layoutPresets.breadthfirst);
+    layout.run();
+    layout.once('layoutstop', () => {
+      if (!initialFitDoneRef.current) {
+        cy.fit(cy.nodes(), 60);
+        initialFitDoneRef.current = true;
+      }
+      playIntroAnimation();
+    });
+  }, [elements, layoutName]);
 
   return (
     <div
