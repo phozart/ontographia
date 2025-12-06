@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+﻿import { useEffect, useRef, useState } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import TopBar from './TopBar';
@@ -9,6 +9,7 @@ import { LogoSpinner } from './Logo';
 export default function Layout({ theme, onThemeChange, children }) {
 
   const [routeLoading, setRouteLoading] = useState(false);
+  const [showMobileNotice, setShowMobileNotice] = useState(false);
   const router = useRouter();
   const isStudio = router.pathname.startsWith('/studio') || router.pathname.startsWith('/graphnavigator');
   const routeTimer = useRef(null);
@@ -48,6 +49,21 @@ export default function Layout({ theme, onThemeChange, children }) {
     };
   }, [router.events]);
 
+  useEffect(() => {
+    const onResize = () => {
+      const mobile = window.innerWidth < 768;
+      if (mobile) {
+        const dismissed = window.localStorage.getItem('mobile-notice-dismissed');
+        if (!dismissed) setShowMobileNotice(true);
+      } else {
+        setShowMobileNotice(false);
+      }
+    };
+    onResize();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
   return (
     <>
       <Head>
@@ -75,8 +91,30 @@ export default function Layout({ theme, onThemeChange, children }) {
             <LogoSpinner label="Loading..." theme={theme} />
           </div>
         )}
+        {showMobileNotice && (
+          <div className="modal-backdrop" style={{ zIndex: 2000 }} onClick={() => setShowMobileNotice(false)}>
+            <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 440 }}>
+              <h3 style={{ marginTop: 0 }}>Not optimised for mobile</h3>
+              <p style={{ lineHeight: 1.5 }}>
+                Ontographia is best experienced on a tablet or desktop. Graph editing and admin actions are hidden on small screens.
+              </p>
+              <div className="modal-actions" style={{ justifyContent: 'flex-end' }}>
+                <button
+                  className="btn"
+                  type="button"
+                  onClick={() => {
+                    window.localStorage.setItem('mobile-notice-dismissed', '1');
+                    setShowMobileNotice(false);
+                  }}
+                >
+                  Continue
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
         <div className="global-footer">
-          © Ontographia · Privacy: local storage stores your session and role only; no personal private data is kept.
+          Ac Ontographia Aú Privacy: local storage stores your session and role only; no personal private data is kept.
         </div>
       </div>
     </>

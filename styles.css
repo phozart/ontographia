@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+﻿@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root {
   --bg: #eef2f7;
@@ -166,7 +166,7 @@ button {
   text-decoration: none;
   color: var(--text-muted);
   font-weight: 600;
-  padding: 8px 10px;
+  padding: 8px 12px;
   border-radius: 10px;
   transition: all 0.15s ease;
 }
@@ -1296,3 +1296,4 @@ button {
     text-align: center;
   }
 }
+
