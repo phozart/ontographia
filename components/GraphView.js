@@ -72,7 +72,7 @@ export default function GraphView({
       const cyNodes = (Array.isArray(domainNodes) ? domainNodes : []).map(n => {
         const baseColor = n.color || n.typeColor || layerColor(n.layer);
         const color = themeDark ? darkenForDarkMode(baseColor) : baseColor;
-        return {
+        const data = {
           data: {
             id: n.id,
             label: n.name,
@@ -80,13 +80,12 @@ export default function GraphView({
             color,
             shape: n.shape || n.typeShape || 'ellipse',
             raw: n,
-            icon: sanitizeIcon(n.icon || n.typeIcon),
             weight:
               typeof n.weight === 'number'
                 ? n.weight
                 : isNaN(parseFloat(n.weight))
                   ? 1
-                  : parseFloat(n.weight),
+                : parseFloat(n.weight),
             size: computeSize(n),
             textWidth: computeTextWidth(n),
             fontSize: computeFontSize(n),
@@ -95,6 +94,11 @@ export default function GraphView({
           position: n.x && n.y ? { x: n.x, y: n.y } : undefined,
           classes: [`layer-${(n.layer || 'Unassigned').replace(/\s+/g, '')}`],
         };
+        const iconVal = sanitizeIcon(n.icon || n.typeIcon);
+        if (iconVal) {
+          data.data.icon = iconVal;
+        }
+        return data;
       });
 
       const nodeIds = new Set((Array.isArray(domainNodes) ? domainNodes : []).map(n => n.id));

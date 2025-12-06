@@ -29,7 +29,11 @@ export default function DataElementsTree({
     if (!idToPath.has(nodeId)) {
       idToPath.set(nodeId, itemId);
     }
-    const kids = childrenMap.get(node.id) || [];
+    const kids = (childrenMap.get(node.id) || []).filter(child => {
+      if (!child) return false;
+      const cid = child.id != null ? String(child.id) : '';
+      return cid && !visitedNodes.has(cid);
+    });
     const label = (
       <Box display="flex" alignItems="center" gap={1}>
         <Typography variant="body2" fontWeight={isTypeLevel ? 700 : 500}>
