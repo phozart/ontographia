@@ -540,9 +540,7 @@ function NodeDetailCard({ node, onEdit }) {
           <DetailRow label="Data flow element" value={node.label || node.name} />
           <DetailRow label="Type" value={node.typeLabel || node.typeName || node.typeId} />
           <DetailRow label="Layer" value={node.layer || '—'} />
-          <DetailRow label="Icon" value={node.icon || '—'} />
           <DetailRow label="Color" value={node.color || '—'} />
-          <DetailRow label="Shape" value={node.shape || node.typeShape || 'inherit'} />
         </Stack>
         {(!attrs || Object.keys(attrs).length === 0) ? (
           <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>

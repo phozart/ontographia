@@ -216,7 +216,10 @@ export default function NodeTable() {
 
   return (
     <Box>
-      <Typography variant="h6" gutterBottom>Nodes</Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2, pt:2.5 , gap: 2 }}>
+        <Typography variant="h5" sx={{ fontWeight: 700 }}>Nodes</Typography>
+        <Button variant="contained" onClick={openCreate}>+ New node</Button>
+      </Box>
       <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', mb: 2 }}>
         <Autocomplete
           size="small"
@@ -226,12 +229,11 @@ export default function NodeTable() {
           onChange={(_, val) => setTypeFilter(val)}
           renderInput={(params) => <TextField {...params} label="Filter by type" />}
         />
-        <Button variant="contained" onClick={openCreate}>+ New node</Button>
       </Box>
 
       <Box
         sx={{
-          height: 'calc(100vh - 260px)',
+          height: 'calc(100vh - 280px)',
           width: '100%',
           boxShadow: '0 10px 30px rgba(15, 23, 42, 0.12)',
           borderRadius: 2,
@@ -242,13 +244,37 @@ export default function NodeTable() {
           rows={Array.isArray(filteredNodes) ? filteredNodes : []}
           getRowId={row => row.id}
           columns={columns}
-          density="comfortable"
+          density="compact"
           disableRowSelectionOnClick
+          getRowHeight={() => 'auto'}
           slots={{ toolbar: GridToolbar }}
           slotProps={{
             toolbar: {
               showQuickFilter: true,
               quickFilterProps: { debounceMs: 300 },
+            },
+          }}
+          sx={{
+            '& .MuiDataGrid-cell': {
+              whiteSpace: 'normal',
+              lineHeight: 1.3,
+              alignItems: 'flex-start',
+              py: 0.5,
+            },
+            '& .MuiDataGrid-row': {
+              maxHeight: 'none !important',
+            },
+            '& .MuiDataGrid-row:nth-of-type(even)': {
+              backgroundColor: 'rgba(0, 0, 0, 0.02)',
+            },
+            '& .MuiDataGrid-row:nth-of-type(odd)': {
+              backgroundColor: 'rgba(0, 0, 0, 0.01)',
+            },
+            '[data-theme="dark"] & .MuiDataGrid-row:nth-of-type(even)': {
+              backgroundColor: 'rgba(255, 255, 255, 0.04)',
+            },
+            '[data-theme="dark"] & .MuiDataGrid-row:nth-of-type(odd)': {
+              backgroundColor: 'rgba(255, 255, 255, 0.02)',
             },
           }}
         />

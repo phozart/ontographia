@@ -2,12 +2,12 @@ import { useEffect, useRef, useState } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import TopBar from './TopBar';
-import Sidebar from './SideBar';
+
 import AnimatedLogoBackground from './AnimatedLogoBackground';
 import { LogoSpinner } from './Logo';
 
 export default function Layout({ theme, onThemeChange, children }) {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+
   const [routeLoading, setRouteLoading] = useState(false);
   const router = useRouter();
   const isStudio = router.pathname.startsWith('/studio') || router.pathname.startsWith('/graphnavigator');

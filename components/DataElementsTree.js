@@ -20,6 +20,7 @@ export default function DataElementsTree({
     if (!node) return null;
     const nodeId = node.id != null ? String(node.id) : String(path);
     const itemId = `${treeUid}::${nodeId || 'node'}::${path}-${counter++}`;
+    const isTypeLevel = path.startsWith('root-') && path.split('-').length === 2;
     if (visited.has(itemId)) return null;
     visited.add(itemId);
     if (!idToPath.has(nodeId)) {
@@ -28,7 +29,7 @@ export default function DataElementsTree({
     const kids = childrenMap.get(node.id) || [];
     const label = (
       <Box display="flex" alignItems="center" gap={1}>
-        <Typography variant="body2" fontWeight={600}>
+        <Typography variant="body2" fontWeight={isTypeLevel ? 700 : 500}>
           {getLabel(node)}
         </Typography>
         {node.attributes?.mandatory ? <Chip size="small" color="error" label="Mandatory" /> : null}

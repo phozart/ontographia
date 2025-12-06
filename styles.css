@@ -11,7 +11,7 @@
   --accent: #1f3a8a;
   --accent-soft: rgba(31, 58, 138, 0.14);
   --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
-  --footer-height: 36px;
+  --footer-height: 30px;
   --btn: #1f2937;
   --btn-2: #374151;
   --btn-text: #f9fafb;
@@ -405,10 +405,10 @@ button {
 .app-main {
   flex: 1;
   position: relative;
-  min-height: 0;
+  min-height: calc(100vh - 72px - var(--footer-height));
   overflow: hidden;
   background: var(--bg);
-  border-top-left-radius: 18px;
+  border-top-left-radius: 16px;
   padding-bottom: 0;
 }
 
@@ -417,8 +417,8 @@ button {
   z-index: 1;
   min-height: calc(100vh - 72px - var(--footer-height));
   height: calc(100vh - 72px - var(--footer-height));
-  padding: 16px;
-  padding-bottom: var(--footer-height);
+  padding-top: 5px;
+  padding-bottom: calc(var(--footer-height) + 12px);
   overflow: auto;
   display: flex;
   justify-content: center;
@@ -639,6 +639,7 @@ button {
   box-shadow: 0 10px 22px rgba(0,0,0,0.16);
   filter: brightness(1.02);
   background: linear-gradient(135deg, var(--btn-2), var(--btn));
+  color: var(--btn-text);
 }
 .btn-secondary {
   padding: 6px 12px;
@@ -652,6 +653,15 @@ button {
 .btn-secondary:hover {
   border-color: var(--btn-2);
   background: var(--nav-hover-bg);
+  color: var(--nav-hover-color);
+}
+
+.btn:active,
+.btn:focus-visible {
+  color: var(--btn-text);
+}
+.btn-secondary:active,
+.btn-secondary:focus-visible {
   color: var(--nav-hover-color);
 }
 .btn-danger {
