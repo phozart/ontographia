@@ -75,13 +75,18 @@ async function main() {
     await session.run('CREATE CONSTRAINT IF NOT EXISTS FOR (n:Entity) REQUIRE n.id IS UNIQUE');
 
     for (const n of nodes) {
-      const attributesJson = JSON.stringify(n.attributes || {});
+      const attrs = n.attributes || {};
+      const attributesJson = JSON.stringify(attrs);
+      const attributesList = Object.entries(attrs).map(
+        ([k, v]) => `${k}:${Array.isArray(v) ? v.join('|') : String(v)}`
+      );
       const params = {
         id: n.id,
         name: n.name,
         type: n.type,
         layer: n.layer,
         attributesJson,
+        attributesList,
       };
       await session.run(
         `
@@ -89,7 +94,8 @@ async function main() {
         SET e.name = $name,
             e.type = $type,
             e.layer = $layer,
-            e.attributes = $attributesJson
+            e.attributes_json = $attributesJson,
+            e.attributes_list = $attributesList
         `,
         params
       );
