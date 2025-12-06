@@ -1,12 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="-40 -40 80 80">
   <defs>
     <style>
-      .bg { fill: #0B2545; stroke: #0B2545; stroke-width: 1.2; }
-      .node { fill: #ffffff; stroke: none; }
-      .edge { stroke: #ffffff; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+      .edge { stroke: #6b7280; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+      .node { fill: #6b7280; stroke: none; }
     </style>
   </defs>
-  <rect class="bg" x="-36" y="-36" width="72" height="72" rx="12" ry="12" />
   <g class="edge">
     <line x1="0" y1="-38" x2="30" y2="-8" />
     <line x1="30" y1="-8" x2="24" y2="24" />

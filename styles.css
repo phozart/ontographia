@@ -1,4 +1,4 @@
-﻿
+
 :root {
   --bg: #eef2f7;
   --bg-alt: #ffffff;
@@ -74,7 +74,7 @@ label {
 .btn-secondary,
 .btn-small,
 button {
-  font-weight: 600;
+  font-weight: 400;
 }
 
 .logo svg {
@@ -87,7 +87,7 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  pointer-events: none;
+  
   overflow: hidden;
   z-index: 0;
 }
@@ -141,6 +141,7 @@ button {
   align-items: center;
   justify-content: space-between;
   padding: 0 20px;
+  padding-left: 10px;
   border-bottom: 1px solid var(--border);
   background: linear-gradient(135deg, var(--bg-alt), var(--panel));
   box-shadow: var(--shadow);
@@ -154,6 +155,7 @@ button {
   display: flex;
   align-items: center;
   gap: 16px;
+  flex: 0 0 auto;
 }
 
 .topbar-nav {
@@ -161,10 +163,86 @@ button {
   align-items: center;
   gap: 10px;
 }
+
+.topbar-icon-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.center-nav {
+  flex: 1;
+  justify-content: flex-start;
+  min-width: 0;
+}
+.icon-nav-item {
+  padding-top:5px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  text-decoration: none;
+  color: var(--text-muted);
+  padding-left: 10px ;
+  padding-right: 10px;
+  border-radius: 12px;
+  transition: transform 0.18s ease, color 0.18s ease, background 0.18s ease;
+  background: transparent;
+  min-height: 64px;
+  min-width: 100px;
+}
+.icon-nav-item .icon-label {
+  font-size: 12px;
+  font-weight: 600;
+  opacity: 0;
+  max-height: 0;
+  transform: translateY(8px);
+  transition: opacity 0.15s ease, max-height 0.15s ease, transform 0.15s ease;
+  text-align: center;
+}
+.icon-nav-item .icon-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  transition: font-size 0.18s ease, transform 0.18s ease, color 0.18s ease;
+}
+.icon-nav-item .icon-wrap svg {
+  color: currentColor;
+}
+.icon-nav-item:hover {
+  color: var(--nav-active-color);
+  background: var(--nav-active-bg);
+}
+.icon-nav-item:hover .icon-label {
+  opacity: 1;
+  max-height: 24px;
+  transform: translateY(0);
+}
+.icon-nav-item:hover .icon-wrap {
+  font-size: 20px;
+  transform: translateY(-2px);
+}
+.icon-nav-item.active {
+  color: var(--nav-active-color);
+  background: var(--nav-active-bg);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.14);
+}
+.icon-nav-item.active .icon-label {
+  opacity: 1;
+  max-height: 24px;
+  transform: translateY(0);
+}
+.icon-nav-item.active .icon-wrap {
+  font-size: 20px;
+  transform: translateY(-2px);
+}
 .topbar-nav a {
   text-decoration: none;
   color: var(--text-muted);
-  font-weight: 600;
+  font-weight: 500;
+  text-transform: capitalize;
   padding: 8px 12px;
   border-radius: 10px;
   transition: all 0.15s ease;
@@ -173,13 +251,14 @@ button {
 .topbar-nav a:hover {
   color: var(--nav-active-color);
   background: var(--nav-active-bg);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+  box-shadow: 0 6px 14px rgba(250, 150, 150, 0.14);
 }
 .topbar-nav a.active {
   color: var(--nav-active-color);
   background: var(--nav-active-bg);
-  box-shadow: 0 6px 14px rgba(0,0,0,0.14);
+  box-shadow: 0 6px 14px rgba(250, 150, 150, 0.14);
 }
+
 
 .logo {
   font-weight: 800;
@@ -259,16 +338,26 @@ button {
   flex-direction: column;
 }
 .settings-dropdown a {
-  padding: 10px 14px;
+  padding: 8px 12px;
+  margin: 2px 6px;
+  border-radius: 10px;
+  text-decoration: none;
+  color: var(--text);
+  font-weight: 600;
+  background: transparent;
+  border: none;
+  transition: background-color 0.12s ease, color 0.12s ease;
 }
 .settings-dropdown a:hover {
   background: var(--bg);
+  color: var(--nav-hover-color);
 }
 .settings-dropdown a.active {
-  background: var(--accent-soft);
-  color: var(--text);
+  background: var(--bg);
+  color: var(--nav-active-bg);
   font-weight: 700;
 }
+
 
 .suggestion-item {
   display: flex;
@@ -281,6 +370,12 @@ button {
   text-align: left;
   cursor: pointer;
   transition: background-color 0.12s ease;
+}
+.pmi{
+
+  text-decoration: none;
+  padding-top:0px;
+  margin-top:0px;
 }
 .suggestion-item:hover {
   background: rgba(31, 58, 138, 0.06);
@@ -444,7 +539,7 @@ button {
   background: var(--panel);
   box-shadow: 0 -4px 12px rgba(0,0,0,0.08);
   z-index: 1500;
-  pointer-events: none;
+  
   opacity: 0.96;
   min-height: var(--footer-height);
 }
@@ -834,7 +929,7 @@ button {
 .user-view .tree-item {
   padding: 6px 8px;
   gap: 6px;
-  border-radius: 8px;
+  border-radius: 12px;
 }
 .user-view .tree-label {
   font-size: 14px;
@@ -1080,7 +1175,7 @@ button {
 .chip-toggle {
   border: 1px solid var(--border);
   background: var(--bg-alt);
-  border-radius: 8px;
+  border-radius: 12px;
   padding: 2px 6px;
   cursor: pointer;
   font-size: 12px;
@@ -1148,7 +1243,7 @@ button {
 .modal-form textarea {
   padding: 6px 8px;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 12px;
   background: var(--panel);
 }
 .modal-actions {

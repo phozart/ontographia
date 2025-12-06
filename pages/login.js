@@ -47,10 +47,10 @@ export default function LoginPage() {
   return (
     <Box
       sx={{
-        minHeight: '80vh',
+        minHeight: '60vh',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center',
+        justifyContent: 'top',
         px: { xs: 2, md: 4 },
         py: { xs: 3, md: 4 },
       }}
@@ -59,7 +59,7 @@ export default function LoginPage() {
         <Grid item xs={12} md={6}>
           <Stack spacing={2.5} sx={{ maxWidth: 560, mx: 'auto' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <LogoWordmark width={260} height={70} color="var(--text)" />
+              <LogoWordmark width={520} height={140} color="var(--text)" />
             </Box>
             <Typography variant="body1">
               Ontographia helps you model concepts, map relationships, and keep meaning consistent as work crosses teams.
@@ -79,7 +79,7 @@ export default function LoginPage() {
         </Grid>
         <Grid item xs={12} md={6} sx={{ mt: { xs: 1, md: 0 } }}>
           <Paper
-            elevation={3}
+            elevation={4}
             sx={{
               p: { xs: 3, md: 4 },
               background: 'var(--bg-alt)',

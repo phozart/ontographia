@@ -8,6 +8,10 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
+import SchoolIcon from '@mui/icons-material/School';
+import HubIcon from '@mui/icons-material/Hub';
+import SourceIcon from '@mui/icons-material/Source';
+import CableIcon from '@mui/icons-material/Cable';
 import ThemeToggle from './ThemeToggle';
 import { useAuth } from './AuthContext';
 import { LogoWordmark } from './Logo';
@@ -69,28 +73,72 @@ export default function TopBar({ theme, onThemeChange }) {
             }}
           />
         </Link>
-        {user && !isMobile && (
-          <nav className="topbar-nav">
-            <Link href="/semanticmodelbrowser" className={isActive('/semanticmodelbrowser', '/user-view') ? 'active' : ''}>Model Browser</Link>
-            <Link href="/graphnavigator" className={isActive('/graphnavigator', '/studio') ? 'active' : ''}>Graph Navigator</Link>
-            {role === 'admin' && <Link href="/nodes" className={isActive('/nodes') ? 'active' : ''}>Nodes</Link>}
-            {role === 'admin' && <Link href="/relationships" className={isActive('/relationships') ? 'active' : ''}>Relationships</Link>}
-          </nav>
-        )}
-        {user && isMobile && (
-          <div style={{ position: 'relative' }}>
-            <IconButton size="small" onClick={() => setNavOpen(o => !o)} aria-label="Toggle navigation">
-              {navOpen ? <CloseIcon fontSize="small" /> : <MenuIcon fontSize="small" />}
-            </IconButton>
-            {navOpen && (
-              <div className="settings-dropdown" style={{ marginTop: 6 }}>
-                <Link href="/home" className={isActive('/home') ? 'active' : ''} onClick={() => setNavOpen(false)}>Home</Link>
-                <Link href="/graphnavigator" className={isActive('/graphnavigator') ? 'active' : ''} onClick={() => setNavOpen(false)}>Graph Navigator</Link>
-              </div>
-            )}
-          </div>
-        )}
       </div>
+      {user && !isMobile && (
+        <nav className="topbar-icon-nav center-nav">
+          <Link
+            href="/semanticmodelbrowser"
+            className={`icon-nav-item ${isActive('/semanticmodelbrowser', '/user-view') ? 'active' : ''}`}
+          >
+
+             <span className="icon-wrap">
+            <SchoolIcon fontSize="inherit" />
+           
+           
+              
+            </span>
+             <span className="icon-label"> <p className="pmi">Model Browser</p></span>
+          </Link>
+          <Link
+            href="/graphnavigator"
+            className={`icon-nav-item ${isActive('/graphnavigator', '/studio') ? 'active' : ''}`}
+          ><span className="icon-wrap">
+            <HubIcon fontSize="inherit" />
+            
+            
+              
+            </span>
+            <span className="icon-label"><p className="pmi"> Graph Navigator</p></span>
+          </Link>
+          {role === 'admin' && (
+            <Link href="/nodes" className={`icon-nav-item ${isActive('/nodes') ? 'active' : ''}`}>
+                <span className="icon-wrap">
+              <SourceIcon fontSize="inherit" />
+             
+            
+                
+              </span>
+               <span className="icon-label"><p className="pmi"> Nodes</p></span>
+            </Link>
+          )}
+          {role === 'admin' && (
+            <Link
+              href="/relationships"
+              className={`icon-nav-item ${isActive('/relationships') ? 'active' : ''}`}
+            >
+              
+              <span className="icon-wrap">
+                <CableIcon fontSize="inherit" />
+                
+              </span>
+              <span className="icon-label"> <p className="pmi">Connections</p></span>
+            </Link>
+          )}
+        </nav>
+      )}
+      {user && isMobile && (
+        <div style={{ position: 'relative' }}>
+          <IconButton size="small" onClick={() => setNavOpen(o => !o)} aria-label="Toggle navigation">
+            {navOpen ? <CloseIcon fontSize="small" /> : <MenuIcon fontSize="small" />}
+          </IconButton>
+          {navOpen && (
+            <div className="settings-dropdown" style={{ marginTop: 6 }}>
+              <Link href="/home" className={isActive('/home') ? 'active' : ''} onClick={() => setNavOpen(false)}>Home</Link>
+              <Link href="/graphnavigator" className={isActive('/graphnavigator') ? 'active' : ''} onClick={() => setNavOpen(false)}>Graph Navigator</Link>
+            </div>
+          )}
+        </div>
+      )}
       <div className="topbar-right">
         {user && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -104,7 +152,7 @@ export default function TopBar({ theme, onThemeChange }) {
                     aria-label="Settings"
                     sx={{ color: 'var(--text)' }}
                   >
-                    <SettingsIcon fontSize="small" />
+                    <SettingsIcon fontSize="large" />
                   </IconButton>
                 </Tooltip>
                 {settingsOpen && (
@@ -120,13 +168,13 @@ export default function TopBar({ theme, onThemeChange }) {
             <div className="settings-menu" ref={userMenuRef} style={{ position: 'relative' }}>
               <Tooltip title={`${user} (${role})`}>
                 <IconButton
-                  size="small"
+                  size="large"
                   onClick={() => setUserMenuOpen(o => !o)}
                   aria-expanded={userMenuOpen}
                   aria-label="User menu"
                   sx={{ color: 'var(--text)' }}
                 >
-                  <AccountCircleIcon fontSize="small" />
+                  <AccountCircleIcon fontSize="large" />
                 </IconButton>
               </Tooltip>
               {userMenuOpen && (
@@ -155,9 +203,7 @@ export default function TopBar({ theme, onThemeChange }) {
         )}
         {!user && (
           <>
-            <Link href="/login" className="btn-small">
-              Login
-            </Link>
+          
             <ThemeToggle theme={theme} onThemeChange={onThemeChange} />
           </>
         )}

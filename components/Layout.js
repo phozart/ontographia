@@ -10,10 +10,12 @@ export default function Layout({ theme, onThemeChange, children }) {
 
   const [routeLoading, setRouteLoading] = useState(false);
   const [showMobileNotice, setShowMobileNotice] = useState(false);
+  const [showPrivacy, setShowPrivacy] = useState(false);
   const router = useRouter();
   const isStudio = router.pathname.startsWith('/studio') || router.pathname.startsWith('/graphnavigator');
   const routeTimer = useRef(null);
   const routeStart = useRef(0);
+  const year = new Date().getFullYear();
 
   useEffect(() => {
     function handleMove(e) {
@@ -72,12 +74,6 @@ export default function Layout({ theme, onThemeChange, children }) {
           name="description"
           content="Ontographia Knowledge Graph Studio lets you explore semantic models, navigate relationships, and understand domain structures."
         />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-          rel="stylesheet"
-        />
         <link rel="icon" href="/constellation-icon.svg" />
       </Head>
       <div className={`app app--${theme}`}>
@@ -120,8 +116,38 @@ export default function Layout({ theme, onThemeChange, children }) {
           </div>
         )}
         <div className="global-footer">
-          Ac Ontographia Aú Privacy: local storage stores your session and role only; no personal private data is kept.
+          © {year} Ontographia ·{' '}
+          <button
+            type="button"
+            className="link"
+            style={{ border: 'none', background: 'transparent', padding: 0, cursor: 'pointer' }}
+            onClick={() => setShowPrivacy(true)}
+          >
+            Privacy
+          </button>
         </div>
+        {showPrivacy && (
+          <div className="modal-backdrop" style={{ zIndex: 2100 }} onClick={() => setShowPrivacy(false)}>
+            <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 520 }}>
+              <h3 style={{ marginTop: 0 }}>Privacy statement</h3>
+              <p style={{ lineHeight: 1.6 }}>
+                Ontographia uses a minimal privacy footprint. We store your session token and role in local storage on
+                this device only. No personal data is kept beyond what you enter to sign in. All graph edits and
+                metadata remain within your environment; nothing is sent to third-party analytics. For support or audit,
+                an administrator may review server logs that contain timestamped access events but not your content.
+              </p>
+              <p style={{ lineHeight: 1.6 }}>
+                By continuing, you confirm you are authorised to access the workspace data and will handle it according
+                to your organisation’s security and privacy policies.
+              </p>
+              <div className="modal-actions" style={{ justifyContent: 'flex-end' }}>
+                <button className="btn" type="button" onClick={() => setShowPrivacy(false)}>
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
