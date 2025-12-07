@@ -11,7 +11,7 @@ export default async function handler(req, res) {
     const isDemo = isDemoRequest(req);
 
     if (req.method === 'GET') {
-      const { domain } = req.query;
+      const { domain, domainName } = req.query;
 
       if (isDemo) {
         return res.status(200).json(demoListNodeTypes());
@@ -21,8 +21,11 @@ export default async function handler(req, res) {
       const params = {};
 
       if (domain && domain !== 'all') {
-        query += ' WHERE t.domain = $domain';
-        params.domain = domain;
+        const domains = [domain, domainName].filter(Boolean);
+        if (domains.length) {
+          query += ' WHERE coalesce(t.domain, "core") IN $domains';
+          params.domains = domains;
+        }
       }
 
       query += ' RETURN t ORDER BY t.name';

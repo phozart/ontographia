@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import CytoscapeComponent from 'react-cytoscapejs';
 import { useFilter } from './FilterContext';
+import { useDomains } from './DomainContext';
 
 const layoutPresets = {
   breadthfirst: { name: 'breadthfirst', directed: true, padding: 60, spacingFactor: 1.25 },
@@ -34,6 +35,7 @@ export default function GraphView({
     if (typeof document === 'undefined') return false;
     return document.documentElement.dataset.theme === 'dark';
   });
+  const { activeDomain, activeDomainObj } = useDomains();
 
   useEffect(() => {
     if (typeof document === 'undefined') return undefined;
@@ -48,19 +50,30 @@ export default function GraphView({
 
   useEffect(() => {
     loadGraph();
-  }, [reloadKey, typeFilters, themeDark]);
+  }, [reloadKey, typeFilters, themeDark, activeDomain, activeDomainObj]);
 
   async function loadGraph() {
     try {
       initialFitDoneRef.current = false;
 
-      const query =
+      const typeQuery =
         typeFilters && typeFilters.length
           ? `?typeIds=${encodeURIComponent(typeFilters.join(','))}`
           : '';
+      const domainPart = activeDomain
+        ? `${typeQuery ? '&' : '?'}domain=${encodeURIComponent(activeDomain)}&domainName=${encodeURIComponent(
+            activeDomainObj?.name || ''
+          )}`
+        : '';
+      const nodesUrl = `/api/nodes${typeQuery}${domainPart}`;
+      const relUrl = `/api/relationships${
+        activeDomain
+          ? `?domain=${encodeURIComponent(activeDomain)}&domainName=${encodeURIComponent(activeDomainObj?.name || '')}`
+          : ''
+      }`;
       const [nodesRes, relsRes] = await Promise.all([
-        fetch(`/api/nodes${query}`),
-        fetch('/api/relationships'),
+        fetch(nodesUrl),
+        fetch(relUrl),
       ]);
       if (!nodesRes.ok || !relsRes.ok) {
         console.error('Failed to load graph data', nodesRes.status, relsRes.status);
@@ -270,7 +283,6 @@ export default function GraphView({
           'source-arrow-color': '#6b7280',
           'source-arrow-shape': 'circle',
           'source-arrow-fill': 'filled',
-          'source-arrow-size': 6,
           'curve-style': 'bezier',
           label: 'data(label)',
           'font-size': 11,

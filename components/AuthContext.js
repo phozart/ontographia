@@ -99,11 +99,11 @@ export function useRouteGuard() {
     const studioRoutes = ['/studio', '/graphnavigator'];
     const modelRoutes = ['/semanticmodelbrowser', '/user-view'];
     const homeRoute = ['/home'];
-    const adminRoutes = ['/', '/demo', ...homeRoute, ...studioRoutes, ...modelRoutes, '/nodes', '/relationships', '/settings', '/node-types', '/relationship-types', '/login'];
+    const adminRoutes = ['/', '/demo', ...homeRoute, ...studioRoutes, ...modelRoutes, '/nodes', '/relationships', '/settings', '/domains', '/node-types', '/relationship-types', '/login'];
     if (!isDemoClient && role === 'admin') return [...adminRoutes, '/admin/users'];
     if (role === 'admin') return adminRoutes;
-    if (role === 'editor') return ['/', '/demo', ...homeRoute, ...studioRoutes, ...modelRoutes, '/settings', '/login'];
-    if (role === 'viewer') return ['/', '/demo', ...homeRoute, ...studioRoutes, ...modelRoutes, '/settings', '/login'];
+    if (role === 'editor') return ['/', '/demo', ...homeRoute, ...studioRoutes, ...modelRoutes, '/settings', '/domains', '/login'];
+    if (role === 'viewer') return ['/', '/demo', ...homeRoute, ...studioRoutes, ...modelRoutes, '/settings', '/domains', '/login'];
     return ['/login'];
   }, [role, isDemoClient]);
 

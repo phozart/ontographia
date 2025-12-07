@@ -1,5 +1,9 @@
 import React from 'react';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import LoopIcon from '@mui/icons-material/Loop';
+import HighlightOffIcon from '@mui/icons-material/HighlightOff';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 
@@ -7,6 +11,9 @@ export default function UserViewHeader({
   nodeTypes,
   selectedType,
   onSelectType,
+  layers = [],
+  selectedLayer = '',
+  onSelectLayer,
   nodeQuery,
   onNodeQueryChange,
   filteredNodes,
@@ -28,19 +35,46 @@ export default function UserViewHeader({
       <div className="user-filters__header">
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <h2 style={{ margin: 0 }}>Semantic Model Browser</h2>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <Tooltip title="Refresh">
+            <span>
+              <IconButton onClick={onRefresh} disabled={loading} aria-label="Refresh">
+                <LoopIcon fontSize="small" />
+              </IconButton>
+            </span>
+          </Tooltip>
           <Tooltip title="What is this page?">
             <IconButton size="small" onClick={onInfo} aria-label="Semantic Model Browser info">
               <InfoOutlinedIcon fontSize="small" />
             </IconButton>
           </Tooltip>
+          {selectedNodeId && (
+            <Tooltip title="Clear focus">
+              <IconButton size="small" onClick={onShowAll} aria-label="Clear focus">
+                <HighlightOffIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          )}
         </div>
-        {selectedNodeId && (
-          <button className="chip-toggle" onClick={onShowAll}>
-            Clear focus
-          </button>
-        )}
       </div>
       <div className="user-filters__grid">
+        <div className="form-group">
+          <label>Layer</label>
+          <input
+            list="layer-options"
+            value={selectedLayer}
+            placeholder="Any layer"
+            onChange={e => onSelectLayer(e.target.value)}
+          />
+          <datalist id="layer-options">
+            {layers.map(layer => (
+              <option key={layer} value={layer}>
+                {layer}
+              </option>
+            ))}
+          </datalist>
+        </div>
         <div className="form-group">
           <label>Node type</label>
           <select value={selectedType} onChange={e => onSelectType(e.target.value)}>
@@ -68,18 +102,36 @@ export default function UserViewHeader({
             ))}
           </datalist>
         </div>
-        <div className="form-group">
+        <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
           <label>Direction</label>
-          <select value={direction} onChange={e => onDirectionChange(e.target.value)}>
-            <option value="out">Top-down</option>
-            <option value="in">Bottom-up</option>
-          </select>
-        </div>
-        <div className="user-filters__actions">
-          <button className="btn-secondary" onClick={onRefresh} disabled={loading}>
-            {loading ? 'Loading...' : 'Refresh'}
-          </button>
-          
+          <div style={{ display: 'flex', gap: 8 }}>
+            <Tooltip title="Top-down">
+              <IconButton
+                size="small"
+                onClick={() => onDirectionChange('out')}
+                sx={{
+                  border: '1px solid var(--border)',
+                  background: direction === 'out' ? 'var(--nav-active-bg)' : 'var(--panel)',
+                  color: direction === 'out' ? 'var(--nav-active-color)' : 'var(--text)',
+                }}
+              >
+                <ArrowDownwardIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Bottom-up">
+              <IconButton
+                size="small"
+                onClick={() => onDirectionChange('in')}
+                sx={{
+                  border: '1px solid var(--border)',
+                  background: direction === 'in' ? 'var(--nav-active-bg)' : 'var(--panel)',
+                  color: direction === 'in' ? 'var(--nav-active-color)' : 'var(--text)',
+                }}
+              >
+                <ArrowUpwardIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </div>
         </div>
       </div>
       {crumbs && crumbs.length > 0 && (

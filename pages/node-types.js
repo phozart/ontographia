@@ -21,6 +21,7 @@ import {
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { LogoSpinner } from '../components/Logo';
+import { useDomains } from '../components/DomainContext';
 
 const shapeOptions = ['ellipse', 'round-rectangle', 'rectangle', 'diamond', 'hexagon'];
 
@@ -40,16 +41,20 @@ export default function NodeTypesPage() {
     shape: 'ellipse'
   });
   const [errorMsg, setErrorMsg] = useState('');
+  const { activeDomain, accessibleDomains, activeDomainObj } = useDomains();
 
   useEffect(() => {
     loadTypes();
-  }, []);
+  }, [activeDomain, activeDomainObj]);
 
   async function loadTypes() {
     setLoading(true);
     setErrorMsg('');
     try {
-      const res = await fetch('/api/node-types');
+      const qs = activeDomain
+        ? `?domain=${encodeURIComponent(activeDomain)}&domainName=${encodeURIComponent(activeDomainObj?.name || '')}`
+        : '';
+      const res = await fetch(`/api/node-types${qs}`);
       if (!res.ok) {
         setErrorMsg(`Failed to load node types (${res.status})`);
         setTypes([]);
@@ -75,7 +80,7 @@ export default function NodeTypesPage() {
       layer: '',
       color: '#888888',
       icon: '',
-      domain: 'core',
+      domain: activeDomainObj?.name || activeDomain || 'core',
       shape: 'ellipse'
     });
     setDialogOpen(true);
@@ -90,7 +95,7 @@ export default function NodeTypesPage() {
       layer: t.layer || '',
       color: t.color || '#888888',
       icon: t.icon || '',
-      domain: t.domain || 'core',
+      domain: t.domain || activeDomainObj?.name || 'core',
       shape: t.shape || 'ellipse'
     });
     setDialogOpen(true);
@@ -107,7 +112,10 @@ export default function NodeTypesPage() {
       setErrorMsg('Name is required');
       return;
     }
-    const payload = { ...form };
+    const payload = {
+      ...form,
+      domain: activeDomainObj?.name || activeDomain || form.domain || 'core',
+    };
     const url = editingId ? `/api/node-types/${encodeURIComponent(editingId)}` : '/api/node-types';
     const method = editingId ? 'PUT' : 'POST';
     try {
@@ -252,8 +260,11 @@ export default function NodeTypesPage() {
               fullWidth
               margin="dense"
               label="Domain"
+              select
               value={form.domain}
-              onChange={e => setForm(prev => ({ ...prev, domain: e.target.value }))}
+              SelectProps={{ native: true }}
+              helperText="Tied to your active domain"
+              disabled
             />
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
               <TextField

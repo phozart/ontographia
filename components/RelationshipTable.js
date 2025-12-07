@@ -12,6 +12,7 @@ import { DataGrid, GridToolbar } from '@mui/x-data-grid';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import RelationshipFormDialog from './RelationshipFormDialog';
+import { useDomains } from './DomainContext';
 
 export default function RelationshipTable({ onChanged, reloadKey, hideCreate }) {
   const [nodes, setNodes] = useState([]);
@@ -25,15 +26,22 @@ export default function RelationshipTable({ onChanged, reloadKey, hideCreate }) 
   const [type, setType] = useState(null);
   const [editOpen, setEditOpen] = useState(false);
   const [editingRel, setEditingRel] = useState(null);
+  const { activeDomain, activeDomainObj } = useDomains();
 
   async function loadNodes() {
-    const res = await fetch('/api/nodes');
+    const qs = activeDomain
+      ? `?domain=${encodeURIComponent(activeDomain)}&domainName=${encodeURIComponent(activeDomainObj?.name || '')}`
+      : '';
+    const res = await fetch(`/api/nodes${qs}`);
     const data = await res.json();
     setNodes(data);
   }
 
   async function loadTypes() {
-    const res = await fetch('/api/node-types');
+    const qs = activeDomain
+      ? `?domain=${encodeURIComponent(activeDomain)}&domainName=${encodeURIComponent(activeDomainObj?.name || '')}`
+      : '';
+    const res = await fetch(`/api/node-types${qs}`);
     const data = await res.json();
     setTypes(data);
   }
@@ -49,7 +57,10 @@ export default function RelationshipTable({ onChanged, reloadKey, hideCreate }) 
   }
 
   async function loadRelationships() {
-    const res = await fetch('/api/relationships');
+    const qs = activeDomain
+      ? `?domain=${encodeURIComponent(activeDomain)}&domainName=${encodeURIComponent(activeDomainObj?.name || '')}`
+      : '';
+    const res = await fetch(`/api/relationships${qs}`);
     const data = await res.json();
     setRels(data);
   }
@@ -59,7 +70,7 @@ export default function RelationshipTable({ onChanged, reloadKey, hideCreate }) 
     loadTypes();
     loadRelationships();
     loadRelTypes();
-  }, [reloadKey]);
+  }, [reloadKey, activeDomain, activeDomainObj]);
 
   async function handleCreate(e) {
     e.preventDefault();
@@ -72,6 +83,7 @@ export default function RelationshipTable({ onChanged, reloadKey, hideCreate }) 
         sourceId: sourceNode.id,
         targetId: targetNode.id,
         type: type.name || type.label || '',
+        domain: activeDomain || undefined,
       })
     });
 

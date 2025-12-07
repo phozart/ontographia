@@ -11,12 +11,12 @@ export default async function handler(req, res) {
     const isDemo = isDemoRequest(req);
 
     if (req.method === 'GET') {
-      const { nodeId } = req.query;
+      const { nodeId, domain, domainName } = req.query;
 
       if (nodeId) {
         // relationships for a single node, with direction
         if (isDemo) {
-          const rels = demoListRelationships(nodeId);
+          const rels = demoListRelationships(nodeId, domain);
           return res.status(200).json(rels);
         }
 
@@ -30,9 +30,13 @@ export default async function handler(req, res) {
           UNWIND (outgoing + incoming) AS row
           WITH row.rel AS r, row.other AS otherNode, row.direction AS direction
           WHERE r IS NOT NULL AND otherNode IS NOT NULL
+          ${domain ? 'AND coalesce(n.domain, "core") IN $domains AND coalesce(otherNode.domain, "core") IN $domains' : ''}
           RETURN r, otherNode, direction
           `,
-          { nodeId }
+          {
+            nodeId,
+            domains: domain ? [domain, domainName].filter(Boolean) : undefined,
+          }
         );
 
         const rels = records.map(rec => {
@@ -60,16 +64,24 @@ export default async function handler(req, res) {
 
       // all relationships (for Graph)
       if (isDemo) {
-        const rels = demoListRelationships();
+        const rels = demoListRelationships(null, domain);
         return res.status(200).json(rels);
       }
 
-      const records = await runRead(
-        `
+      let query = `
         MATCH (a:DomainNode)-[r]->(b:DomainNode)
-        RETURN a, r, b
-        `
-      );
+      `;
+      const params = {};
+      if (domain) {
+        const domains = [domain, domainName].filter(Boolean);
+        if (domains.length) {
+          query += ' WHERE coalesce(a.domain, "core") IN $domains AND coalesce(b.domain, "core") IN $domains';
+          params.domains = domains;
+        }
+      }
+      query += ' RETURN a, r, b';
+
+      const records = await runRead(query, params);
 
       const rels = records.map(rec => {
         const a = rec.get('a').properties;

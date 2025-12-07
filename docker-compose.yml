@@ -22,8 +22,26 @@ services:
       - "3000:3000"
     env_file:
       - .env
+    environment:
+      PGHOST: postgres
+      NEO4J_URI: bolt://neo4j:7687
     depends_on:
       - neo4j
+      - postgres
+
+  postgres:
+    image: postgres:15
+    container_name: kg-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ontographia
+      POSTGRES_USER: ontographia
+      POSTGRES_PASSWORD: ontographia
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
 
 volumes:
   neo4j_data:
+  pgdata:

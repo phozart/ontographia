@@ -8,6 +8,7 @@ import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { LogoSpinner } from '../components/Logo';
+import { useDomains } from '../components/DomainContext';
 
 const GraphView = dynamic(() => import('../components/GraphView'), {
   ssr: false,
@@ -35,6 +36,7 @@ export default function GraphNavigatorPage() {
   const [focusNodeId, setFocusNodeId] = useState(null);
   const [suggestionsOpen, setSuggestionsOpen] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
+  const { activeDomain, activeDomainObj } = useDomains();
 
   function handleNodeClick(node) {
     setSelectedNode(node);
@@ -68,10 +70,13 @@ export default function GraphNavigatorPage() {
     async function load() {
       setLoading(true);
       try {
+        const qs = activeDomain
+          ? `?domain=${encodeURIComponent(activeDomain)}&domainName=${encodeURIComponent(activeDomainObj?.name || '')}`
+          : '';
         const [nodesRes, relsRes, typesRes] = await Promise.all([
-          fetch('/api/nodes'),
-          fetch('/api/relationships'),
-          fetch('/api/node-types'),
+          fetch(`/api/nodes${qs}`),
+          fetch(`/api/relationships${qs}`),
+          fetch(`/api/node-types${qs}`),
         ]);
         if (nodesRes.ok) setNodes(await nodesRes.json());
         if (relsRes.ok) setRels(await relsRes.json());
@@ -83,7 +88,7 @@ export default function GraphNavigatorPage() {
       }
     }
     load();
-  }, []);
+  }, [activeDomain, activeDomainObj]);
 
   const adjacency = useMemo(() => {
     const map = new Map();

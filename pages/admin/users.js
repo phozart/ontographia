@@ -55,8 +55,19 @@ export default function AdminUsersPage() {
       },
       { field: 'createdAt', headerName: 'Created', width: 160 },
       { field: 'updatedAt', headerName: 'Updated', width: 160 },
-      { field: 'lastLoginAt', headerName: 'Last login', width: 160, valueGetter: p => p.value || '-' },
-      { field: 'loginCount', headerName: 'Logins', width: 100, type: 'number', valueGetter: p => p.value ?? 0 },
+      {
+        field: 'lastLoginAt',
+        headerName: 'Last login',
+        width: 160,
+        valueGetter: params => (params && params.value ? params.value : '-'),
+      },
+      {
+        field: 'loginCount',
+        headerName: 'Logins',
+        width: 100,
+        type: 'number',
+        valueGetter: params => (params && params.value !== undefined && params.value !== null ? params.value : 0),
+      },
       {
         field: 'actions',
         headerName: 'Actions',

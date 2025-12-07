@@ -10,7 +10,7 @@ export default async function handler(req, res) {
     const isDemo = isDemoRequest(req);
 
     if (req.method === 'GET') {
-      const { typeId, typeIds } = req.query;
+      const { typeId, typeIds, domain, domainName } = req.query;
 
       let query = `
         MATCH (n:DomainNode)
@@ -26,9 +26,23 @@ export default async function handler(req, res) {
         filterIds = [typeId];
       }
 
+      const whereParts = [];
+
       if (filterIds.length) {
-        query += ' WHERE coalesce(t.id, n.typeId) IN $typeIds';
+        whereParts.push('coalesce(t.id, n.typeId) IN $typeIds');
         params.typeIds = filterIds;
+      }
+
+      if (domain) {
+        const domains = [domain, domainName].filter(Boolean);
+        if (domains.length) {
+          whereParts.push('coalesce(n.domain, t.domain, "core") IN $domains');
+          params.domains = domains;
+        }
+      }
+
+      if (whereParts.length) {
+        query += ' WHERE ' + whereParts.join(' AND ');
       }
 
       if (isDemo) {
@@ -67,7 +81,8 @@ export default async function handler(req, res) {
           color: n.color || null,
           icon: n.icon || (t ? t.icon : null) || null,
           weight: typeof n.weight === 'number' ? n.weight : parseFloat(n.weight) || null,
-          shape: n.shape || (t ? t.shape : null) || 'ellipse'
+          shape: n.shape || (t ? t.shape : null) || 'ellipse',
+          domain: n.domain || t?.domain || null,
         };
       });
 
@@ -75,7 +90,7 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'POST') {
-      const { typeId, name, layer, tags, weight, description, icon, color, attributes, shape } = req.body || {};
+      const { typeId, name, layer, tags, weight, description, icon, color, attributes, shape, domain } = req.body || {};
 
       if (!typeId) {
         return res.status(400).json({ error: 'typeId is required' });
@@ -86,6 +101,7 @@ export default async function handler(req, res) {
 
       const id = `n_${Date.now()}`;
       const safeLayer = layer ?? null;
+      const safeDomain = domain ?? null;
       const safeTags = tags ?? [];
       const safeDescription = description ?? '';
       const safeIcon = icon ?? null;
@@ -131,12 +147,26 @@ export default async function handler(req, res) {
           layer: coalesce($layer, t.layer),
           tags: coalesce($tags, []),
           weight: $weight,
-          shape: $shape
+          shape: $shape,
+          domain: coalesce($domain, t.domain)
         })
         MERGE (n)-[:INSTANCE_OF]->(t)
         RETURN n
         `,
-        { id, typeId, name, description: safeDescription, icon: safeIcon, attributesJson, layer: safeLayer, tags: safeTags, weight: safeWeight, color: safeColor, shape: safeShape }
+        {
+          id,
+          typeId,
+          name,
+          description: safeDescription,
+          icon: safeIcon,
+          attributesJson,
+          layer: safeLayer,
+          tags: safeTags,
+          weight: safeWeight,
+          color: safeColor,
+          shape: safeShape,
+          domain: safeDomain,
+        }
       );
 
       return res.status(201).json({ id });

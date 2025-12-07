@@ -2,7 +2,7 @@ import { verifyUser, ensureSeedAdmin } from '../../../lib/userStore';
 
 export default async function handler(req, res) {
   try {
-    ensureSeedAdmin();
+    await ensureSeedAdmin();
   } catch (err) {
     console.error('Seed admin failed', err);
   }
@@ -14,7 +14,7 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'username and password required' });
   }
   try {
-    const user = verifyUser(username, password);
+    const user = await verifyUser(username, password);
     if (!user) return res.status(401).json({ error: 'Invalid credentials' });
     return res.status(200).json(user);
   } catch (err) {

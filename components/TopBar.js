@@ -18,6 +18,10 @@ import LockIcon from '@mui/icons-material/Lock';
 import ThemeToggle from './ThemeToggle';
 import { useAuth } from './AuthContext';
 import { LogoWordmark } from './Logo';
+import { useDomains } from './DomainContext';
+
+import Autocomplete from '@mui/material/Autocomplete';
+import TextField from '@mui/material/TextField';
 
 export default function TopBar({ theme, onThemeChange }) {
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -30,6 +34,7 @@ export default function TopBar({ theme, onThemeChange }) {
   const [isMobile, setIsMobile] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
   const [isDemo, setIsDemo] = useState(false);
+  const { activeDomain, accessibleDomains, setActiveDomain } = useDomains();
 
   useEffect(() => {
     function handleClickOutside(e) {
@@ -195,6 +200,39 @@ export default function TopBar({ theme, onThemeChange }) {
         {user && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             {!isMobile && (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  padding: '6px 10px',
+                  borderRadius: 10,
+                
+                  border: '0px ',
+                
+                }}
+              >
+                
+                <Autocomplete
+                  size="small"
+                  sx={{ width: 200 }}
+                  options={accessibleDomains}
+                  getOptionLabel={(option) => option?.name || option?.id || ''}
+                  value={accessibleDomains.find(d => d.id === activeDomain) || null}
+                  onChange={(_, val) => setActiveDomain(val ? val.id : null)}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      variant="standard"
+                      label ="Domain"
+                      placeholder={accessibleDomains.length ? 'Select domain' : 'No domains'}
+                    />
+                  )}
+                  isOptionEqualToValue={(opt, val) => opt?.id === val?.id}
+                />
+              </div>
+            )}
+            {!isMobile && (
               <div className="settings-menu" ref={menuRef} style={{ position: 'relative' }}>
                 <Tooltip title="Settings">
                   <IconButton
@@ -210,6 +248,7 @@ export default function TopBar({ theme, onThemeChange }) {
                 {settingsOpen && (
                   <div className="settings-dropdown" style={{ right: 0, left: 'auto' }}>
                     <Link href="/settings" className={isActive('/settings') ? 'active' : ''}>General</Link>
+                    <Link href="/domains" className={isActive('/domains') ? 'active' : ''}>Domains</Link>
                     {role === 'admin' && !isDemo && <Link href="/admin/users" className={isActive('/admin/users') ? 'active' : ''}>Users</Link>}
                     {role === 'admin' && <Link href="/node-types" className={isActive('/node-types') ? 'active' : ''}>Node types</Link>}
                     {role === 'admin' && <Link href="/relationship-types" className={isActive('/relationship-types') ? 'active' : ''}>Relationship types</Link>}

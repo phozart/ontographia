@@ -15,6 +15,7 @@ import { DataGrid, GridToolbar } from '@mui/x-data-grid';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AttributeEditor from './AttributeEditor';
+import { useDomains } from './DomainContext';
 
 export default function NodeTable() {
   const [types, setTypes] = useState([]);
@@ -34,6 +35,7 @@ export default function NodeTable() {
     attributes: {},
     shape: '',
   });
+  const { activeDomain, activeDomainObj } = useDomains();
 
   const attrSuggestions = useMemo(() => {
     const acc = {};
@@ -48,17 +50,23 @@ export default function NodeTable() {
   useEffect(() => {
     loadTypes();
     loadNodes();
-  }, []);
+  }, [activeDomain, activeDomainObj]);
 
   async function loadTypes() {
-    const res = await fetch('/api/node-types');
+    const qs = activeDomain
+      ? `?domain=${encodeURIComponent(activeDomain)}&domainName=${encodeURIComponent(activeDomainObj?.name || '')}`
+      : '';
+    const res = await fetch(`/api/node-types${qs}`);
     if (!res.ok) return;
     const data = await res.json();
     setTypes(data);
   }
 
   async function loadNodes() {
-    const res = await fetch('/api/nodes');
+    const qs = activeDomain
+      ? `?domain=${encodeURIComponent(activeDomain)}&domainName=${encodeURIComponent(activeDomainObj?.name || '')}`
+      : '';
+    const res = await fetch(`/api/nodes${qs}`);
     if (!res.ok) return;
     const data = await res.json();
     setNodes(data);
@@ -117,6 +125,7 @@ export default function NodeTable() {
             : parseFloat(form.weight),
       attributes: form.attributes || {},
       shape: form.shape === '' ? null : form.shape,
+      domain: activeDomain || undefined,
     };
 
     const url = editingId ? `/api/nodes/${encodeURIComponent(editingId)}` : '/api/nodes';
@@ -145,7 +154,7 @@ export default function NodeTable() {
     }
   }
 
-  const filteredNodes = nodes.filter(n => !typeFilter || n.typeId === typeFilter.id);
+ const filteredNodes = nodes.filter(n => !typeFilter || n.typeId === typeFilter.id);
 
   const columns = useMemo(
     () => [
@@ -155,7 +164,10 @@ export default function NodeTable() {
         headerName: 'Type',
         flex: 1,
         minWidth: 140,
-        valueGetter: params => params?.row?.typeName || params?.row?.typeLabel || params?.row?.typeId || '',
+        valueGetter: params => {
+          if (!params?.row) return '';
+          return params.row.typeName || params.row.typeLabel || params.row.typeId || '';
+        },
       },
       { field: 'layer', headerName: 'Layer', flex: 0.6, minWidth: 100 },
       {
@@ -168,16 +180,27 @@ export default function NodeTable() {
         field: 'icon',
         headerName: 'Icon',
         width: 90,
-        renderCell: params =>
-          params.value ? (
-            <img
-              src={params.value}
-              alt=""
-              style={{ width: 24, height: 24, objectFit: 'contain' }}
-            />
-          ) : (
-            <span style={{ color: 'var(--text-muted)' }}>—</span>
-          ),
+        renderCell: params => {
+          const val = params.value;
+          const isUrl =
+            typeof val === 'string' &&
+            (val.startsWith('http://') ||
+              val.startsWith('https://') ||
+              val.startsWith('data:image') ||
+              val.startsWith('/static/') ||
+              val.startsWith('/img/') ||
+              val.startsWith('/images/'));
+          if (isUrl) {
+            return (
+              <img
+                src={val}
+                alt=""
+                style={{ width: 24, height: 24, objectFit: 'contain' }}
+              />
+            );
+          }
+          return <span style={{ color: 'var(--text-muted)' }}>{val ? val : '—'}</span>;
+        },
         sortable: false,
         filterable: false,
       },
@@ -185,8 +208,20 @@ export default function NodeTable() {
         field: 'shape',
         headerName: 'Shape',
         width: 130,
-        valueGetter: params =>
-          (params && params.row && (params.row.shape || params.row.typeShape)) ? (params.row.shape || params.row.typeShape) : 'inherit',
+        valueGetter: params => {
+          if (!params?.row) return '';
+          return params.row.shape || params.row.typeShape || 'inherit';
+        },
+      },
+      {
+        field: 'weight',
+        headerName: 'Weight',
+        width: 90,
+        valueGetter: params => {
+          if (!params?.row) return '';
+          const w = params.row.weight;
+          return w === null || w === undefined ? '' : w;
+        },
       },
       {
         field: 'actions',

@@ -18,6 +18,7 @@ import {
 } from '@mui/material';
 import AttributeEditor from './AttributeEditor';
 import RelationshipFormDialog from './RelationshipFormDialog';
+import { useDomains } from './DomainContext';
 
 export default function NodeDetailPanel({
   selectedNode,
@@ -56,11 +57,12 @@ export default function NodeDetailPanel({
   const [colorPickerOpen, setColorPickerOpen] = useState(false);
   const [relationshipDialogOpen, setRelationshipDialogOpen] = useState(false);
   const [relationshipToEdit, setRelationshipToEdit] = useState(null);
+  const { activeDomain, activeDomainObj } = useDomains();
 
   useEffect(() => {
     loadNodeTypes();
     loadAllNodes();
-  }, []);
+  }, [activeDomain, activeDomainObj]);
 
   useEffect(() => {
     setErrorMsg('');
@@ -132,7 +134,10 @@ export default function NodeDetailPanel({
 
   async function loadNodeTypes() {
     try {
-      const res = await fetch('/api/node-types');
+      const qs = activeDomain
+        ? `?domain=${encodeURIComponent(activeDomain)}&domainName=${encodeURIComponent(activeDomainObj?.name || '')}`
+        : '';
+      const res = await fetch(`/api/node-types${qs}`);
       if (!res.ok) return;
       const data = await res.json();
       setNodeTypes(data);
@@ -143,7 +148,10 @@ export default function NodeDetailPanel({
 
   async function loadAllNodes() {
     try {
-      const res = await fetch('/api/nodes');
+      const qs = activeDomain
+        ? `?domain=${encodeURIComponent(activeDomain)}&domainName=${encodeURIComponent(activeDomainObj?.name || '')}`
+        : '';
+      const res = await fetch(`/api/nodes${qs}`);
       if (!res.ok) return;
       const data = await res.json();
       setAllNodes(data);
@@ -154,7 +162,10 @@ export default function NodeDetailPanel({
 
   async function loadRelationshipsForNode(nodeId) {
     try {
-      const res = await fetch(`/api/relationships?nodeId=${encodeURIComponent(nodeId)}`);
+      const domainPart = activeDomain
+        ? `&domain=${encodeURIComponent(activeDomain)}&domainName=${encodeURIComponent(activeDomainObj?.name || '')}`
+        : '';
+      const res = await fetch(`/api/relationships?nodeId=${encodeURIComponent(nodeId)}${domainPart}`);
       if (!res.ok) return;
       const data = await res.json();
       // Normalize per-node relationship payload to include source/target ids for downstream consumers
@@ -201,7 +212,8 @@ export default function NodeDetailPanel({
               : isNaN(parseFloat(formWeight))
                 ? undefined
                 : parseFloat(formWeight),
-          attributes: formAttributes
+          attributes: formAttributes,
+          domain: activeDomain || undefined,
         }),
       });
       if (!res.ok) {
@@ -243,7 +255,8 @@ export default function NodeDetailPanel({
               : isNaN(parseFloat(formWeight))
                 ? undefined
                 : parseFloat(formWeight),
-          attributes: formAttributes
+          attributes: formAttributes,
+          domain: activeDomain || undefined,
         }),
       });
       if (!res.ok) {

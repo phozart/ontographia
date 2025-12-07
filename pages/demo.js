@@ -16,7 +16,8 @@ export default function DemoPage() {
     } catch (e) {
       // ignore
     }
-    router.replace('/home');
+    // Force a reload so auth is picked up immediately
+    window.location.replace('/home');
   }, [router]);
   return null;
 }

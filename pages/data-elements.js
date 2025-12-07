@@ -3,6 +3,7 @@ import { Box, Grid, Paper } from '@mui/material';
 import DataElementsTree from '../components/DataElementsTree';
 import DataElementDetails from '../components/DataElementDetails';
 import { useAuth } from '../components/AuthContext';
+import { useDomains } from '../components/DomainContext';
 
 export default function DataElementsPage() {
   const { role } = useAuth();
@@ -10,11 +11,15 @@ export default function DataElementsPage() {
   const [nodes, setNodes] = useState([]);
   const [rels, setRels] = useState([]);
   const [selectedId, setSelectedId] = useState('');
+  const { activeDomain, activeDomainObj } = useDomains();
 
   useEffect(() => {
     async function load() {
       try {
-        const [nRes, rRes] = await Promise.all([fetch('/api/nodes'), fetch('/api/relationships')]);
+        const qs = activeDomain
+          ? `?domain=${encodeURIComponent(activeDomain)}&domainName=${encodeURIComponent(activeDomainObj?.name || '')}`
+          : '';
+        const [nRes, rRes] = await Promise.all([fetch(`/api/nodes${qs}`), fetch(`/api/relationships${qs}`)]);
         if (nRes.ok) setNodes(await nRes.json());
         if (rRes.ok) setRels(await rRes.json());
       } catch (e) {
@@ -22,7 +27,7 @@ export default function DataElementsPage() {
       }
     }
     load();
-  }, []);
+  }, [activeDomain, activeDomainObj]);
 
   const dataElements = useMemo(() => (nodes || []).filter(n => n && n.id), [nodes]);
 

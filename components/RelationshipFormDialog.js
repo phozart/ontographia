@@ -9,6 +9,7 @@ import {
   Autocomplete,
   Stack
 } from '@mui/material';
+import { useDomains } from './DomainContext';
 
 export default function RelationshipFormDialog({
   open,
@@ -27,6 +28,7 @@ export default function RelationshipFormDialog({
   const [targetNode, setTargetNode] = useState(null);
   const [relType, setRelType] = useState(null);
   const [editingRel, setEditingRel] = useState(null);
+  const { activeDomain, activeDomainObj } = useDomains();
 
   function withLabel(node) {
     if (!node) return null;
@@ -39,7 +41,7 @@ export default function RelationshipFormDialog({
       loadTypes();
       loadRelTypes();
     }
-  }, [open]);
+  }, [open, activeDomain, activeDomainObj]);
 
   useEffect(() => {
     if (
@@ -93,14 +95,20 @@ export default function RelationshipFormDialog({
   }, [relTypes, relationship, relType]);
 
   async function loadNodes() {
-    const res = await fetch('/api/nodes');
+    const qs = activeDomain
+      ? `?domain=${encodeURIComponent(activeDomain)}&domainName=${encodeURIComponent(activeDomainObj?.name || '')}`
+      : '';
+    const res = await fetch(`/api/nodes${qs}`);
     if (!res.ok) return;
     const data = await res.json();
     setNodes(data);
   }
 
   async function loadTypes() {
-    const res = await fetch('/api/node-types');
+    const qs = activeDomain
+      ? `?domain=${encodeURIComponent(activeDomain)}&domainName=${encodeURIComponent(activeDomainObj?.name || '')}`
+      : '';
+    const res = await fetch(`/api/node-types${qs}`);
     if (!res.ok) return;
     const data = await res.json();
     setTypes(data);

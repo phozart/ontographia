@@ -1,13 +1,15 @@
-﻿import { useEffect, useMemo, useRef, useState } from 'react';
-import { Box, Paper, Card, CardHeader, CardContent, Stack, Typography, Grid } from '@mui/material';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Box, Paper, Card, CardHeader, CardContent, Stack, Typography, Grid, IconButton } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import EditIcon from '@mui/icons-material/Edit';
 import { SimpleTreeView } from '@mui/x-tree-view/SimpleTreeView';
 import { TreeItem } from '@mui/x-tree-view/TreeItem';
 import AttributeEditor from '../components/AttributeEditor';
 import { useAuth } from '../components/AuthContext';
 import UserViewHeader from '../components/UserViewHeader';
 import { LogoSpinner } from '../components/Logo';
+import { useDomains } from '../components/DomainContext';
 
 // Node view: pick a node type + node (search), then browse linked children in a grid until endpoints.
 export default function UserViewPage() {
@@ -18,6 +20,7 @@ export default function UserViewPage() {
   const [loading, setLoading] = useState(true);
   const [selectedType, setSelectedType] = useState('');
   const [selectedNodeId, setSelectedNodeId] = useState('');
+  const [selectedLayer, setSelectedLayer] = useState('');
   const [nodeQuery, setNodeQuery] = useState('');
   const [expanded, setExpanded] = useState({});
   const [expandedTypes, setExpandedTypes] = useState({});
@@ -38,10 +41,11 @@ export default function UserViewPage() {
   const [editError, setEditError] = useState('');
   const [editSaving, setEditSaving] = useState(false);
   const canEdit = role === 'admin' || role === 'editor';
+  const { activeDomain, activeDomainObj } = useDomains();
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [activeDomain, activeDomainObj]);
 
   useEffect(() => {
     setSelectedNodeId('');
@@ -50,13 +54,29 @@ export default function UserViewPage() {
     setExpandedTypes({});
   }, [selectedType]);
 
+  useEffect(() => {
+    setSelectedType('');
+    setSelectedLayer('');
+    setSelectedNodeId('');
+    setNodeQuery('');
+    setExpanded({});
+    setExpandedTypes({});
+  }, [activeDomain]);
+
   async function loadData() {
     setLoading(true);
     try {
+      const domainId = activeDomain || activeDomainObj?.name || '';
+      const domainName = activeDomainObj?.name || activeDomain || '';
+      const domainQuery =
+        domainId || domainName
+          ? `?domain=${encodeURIComponent(domainId)}&domainName=${encodeURIComponent(domainName || domainId)}`
+          : '';
+      const relQuery = domainQuery;
       const [nRes, rRes, tRes] = await Promise.all([
-        fetch('/api/nodes'),
-        fetch('/api/relationships'),
-        fetch('/api/node-types'),
+        fetch(`/api/nodes${domainQuery}`),
+        fetch(`/api/relationships${relQuery}`),
+        fetch(`/api/node-types${domainQuery}`),
       ]);
       if (!nRes.ok || !rRes.ok || !tRes.ok) {
         console.error('Failed to load data');
@@ -73,15 +93,37 @@ export default function UserViewPage() {
     }
   }
 
+  const domainMatch = useCallback(
+    entity => {
+      if (!activeDomain) return true;
+      if (!entity) return false;
+      const val =
+        entity.domainId ??
+        entity.domain ??
+        entity.domainName ??
+        entity.domain_id ??
+        entity.workspaceId ??
+        entity.workspace;
+      const activeName = activeDomainObj?.name;
+      if (val === undefined || val === null) return true;
+      return String(val) === String(activeDomain) || (activeName && String(val) === String(activeName));
+    },
+    [activeDomain, activeDomainObj?.name]
+  );
+
+  const scopedNodeTypes = useMemo(() => {
+    return (nodeTypes || []).filter(t => domainMatch(t));
+  }, [nodeTypes, domainMatch]);
+
   const nodeTypesById = useMemo(() => {
     const map = new Map();
-    (nodeTypes || []).forEach(t => {
+    (scopedNodeTypes || []).forEach(t => {
       if (t.id) map.set(t.id, t);
       if (t.name) map.set(t.name, t);
       if (t.label) map.set(t.label, t);
     });
     return map;
-  }, [nodeTypes]);
+  }, [scopedNodeTypes]);
 
   const enrichedNodes = useMemo(() => {
     return (nodes || []).map(n => {
@@ -96,41 +138,56 @@ export default function UserViewPage() {
     });
   }, [nodes, nodeTypesById]);
 
+  const domainNodes = useMemo(() => enrichedNodes.filter(n => domainMatch(n)), [enrichedNodes, domainMatch]);
+  const domainNodeIds = useMemo(() => new Set(domainNodes.map(n => n.id)), [domainNodes]);
+  const domainRels = useMemo(
+    () => (rels || []).filter(r => domainNodeIds.has(r.sourceId) && domainNodeIds.has(r.targetId)),
+    [rels, domainNodeIds]
+  );
+
   const filteredNodes = useMemo(() => {
-    if (!selectedType) return enrichedNodes || [];
-    return (enrichedNodes || []).filter(n => {
-      const matchValue = n.typeId || n.typeName || n.typeLabel;
-      return matchValue === selectedType;
+    return (domainNodes || []).filter(n => {
+      const matchType = selectedType ? (n.typeId || n.typeName || n.typeLabel) === selectedType : true;
+      const matchLayer = selectedLayer ? (n.layer || '').toString() === selectedLayer : true;
+      return matchType && matchLayer;
     });
-  }, [enrichedNodes, selectedType]);
+  }, [domainNodes, selectedType, selectedLayer]);
+
+  const layers = useMemo(() => {
+    const set = new Set();
+    (domainNodes || []).forEach(n => {
+      if (n.layer) set.add(n.layer.toString());
+    });
+    return Array.from(set).sort();
+  }, [domainNodes]);
 
   const nodeById = useMemo(() => {
     const map = new Map();
-    (enrichedNodes || []).forEach(n => {
+    (domainNodes || []).forEach(n => {
       if (n.id) map.set(n.id, n);
     });
     return map;
-  }, [enrichedNodes]);
+  }, [domainNodes]);
 
   const childrenMap = useMemo(() => {
     const map = new Map();
-    (rels || []).forEach(r => {
+    (domainRels || []).forEach(r => {
       if (!map.has(r.sourceId)) map.set(r.sourceId, []);
       const child = nodeById.get(r.targetId);
       if (child) map.get(r.sourceId).push(child);
     });
     return map;
-  }, [rels, nodeById]);
+  }, [domainRels, nodeById]);
 
   const parentMap = useMemo(() => {
     const map = new Map();
-    (rels || []).forEach(r => {
+    (domainRels || []).forEach(r => {
       if (!map.has(r.targetId)) map.set(r.targetId, []);
       const parent = nodeById.get(r.sourceId);
       if (parent) map.get(r.targetId).push(parent);
     });
     return map;
-  }, [rels, nodeById]);
+  }, [domainRels, nodeById]);
 
   const topNodes = useMemo(() => {
     if (selectedNodeId) {
@@ -223,11 +280,11 @@ export default function UserViewPage() {
     });
     return Array.from(byType.entries()).map(([typeId, items]) => ({
       typeId,
-      items,
+      items: selectedLayer ? items.filter(n => (n.layer || '').toString() === selectedLayer) : items,
       label:
         nodeTypesById.get(typeId)?.label || nodeTypesById.get(typeId)?.name || items[0]?.typeLabel || typeId,
     }));
-  }, [enrichedNodes, nodeTypesById]);
+  }, [enrichedNodes, nodeTypesById, selectedLayer]);
 
   const linkMap = direction === 'out' ? childrenMap : parentMap;
 
@@ -264,6 +321,7 @@ export default function UserViewPage() {
       if (!selectedType) return true;
       return String(group.typeId) === String(selectedType);
     })
+    .filter(group => group.items.length > 0)
     .map(group => {
       const typeItemId = `${treeUid.current}::type::${group.typeId || 'unknown'}`;
       return (
@@ -315,9 +373,12 @@ export default function UserViewPage() {
           style={{ padding: 12, position: 'relative', width: '100%', margin: '0 auto' }}
         >
           <UserViewHeader
-            nodeTypes={nodeTypes}
+        nodeTypes={scopedNodeTypes}
             selectedType={selectedType}
             onSelectType={val => setSelectedType(val)}
+            layers={layers}
+            selectedLayer={selectedLayer}
+            onSelectLayer={val => setSelectedLayer(val)}
             nodeQuery={nodeQuery}
             onNodeQueryChange={val => {
               setNodeQuery(val);
@@ -338,6 +399,8 @@ export default function UserViewPage() {
             onShowAll={() => {
               setSelectedNodeId('');
               setNodeQuery('');
+              setSelectedLayer('');
+              setSelectedType('');
               setExpanded({});
               setExpandedTypes({});
               setCrumbs([]);
@@ -346,6 +409,8 @@ export default function UserViewPage() {
             onCrumbHome={() => {
               setSelectedNodeId('');
               setNodeQuery('');
+              setSelectedLayer('');
+              setSelectedType('');
               setExpanded({});
               setExpandedTypes({});
               setCrumbs([]);
@@ -544,22 +609,14 @@ function NodeDetailCard({ node, onEdit, relationships = [] }) {
         subheader={node.description || 'No description provided.'}
         action={
           canEdit ? (
-            <button
-              className="icon-button"
+            <IconButton
               aria-label="Edit node"
-              onClick={() => {
-                if (onEdit) onEdit(node.id);
-              }}
-              style={{
-                border: 'none',
-                background: 'transparent',
-                cursor: 'pointer',
-                color: '#6b7280',
-                fontSize: 16,
-              }}
+              onClick={() => onEdit && onEdit(node.id)}
+              size="small"
+              sx={{ color: 'var(--text-muted)' }}
             >
-              Edit
-            </button>
+              <EditIcon fontSize="small" />
+            </IconButton>
           ) : null
         }
       />

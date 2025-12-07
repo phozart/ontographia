@@ -4,6 +4,7 @@ import Layout from '../components/Layout';
 import { FilterProvider } from '../components/FilterContext';
 import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
 import { AuthProvider, useRouteGuard } from '../components/AuthContext';
+import { DomainProvider } from '../components/DomainContext';
 
 
 function MyApp({ Component, pageProps }) {
@@ -55,17 +56,19 @@ function MyApp({ Component, pageProps }) {
 
   return (
     <AuthProvider>
-      <FilterProvider>
-        <ThemeProvider theme={muiTheme}>
-          <CssBaseline />
-          <ServiceWorkerRegister />
-          <Guard>
-            <Layout theme={theme} onThemeChange={handleThemeChange}>
-              <Component {...pageProps} />
-            </Layout>
-          </Guard>
-        </ThemeProvider>
-      </FilterProvider>
+      <DomainProvider>
+        <FilterProvider>
+          <ThemeProvider theme={muiTheme}>
+            <CssBaseline />
+            <ServiceWorkerRegister />
+            <Guard>
+              <Layout theme={theme} onThemeChange={handleThemeChange}>
+                <Component {...pageProps} />
+              </Layout>
+            </Guard>
+          </ThemeProvider>
+        </FilterProvider>
+      </DomainProvider>
     </AuthProvider>
   );
 }

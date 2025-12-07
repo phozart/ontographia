@@ -1,13 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  env: {
-    MUI_X_LICENSE_KEY:
-      process.env.MUI_X_LICENSE_KEY ||
-      process.env.MUI ||
-      process.env.MUI_LICENSE ||
-      "aa8e04338cf9e7d76628ea0bcf0eefd9T1JERVI6NDMyMzQsRVhQSVJZPTE2ODM0NjUzNTcwMDAsS0VZVkVSU0lPTj0x",
-  },
   transpilePackages: [
     '@mui/material',
     '@mui/system',
