@@ -1,7 +1,14 @@
 import { runRead, runWrite } from '../../../lib/neo4j';
+import {
+  isDemoRequest,
+  listNodes as demoListNodes,
+  createNode as demoCreateNode,
+} from '../../../lib/demoStore';
 
 export default async function handler(req, res) {
   try {
+    const isDemo = isDemoRequest(req);
+
     if (req.method === 'GET') {
       const { typeId, typeIds } = req.query;
 
@@ -22,6 +29,11 @@ export default async function handler(req, res) {
       if (filterIds.length) {
         query += ' WHERE coalesce(t.id, n.typeId) IN $typeIds';
         params.typeIds = filterIds;
+      }
+
+      if (isDemo) {
+        const nodes = demoListNodes({ typeIds: filterIds });
+        return res.status(200).json(nodes);
       }
 
       query += ' RETURN n, t ORDER BY n.name';
@@ -88,6 +100,23 @@ export default async function handler(req, res) {
             ? null
             : parseFloat(weight);
       const safeColor = color === undefined || color === '' ? null : color;
+
+      if (isDemo) {
+        const id = demoCreateNode({
+          id,
+          typeId,
+          name,
+          description: safeDescription,
+          icon: safeIcon,
+          attributes: safeAttributes,
+          layer: safeLayer,
+          tags: safeTags,
+          weight: safeWeight,
+          color: safeColor,
+          shape: safeShape
+        });
+        return res.status(201).json({ id });
+      }
 
       await runWrite(
         `

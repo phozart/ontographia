@@ -37,8 +37,15 @@ export function AuthProvider({ children }) {
     setHydrated(true);
   }, []);
 
+  const clearDemoCookie = () => {
+    if (typeof document !== 'undefined') {
+      document.cookie = 'demo_mode=; Max-Age=0; Path=/;';
+    }
+  };
+
   const login = async ({ username, password }) => {
     if (!username || !password) throw new Error('Username and password are required');
+    clearDemoCookie();
     const res = await fetch('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -60,6 +67,7 @@ export function AuthProvider({ children }) {
     setUser(null);
     setRole(null);
     window.localStorage.removeItem('kg-auth');
+    clearDemoCookie();
     router.push('/login');
   };
 
@@ -84,25 +92,24 @@ export function useAuth() {
 export function useRouteGuard() {
   const { role, hydrated } = useAuth();
   const router = useRouter();
+  const isDemoClient = typeof document !== 'undefined' && document.cookie.includes('demo_mode=1');
 
   const allowedRoutes = useMemo(() => {
-    if (!role) return ['/', '/login'];
+    if (!role) return ['/', '/login', '/demo'];
     const studioRoutes = ['/studio', '/graphnavigator'];
     const modelRoutes = ['/semanticmodelbrowser', '/user-view'];
     const homeRoute = ['/home'];
-    if (role === 'admin') return ['/', ...homeRoute, ...studioRoutes, ...modelRoutes, '/nodes', '/relationships', '/settings', '/node-types', '/relationship-types', '/admin/users', '/login'];
-    if (role === 'editor') return ['/', ...homeRoute, ...studioRoutes, ...modelRoutes, '/settings', '/login'];
-    if (role === 'viewer') return ['/', ...homeRoute, ...studioRoutes, ...modelRoutes, '/settings', '/login'];
+    const adminRoutes = ['/', '/demo', ...homeRoute, ...studioRoutes, ...modelRoutes, '/nodes', '/relationships', '/settings', '/node-types', '/relationship-types', '/login'];
+    if (!isDemoClient && role === 'admin') return [...adminRoutes, '/admin/users'];
+    if (role === 'admin') return adminRoutes;
+    if (role === 'editor') return ['/', '/demo', ...homeRoute, ...studioRoutes, ...modelRoutes, '/settings', '/login'];
+    if (role === 'viewer') return ['/', '/demo', ...homeRoute, ...studioRoutes, ...modelRoutes, '/settings', '/login'];
     return ['/login'];
-  }, [role]);
+  }, [role, isDemoClient]);
 
   const enforceRoute = () => {
     if (!router?.pathname || !hydrated) return;
     const path = router.pathname;
-    if (role && path === '/') {
-      router.replace('/home');
-      return;
-    }
     if (!allowedRoutes.includes(path)) {
       const dest = role ? '/home' : '/login';
       router.replace(dest);

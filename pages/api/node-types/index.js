@@ -1,10 +1,21 @@
 // pages/api/node-types.js
 import { runRead, runWrite } from '../../../lib/neo4j';
+import {
+  isDemoRequest,
+  listNodeTypes as demoListNodeTypes,
+  createNodeType as demoCreateNodeType,
+} from '../../../lib/demoStore';
 
 export default async function handler(req, res) {
   try {
+    const isDemo = isDemoRequest(req);
+
     if (req.method === 'GET') {
       const { domain } = req.query;
+
+      if (isDemo) {
+        return res.status(200).json(demoListNodeTypes());
+      }
 
       let query = 'MATCH (t:NodeType)';
       const params = {};
@@ -42,6 +53,10 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'name is required' });
       }
       const id = `nt_${Date.now()}`;
+      if (isDemo) {
+        demoCreateNodeType({ id, name, label, description, layer, color, icon, domain, shape });
+        return res.status(201).json({ id });
+      }
       await runWrite(
         `
         MERGE (t:NodeType {id: $id})

@@ -6,6 +6,7 @@ import { LogoSpinner } from '../../components/Logo';
 
 export default function AdminUsersPage() {
   const { role } = useAuth();
+  const [isDemo, setIsDemo] = useState(false);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -93,6 +94,9 @@ export default function AdminUsersPage() {
   );
 
   useEffect(() => {
+    if (typeof document !== 'undefined') {
+      setIsDemo(document.cookie.includes('demo_mode=1'));
+    }
     if (role !== 'admin') return;
     loadUsers();
   }, [role]);
@@ -101,6 +105,20 @@ export default function AdminUsersPage() {
     setError('');
     setLoading(true);
     try {
+      if (isDemo) {
+        setUsers([
+          {
+            id: 'demo',
+            username: 'demo',
+            role: 'admin',
+            createdAt: '-',
+            updatedAt: '-',
+            lastLoginAt: '-',
+            loginCount: 0,
+          },
+        ]);
+        return;
+      }
       const res = await fetch('/api/admin/users', { headers: { 'x-role': 'admin' } });
       if (!res.ok) throw new Error('Failed to load users');
       const data = await res.json();
@@ -136,8 +154,13 @@ export default function AdminUsersPage() {
   }
 
   async function handleDelete(id) {
+    if (isDemo) return;
     if (!window.confirm('Delete this user?')) return;
     try {
+      if (isDemo) {
+        setUsers(prev => prev.filter(u => u.id !== id));
+        return;
+      }
       const res = await fetch('/api/admin/users', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json', 'x-role': 'admin' },
@@ -155,6 +178,7 @@ export default function AdminUsersPage() {
 
   async function handleUpdate(id, updates) {
     try {
+      if (isDemo) return;
       const res = await fetch('/api/admin/users', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'x-role': 'admin' },
@@ -209,7 +233,7 @@ export default function AdminUsersPage() {
               </select>
             </label>
             <div style={{ display: 'flex', alignItems: 'flex-end' }}>
-              <button className="btn" type="submit" disabled={saving}>
+              <button className="btn" type="submit" disabled={saving || isDemo}>
                 {saving ? 'Saving...' : 'Create'}
               </button>
             </div>

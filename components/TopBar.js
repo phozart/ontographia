@@ -8,10 +8,13 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
+import AppsIcon from '@mui/icons-material/Apps';
 import SchoolIcon from '@mui/icons-material/School';
 import HubIcon from '@mui/icons-material/Hub';
 import SourceIcon from '@mui/icons-material/Source';
 import CableIcon from '@mui/icons-material/Cable';
+import HomeIcon from '@mui/icons-material/Home';
+import LockIcon from '@mui/icons-material/Lock';
 import ThemeToggle from './ThemeToggle';
 import { useAuth } from './AuthContext';
 import { LogoWordmark } from './Logo';
@@ -26,6 +29,7 @@ export default function TopBar({ theme, onThemeChange }) {
   const logoColor = theme === 'dark' ? '#e6edff' : '#0B2545';
   const [isMobile, setIsMobile] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
+  const [isDemo, setIsDemo] = useState(false);
 
   useEffect(() => {
     function handleClickOutside(e) {
@@ -38,7 +42,12 @@ export default function TopBar({ theme, onThemeChange }) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const isActive = (...hrefs) => hrefs.some(href => router?.pathname?.startsWith(href));
+  const isActive = (...hrefs) =>
+    hrefs.some(href => {
+      if (!router?.pathname) return false;
+      if (href === '/') return router.pathname === '/';
+      return router.pathname.startsWith(href);
+    });
 
   useEffect(() => {
     const onResize = () => setIsMobile(window.innerWidth < 768);
@@ -47,11 +56,17 @@ export default function TopBar({ theme, onThemeChange }) {
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      setIsDemo(document.cookie.includes('demo_mode=1'));
+    }
+  }, []);
+
   return (
     <header className="topbar">
       <div className="topbar-left">
         <Link
-          href="/home"
+          href="/"
           className="logo"
           style={{
             display: 'flex',
@@ -76,6 +91,22 @@ export default function TopBar({ theme, onThemeChange }) {
       </div>
       {user && !isMobile && (
         <nav className="topbar-icon-nav center-nav">
+          <Link href="/" className={`icon-nav-item ${isActive('/') ? 'active' : ''}`}>
+            <span className="icon-wrap">
+              <HomeIcon fontSize="inherit" />
+            </span>
+            <span className="icon-label">
+              <p className="pmi">Home</p>
+            </span>
+          </Link>
+          <Link href="/home" className={`icon-nav-item ${isActive('/home') ? 'active' : ''}`}>
+            <span className="icon-wrap">
+              <AppsIcon fontSize="inherit" />
+            </span>
+            <span className="icon-label">
+              <p className="pmi">Product</p>
+            </span>
+          </Link>
           <Link
             href="/semanticmodelbrowser"
             className={`icon-nav-item ${isActive('/semanticmodelbrowser', '/user-view') ? 'active' : ''}`}
@@ -133,11 +164,32 @@ export default function TopBar({ theme, onThemeChange }) {
           </IconButton>
           {navOpen && (
             <div className="settings-dropdown" style={{ marginTop: 6 }}>
-              <Link href="/home" className={isActive('/home') ? 'active' : ''} onClick={() => setNavOpen(false)}>Home</Link>
+              <Link href="/home" className={isActive('/home') ? 'active' : ''} onClick={() => setNavOpen(false)}>Product</Link>
+              <Link href="/" className={isActive('/') ? 'active' : ''} onClick={() => setNavOpen(false)}>Home</Link>
               <Link href="/graphnavigator" className={isActive('/graphnavigator') ? 'active' : ''} onClick={() => setNavOpen(false)}>Graph Navigator</Link>
             </div>
           )}
         </div>
+      )}
+      {!user && !isMobile && (
+        <nav className="topbar-icon-nav center-nav">
+          <Link href="/" className={`icon-nav-item ${isActive('/') ? 'active' : ''}`}>
+            <span className="icon-wrap">
+              <HomeIcon fontSize="inherit" />
+            </span>
+            <span className="icon-label">
+              <p className="pmi">Home</p>
+            </span>
+          </Link>
+          <Link href="/login" className={`icon-nav-item ${isActive('/login') ? 'active' : ''}`}>
+            <span className="icon-wrap">
+              <LockIcon fontSize="inherit" />
+            </span>
+            <span className="icon-label">
+              <p className="pmi">Login</p>
+            </span>
+          </Link>
+        </nav>
       )}
       <div className="topbar-right">
         {user && (
@@ -158,7 +210,7 @@ export default function TopBar({ theme, onThemeChange }) {
                 {settingsOpen && (
                   <div className="settings-dropdown" style={{ right: 0, left: 'auto' }}>
                     <Link href="/settings" className={isActive('/settings') ? 'active' : ''}>General</Link>
-                    {role === 'admin' && <Link href="/admin/users" className={isActive('/admin/users') ? 'active' : ''}>Users</Link>}
+                    {role === 'admin' && !isDemo && <Link href="/admin/users" className={isActive('/admin/users') ? 'active' : ''}>Users</Link>}
                     {role === 'admin' && <Link href="/node-types" className={isActive('/node-types') ? 'active' : ''}>Node types</Link>}
                     {role === 'admin' && <Link href="/relationship-types" className={isActive('/relationship-types') ? 'active' : ''}>Relationship types</Link>}
                   </div>

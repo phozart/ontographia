@@ -1,13 +1,25 @@
 // pages/api/relationships.js
 import { runRead, runWrite } from '../../../lib/neo4j';
+import {
+  isDemoRequest,
+  listRelationships as demoListRelationships,
+  createRelationship as demoCreateRelationship,
+} from '../../../lib/demoStore';
 
 export default async function handler(req, res) {
   try {
+    const isDemo = isDemoRequest(req);
+
     if (req.method === 'GET') {
       const { nodeId } = req.query;
 
       if (nodeId) {
         // relationships for a single node, with direction
+        if (isDemo) {
+          const rels = demoListRelationships(nodeId);
+          return res.status(200).json(rels);
+        }
+
         const records = await runRead(
           `
           MATCH (n:DomainNode {id: $nodeId})
@@ -47,6 +59,11 @@ export default async function handler(req, res) {
       }
 
       // all relationships (for Graph)
+      if (isDemo) {
+        const rels = demoListRelationships();
+        return res.status(200).json(rels);
+      }
+
       const records = await runRead(
         `
         MATCH (a:DomainNode)-[r]->(b:DomainNode)
@@ -86,6 +103,11 @@ export default async function handler(req, res) {
       }
 
       const relId = `rel_${Date.now()}`;
+
+      if (isDemo) {
+        const id = demoCreateRelationship({ sourceId, targetId, type });
+        return res.status(201).json({ id });
+      }
 
       const records = await runWrite(
         `

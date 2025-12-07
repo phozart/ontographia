@@ -1,5 +1,11 @@
 // pages/api/nodes/[id].js
 import { runRead, runWrite } from '../../../lib/neo4j';
+import {
+  isDemoRequest,
+  getNode as demoGetNode,
+  updateNode as demoUpdateNode,
+  deleteNode as demoDeleteNode,
+} from '../../../lib/demoStore';
 
 export default async function handler(req, res) {
   const { id } = req.query;
@@ -9,7 +15,15 @@ export default async function handler(req, res) {
   }
 
   try {
+    const isDemo = isDemoRequest(req);
+
     if (req.method === 'GET') {
+      if (isDemo) {
+        const node = demoGetNode(id);
+        if (!node) return res.status(404).json({ error: 'Node not found' });
+        return res.status(200).json(node);
+      }
+
       const records = await runRead(
         `
         MATCH (n:DomainNode {id: $id})
@@ -86,6 +100,22 @@ export default async function handler(req, res) {
         attributesProvided && attributes && typeof attributes === 'object' ? attributes : {};
       const attributesJson = attributesProvided ? JSON.stringify(safeAttributes) : null;
 
+      if (isDemo) {
+        const ok = demoUpdateNode(id, {
+          name,
+          layer: safeLayer,
+          tags: safeTags,
+          description: safeDescription,
+          icon: safeIcon,
+          color: color !== undefined ? safeColor : undefined,
+          weight: safeWeight,
+          shape: safeShape,
+          attributes: attributesProvided ? safeAttributes : undefined,
+        });
+        if (!ok) return res.status(404).json({ error: 'Node not found' });
+        return res.status(200).json({ id });
+      }
+
       const records = await runWrite(
         `
         MATCH (n:DomainNode {id: $id})
@@ -132,6 +162,10 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'DELETE') {
+      if (isDemo) {
+        demoDeleteNode(id);
+        return res.status(204).end();
+      }
       await runWrite(
         `
         MATCH (n:DomainNode {id: $id})

@@ -1,0 +1,83 @@
+{
+  "nodeTypes": [
+    {
+      "id": "nt_language",
+      "name": "Programming Language",
+      "label": "Programming Language",
+      "description": "Languages for expressing algorithms",
+      "layer": "Concept",
+      "color": "#0B2545",
+      "icon": "dot",
+      "shape": "ellipse"
+    },
+    {
+      "id": "nt_function",
+      "name": "Function",
+      "label": "Function",
+      "description": "Units of computation",
+      "layer": "Implementation",
+      "color": "#1f3a8a",
+      "icon": "dot",
+      "shape": "round-rectangle"
+    },
+    {
+      "id": "nt_rule",
+      "name": "Rule",
+      "label": "Rule",
+      "description": "Constraints or business logic",
+      "layer": "Logic",
+      "color": "#7c3aed",
+      "icon": "dot",
+      "shape": "diamond"
+    },
+    {
+      "id": "nt_question",
+      "name": "Philosophical Question",
+      "label": "Philosophical Question",
+      "description": "Why and meaning",
+      "layer": "Reflection",
+      "color": "#e11d48",
+      "icon": "dot",
+      "shape": "hexagon"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "n_python",
+      "name": "Python",
+      "typeId": "nt_language",
+      "layer": "Concept",
+      "description": "A multi-paradigm programming language",
+      "attributes": { "paradigm": "multi-paradigm", "typing": "dynamic", "motto": "Readability matters" }
+    },
+    {
+      "id": "n_recursion",
+      "name": "Recursive Function",
+      "typeId": "nt_function",
+      "layer": "Implementation",
+      "description": "A function that calls itself",
+      "attributes": { "examples": "factorial, fibonacci", "pitfall": "stack depth" }
+    },
+    {
+      "id": "n_rules",
+      "name": "Business Rule Engine",
+      "typeId": "nt_rule",
+      "layer": "Logic",
+      "description": "Captures business logic declaratively",
+      "attributes": { "format": "DSL", "benefit": "separation of concerns" }
+    },
+    {
+      "id": "n_question",
+      "name": "What is meaning?",
+      "typeId": "nt_question",
+      "layer": "Reflection",
+      "description": "Philosophical inquiry into semantics",
+      "attributes": { "domain": "epistemology", "debate": "realism vs constructivism" }
+    }
+  ],
+  "relationships": [
+    { "id": "rel_1", "type": "IMPLEMENTS", "sourceId": "n_python", "targetId": "n_recursion" },
+    { "id": "rel_2", "type": "EXPRESSES", "sourceId": "n_recursion", "targetId": "n_rules" },
+    { "id": "rel_3", "type": "RAISES", "sourceId": "n_rules", "targetId": "n_question" }
+  ]
+}
