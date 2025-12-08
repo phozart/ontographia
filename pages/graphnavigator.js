@@ -1,6 +1,6 @@
 // pages/graphnavigator.js
 import { useEffect, useMemo, useState } from 'react';
-import dynamic from 'next/dynamic';
+import nextDynamic from 'next/dynamic';
 import NodeDetailPanel from '../components/NodeDetailPanel';
 import { useFilter } from '../components/FilterContext';
 import { useAuth } from '../components/AuthContext';
@@ -10,7 +10,7 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { LogoSpinner } from '../components/Logo';
 import { useDomains } from '../components/DomainContext';
 
-const GraphView = dynamic(() => import('../components/GraphView'), {
+const GraphView = nextDynamic(() => import('../components/GraphView'), {
   ssr: false,
 });
 
@@ -37,6 +37,23 @@ export default function GraphNavigatorPage() {
   const [suggestionsOpen, setSuggestionsOpen] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
   const { activeDomain, activeDomainObj } = useDomains();
+
+  const domainMatch = useMemo(() => {
+    const activeName = activeDomainObj?.name;
+    const active = activeDomain;
+    return (entity) => {
+      if (!active) return true;
+      if (!entity) return false;
+      const val =
+        entity.domain ??
+        entity.domainId ??
+        entity.domainName ??
+        entity.workspace ??
+        entity.workspaceId;
+      if (val === undefined || val === null) return false;
+      return String(val) === String(active) || (activeName && String(val) === String(activeName));
+    };
+  }, [activeDomain, activeDomainObj?.name]);
 
   function handleNodeClick(node) {
     setSelectedNode(node);
@@ -78,9 +95,19 @@ export default function GraphNavigatorPage() {
           fetch(`/api/relationships${qs}`),
           fetch(`/api/node-types${qs}`),
         ]);
-        if (nodesRes.ok) setNodes(await nodesRes.json());
-        if (relsRes.ok) setRels(await relsRes.json());
-        if (typesRes.ok) setNodeTypes(await typesRes.json());
+        const [nodesData, relsData, typesData] = await Promise.all([
+          nodesRes.ok ? nodesRes.json() : [],
+          relsRes.ok ? relsRes.json() : [],
+          typesRes.ok ? typesRes.json() : [],
+        ]);
+        setNodeTypes(typesData || []);
+        const scopedNodes = (nodesData || []).filter(domainMatch);
+        const scopedIds = new Set(scopedNodes.map(n => n.id));
+        const scopedRels = (relsData || []).filter(
+          r => scopedIds.has(r.sourceId) && scopedIds.has(r.targetId)
+        );
+        setNodes(scopedNodes);
+        setRels(scopedRels);
       } catch (e) {
         console.error('Failed to load graph filters', e);
       } finally {
@@ -320,4 +347,9 @@ export default function GraphNavigatorPage() {
       )}
     </div>
   );
+}
+
+// Force server render (avoid static prerender issues)
+export async function getServerSideProps() {
+  return { props: {} };
 }

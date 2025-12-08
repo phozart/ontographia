@@ -122,3 +122,8 @@ export default function DataElementsPage() {
     </Box>
   );
 }
+
+// Render this page only after login on the server to avoid prerender issues
+export async function getServerSideProps() {
+  return { props: {} };
+}

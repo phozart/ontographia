@@ -192,3 +192,8 @@ export default function DomainsPage() {
     </Box>
   );
 }
+
+// Force SSR so we don't prerender this authenticated page during static export
+export async function getServerSideProps() {
+  return { props: {} };
+}

@@ -1,8 +1,12 @@
-import dynamic from 'next/dynamic';
+import nextDynamic from 'next/dynamic';
 
-const GraphView = dynamic(() => import('../components/GraphView'), {
+const GraphView = nextDynamic(() => import('../components/GraphView'), {
   ssr: false
 });
+
+export async function getServerSideProps() {
+  return { props: {} };
+}
 
 export default function GraphPage() {
   return (

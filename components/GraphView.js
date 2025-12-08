@@ -36,6 +36,22 @@ export default function GraphView({
     return document.documentElement.dataset.theme === 'dark';
   });
   const { activeDomain, activeDomainObj } = useDomains();
+  const domainMatch = useMemo(() => {
+    const activeName = activeDomainObj?.name;
+    const active = activeDomain;
+    return (entity) => {
+      if (!active) return true;
+      if (!entity) return false;
+      const val =
+        entity.domain ??
+        entity.domainId ??
+        entity.domainName ??
+        entity.workspace ??
+        entity.workspaceId;
+      if (val === undefined || val === null) return false;
+      return String(val) === String(active) || (activeName && String(val) === String(activeName));
+    };
+  }, [activeDomain, activeDomainObj?.name]);
 
   useEffect(() => {
     if (typeof document === 'undefined') return undefined;
@@ -81,8 +97,13 @@ export default function GraphView({
       }
       const domainNodes = await nodesRes.json();
       const rels = await relsRes.json();
+      const scopedNodes = (Array.isArray(domainNodes) ? domainNodes : []).filter(domainMatch);
+      const scopedIds = new Set(scopedNodes.map(n => n.id));
+      const scopedRels = (Array.isArray(rels) ? rels : []).filter(
+        r => scopedIds.has(r.sourceId) && scopedIds.has(r.targetId)
+      );
 
-      const cyNodes = (Array.isArray(domainNodes) ? domainNodes : []).map(n => {
+      const cyNodes = scopedNodes.map(n => {
         const baseColor = n.color || n.typeColor || layerColor(n.layer);
         const color = themeDark ? darkenForDarkMode(baseColor) : baseColor;
         const data = {
@@ -114,9 +135,7 @@ export default function GraphView({
         return data;
       });
 
-      const nodeIds = new Set((Array.isArray(domainNodes) ? domainNodes : []).map(n => n.id));
-      const cyEdges = (Array.isArray(rels) ? rels : [])
-        .filter(r => nodeIds.has(r.sourceId) && nodeIds.has(r.targetId))
+      const cyEdges = scopedRels
         .map((r, idx) => ({
           data: {
             id: r.id || `edge-${idx}`,

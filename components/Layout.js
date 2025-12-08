@@ -5,6 +5,7 @@ import TopBar from './TopBar';
 
 import AnimatedLogoBackground from './AnimatedLogoBackground';
 import { LogoSpinner } from './Logo';
+import { useDomains } from './DomainContext';
 
 export default function Layout({ theme, onThemeChange, children }) {
 
@@ -16,6 +17,7 @@ export default function Layout({ theme, onThemeChange, children }) {
   const routeTimer = useRef(null);
   const routeStart = useRef(0);
   const year = new Date().getFullYear();
+  const { activeDomain, activeDomainObj } = useDomains();
 
   useEffect(() => {
     function handleMove(e) {
@@ -117,16 +119,32 @@ export default function Layout({ theme, onThemeChange, children }) {
             </div>
           </div>
         )}
-        <div className="global-footer">
-          © {year} Ontographia ·{' '}
-          <button
-            type="button"
-            className="link"
-            style={{ border: 'none', background: 'transparent', padding: 0, cursor: 'pointer' }}
-            onClick={() => setShowPrivacy(true)}
-          >
-            Privacy
-          </button>
+        <div
+          className="global-footer"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 12,
+          }}
+        >
+          <span style={{ color: 'var(--text-muted)' }}>
+            © {year} Ontographia ·{' '}
+            <button
+              type="button"
+              className="link"
+              style={{ border: 'none', background: 'transparent', padding: 0, cursor: 'pointer' }}
+              onClick={() => setShowPrivacy(true)}
+            >
+              Privacy
+            </button>
+          </span>
+          <span style={{ color: 'var(--text-muted)' }}>
+            Domain:{' '}
+            <strong style={{ color: 'var(--text)' }}>
+              {activeDomainObj?.name || activeDomain || 'None'}
+            </strong>
+          </span>
         </div>
         {showPrivacy && (
           <div className="modal-backdrop" style={{ zIndex: 2100 }} onClick={() => setShowPrivacy(false)}>
@@ -140,7 +158,7 @@ export default function Layout({ theme, onThemeChange, children }) {
               </p>
               <p style={{ lineHeight: 1.6 }}>
                 By continuing, you confirm you are authorised to access the workspace data and will handle it according
-                to your organisation’s security and privacy policies.
+                to your organisationâ€™s security and privacy policies.
               </p>
               <div className="modal-actions" style={{ justifyContent: 'flex-end' }}>
                 <button className="btn" type="button" onClick={() => setShowPrivacy(false)}>

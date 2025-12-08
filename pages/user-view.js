@@ -83,9 +83,15 @@ export default function UserViewPage() {
         setLoading(false);
         return;
       }
-      setNodes(await nRes.json());
-      setRels(await rRes.json());
-      setNodeTypes(await tRes.json());
+      const [nodesData, relsData, typesData] = await Promise.all([nRes.json(), rRes.json(), tRes.json()]);
+      setNodeTypes(typesData);
+      const scopedNodes = (nodesData || []).filter(domainMatch);
+      const scopedIds = new Set(scopedNodes.map(n => n.id));
+      const scopedRels = (relsData || []).filter(
+        r => scopedIds.has(r.sourceId) && scopedIds.has(r.targetId)
+      );
+      setNodes(scopedNodes);
+      setRels(scopedRels);
     } catch (e) {
       console.error(e);
     } finally {
@@ -105,7 +111,7 @@ export default function UserViewPage() {
         entity.workspaceId ??
         entity.workspace;
       const activeName = activeDomainObj?.name;
-      if (val === undefined || val === null) return true;
+      if (val === undefined || val === null) return false;
       return String(val) === String(activeDomain) || (activeName && String(val) === String(activeName));
     },
     [activeDomain, activeDomainObj?.name]

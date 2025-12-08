@@ -95,10 +95,10 @@ export function useRouteGuard() {
   const isDemoClient = typeof document !== 'undefined' && document.cookie.includes('demo_mode=1');
 
   const allowedRoutes = useMemo(() => {
-    if (!role) return ['/', '/login', '/demo'];
+    if (!role) return ['/', '/login', '/demo', '/help'];
     const studioRoutes = ['/studio', '/graphnavigator'];
     const modelRoutes = ['/semanticmodelbrowser', '/user-view'];
-    const homeRoute = ['/home'];
+    const homeRoute = ['/home', '/help'];
     const adminRoutes = ['/', '/demo', ...homeRoute, ...studioRoutes, ...modelRoutes, '/nodes', '/relationships', '/settings', '/domains', '/node-types', '/relationship-types', '/login'];
     if (!isDemoClient && role === 'admin') return [...adminRoutes, '/admin/users'];
     if (role === 'admin') return adminRoutes;

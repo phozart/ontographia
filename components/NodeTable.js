@@ -69,7 +69,11 @@ export default function NodeTable() {
     const res = await fetch(`/api/nodes${qs}`);
     if (!res.ok) return;
     const data = await res.json();
-    setNodes(data);
+    const domains = [activeDomain, activeDomainObj?.name].filter(Boolean).map(String);
+    const filtered = domains.length
+      ? data.filter(n => domains.includes(String(n.domain || '')))
+      : data;
+    setNodes(filtered);
   }
 
   function openCreate() {

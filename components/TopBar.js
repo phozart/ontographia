@@ -15,6 +15,7 @@ import SourceIcon from '@mui/icons-material/Source';
 import CableIcon from '@mui/icons-material/Cable';
 import HomeIcon from '@mui/icons-material/Home';
 import LockIcon from '@mui/icons-material/Lock';
+import QuizIcon from '@mui/icons-material/Quiz';
 import ThemeToggle from './ThemeToggle';
 import { useAuth } from './AuthContext';
 import { LogoWordmark } from './Logo';
@@ -22,6 +23,7 @@ import { useDomains } from './DomainContext';
 
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
+import DomainIcon from '@mui/icons-material/Domain';
 
 export default function TopBar({ theme, onThemeChange }) {
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -35,13 +37,17 @@ export default function TopBar({ theme, onThemeChange }) {
   const [navOpen, setNavOpen] = useState(false);
   const [isDemo, setIsDemo] = useState(false);
   const { activeDomain, accessibleDomains, setActiveDomain } = useDomains();
+  const [domainMenuOpen, setDomainMenuOpen] = useState(false);
+  const domainMenuRef = useRef(null);
 
   useEffect(() => {
     function handleClickOutside(e) {
       const inSettings = menuRef.current && menuRef.current.contains(e.target);
       const inUserMenu = userMenuRef.current && userMenuRef.current.contains(e.target);
+      const inDomainMenu = domainMenuRef.current && domainMenuRef.current.contains(e.target);
       if (!inSettings) setSettingsOpen(false);
       if (!inUserMenu) setUserMenuOpen(false);
+      if (!inDomainMenu) setDomainMenuOpen(false);
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -172,6 +178,29 @@ export default function TopBar({ theme, onThemeChange }) {
               <Link href="/home" className={isActive('/home') ? 'active' : ''} onClick={() => setNavOpen(false)}>Product</Link>
               <Link href="/" className={isActive('/') ? 'active' : ''} onClick={() => setNavOpen(false)}>Home</Link>
               <Link href="/graphnavigator" className={isActive('/graphnavigator') ? 'active' : ''} onClick={() => setNavOpen(false)}>Graph Navigator</Link>
+              <Link href="/help" className={isActive('/help') ? 'active' : ''} onClick={() => setNavOpen(false)}>Help Center</Link>
+              <div style={{ borderTop: '1px solid var(--border)', margin: '6px 0' }} />
+              {accessibleDomains.length === 0 && <span style={{ padding: '6px 10px', display: 'block', color: 'var(--text-muted)' }}>No domains</span>}
+              {accessibleDomains.map(d => (
+                <button
+                  key={d.id}
+                  type="button"
+                  onClick={() => {
+                    setActiveDomain(d.id);
+                    setNavOpen(false);
+                  }}
+                  style={{
+                    padding: '8px 10px',
+                    textAlign: 'left',
+                    background: d.id === activeDomain ? 'var(--nav-active-bg)' : 'transparent',
+                    color: d.id === activeDomain ? 'var(--nav-active-color)' : 'var(--text)',
+                    border: 'none',
+                    width: '100%',
+                  }}
+                >
+                  {d.name || d.id}
+                </button>
+              ))}
             </div>
           )}
         </div>
@@ -200,36 +229,46 @@ export default function TopBar({ theme, onThemeChange }) {
         {user && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             {!isMobile && (
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 6,
-                  padding: '6px 10px',
-                  borderRadius: 10,
-                
-                  border: '0px ',
-                
-                }}
-              >
-                
-                <Autocomplete
-                  size="small"
-                  sx={{ width: 200 }}
-                  options={accessibleDomains}
-                  getOptionLabel={(option) => option?.name || option?.id || ''}
-                  value={accessibleDomains.find(d => d.id === activeDomain) || null}
-                  onChange={(_, val) => setActiveDomain(val ? val.id : null)}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      variant="standard"
-                      label ="Domain"
-                      placeholder={accessibleDomains.length ? 'Select domain' : 'No domains'}
-                    />
-                  )}
-                  isOptionEqualToValue={(opt, val) => opt?.id === val?.id}
-                />
+              <div className="settings-menu" ref={domainMenuRef} style={{ position: 'relative' }}>
+                <Tooltip title="Switch domain">
+                  <IconButton
+                    size="small"
+                    onClick={() => setDomainMenuOpen(o => !o)}
+                    aria-label="Select domain"
+                    sx={{ color: 'var(--text)' }}
+                  >
+                    <DomainIcon fontSize="large" />
+                  </IconButton>
+                </Tooltip>
+                {domainMenuOpen && (
+                  <div className="settings-dropdown" style={{ right: 0, left: 'auto' }}>
+                    {accessibleDomains.length === 0 && (
+                      <span style={{ padding: '8px 12px', color: 'var(--text-muted)' }}>No domains</span>
+                    )}
+                    {accessibleDomains.map(d => (
+                      <button
+                        key={d.id}
+                        type="button"
+                        onClick={() => {
+                          setActiveDomain(d.id);
+                          setDomainMenuOpen(false);
+                        }}
+                        style={{
+                          padding: '8px 12px',
+                          margin: '2px 6px',
+                          borderRadius: 10,
+                          textAlign: 'left',
+                          background: d.id === activeDomain ? 'var(--nav-active-bg)' : 'transparent',
+                          color: d.id === activeDomain ? 'var(--nav-active-color)' : 'var(--text)',
+                          border: 'none',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        {d.name || d.id}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
             {!isMobile && (
@@ -248,13 +287,27 @@ export default function TopBar({ theme, onThemeChange }) {
                 {settingsOpen && (
                   <div className="settings-dropdown" style={{ right: 0, left: 'auto' }}>
                     <Link href="/settings" className={isActive('/settings') ? 'active' : ''}>General</Link>
-                    <Link href="/domains" className={isActive('/domains') ? 'active' : ''}>Domains</Link>
+                    {role !== 'viewer' && (
+                      <Link href="/domains" className={isActive('/domains') ? 'active' : ''}>Domains</Link>
+                    )}
                     {role === 'admin' && !isDemo && <Link href="/admin/users" className={isActive('/admin/users') ? 'active' : ''}>Users</Link>}
                     {role === 'admin' && <Link href="/node-types" className={isActive('/node-types') ? 'active' : ''}>Node types</Link>}
                     {role === 'admin' && <Link href="/relationship-types" className={isActive('/relationship-types') ? 'active' : ''}>Relationship types</Link>}
                   </div>
                 )}
               </div>
+            )}
+            {!isMobile && (
+              <Tooltip title="Help center">
+                <IconButton
+                  size="small"
+                  onClick={() => router.push('/help')}
+                  aria-label="Help center"
+                  sx={{ color: 'var(--text)' }}
+                >
+                  <QuizIcon fontSize="large" />
+                </IconButton>
+              </Tooltip>
             )}
             <div className="settings-menu" ref={userMenuRef} style={{ position: 'relative' }}>
               <Tooltip title={`${user} (${role})`}>

@@ -20,24 +20,29 @@ import {
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { LogoSpinner } from '../components/Logo';
+import { useDomains } from '../components/DomainContext';
 
 export default function RelationshipTypesPage() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
-  const [form, setForm] = useState({ name: '', label: '', description: '', color: '#9ca3af' });
+  const [form, setForm] = useState({ name: '', label: '', description: '', color: '#9ca3af', domain: '' });
   const [errorMsg, setErrorMsg] = useState('');
+  const { activeDomain, activeDomainObj } = useDomains();
 
   useEffect(() => {
     loadTypes();
-  }, []);
+  }, [activeDomain, activeDomainObj]);
 
   async function loadTypes() {
     setLoading(true);
     setErrorMsg('');
     try {
-      const res = await fetch('/api/relationship-types');
+      const qs = activeDomain
+        ? `?domain=${encodeURIComponent(activeDomain)}&domainName=${encodeURIComponent(activeDomainObj?.name || '')}`
+        : '';
+      const res = await fetch(`/api/relationship-types${qs}`);
       if (!res.ok) {
         setErrorMsg(`Failed to load relationship types (${res.status})`);
         setRows([]);
@@ -45,7 +50,11 @@ export default function RelationshipTypesPage() {
         return;
       }
       const data = await res.json();
-      setRows(data);
+      const domains = [activeDomain, activeDomainObj?.name].filter(Boolean).map(String);
+      const filtered = domains.length
+        ? data.filter(rt => domains.includes(String(rt.domain || 'core')))
+        : data;
+      setRows(filtered);
     } catch (e) {
       console.error(e);
       setErrorMsg('Unexpected error loading relationship types');
@@ -56,7 +65,13 @@ export default function RelationshipTypesPage() {
 
   function openCreate() {
     setEditingId(null);
-    setForm({ name: '', label: '', description: '', color: '#9ca3af' });
+    setForm({
+      name: '',
+      label: '',
+      description: '',
+      color: '#9ca3af',
+      domain: activeDomainObj?.name || activeDomain || 'core',
+    });
     setDialogOpen(true);
   }
 
@@ -67,6 +82,7 @@ export default function RelationshipTypesPage() {
       label: rt.label || '',
       description: rt.description || '',
       color: rt.color || '#9ca3af',
+      domain: rt.domain || activeDomainObj?.name || activeDomain || 'core',
     });
     setDialogOpen(true);
   }
@@ -82,13 +98,21 @@ export default function RelationshipTypesPage() {
       setErrorMsg('Name is required');
       return;
     }
+    if (!activeDomain && !form.domain) {
+      setErrorMsg('Select a domain');
+      return;
+    }
+    const payload = {
+      ...form,
+      domain: activeDomainObj?.name || activeDomain || form.domain || 'core',
+    };
     const url = editingId ? `/api/relationship-types/${encodeURIComponent(editingId)}` : '/api/relationship-types';
     const method = editingId ? 'PUT' : 'POST';
     try {
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
