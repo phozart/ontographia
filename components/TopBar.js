@@ -35,7 +35,6 @@ export default function TopBar({ theme, onThemeChange }) {
   const logoColor = theme === 'dark' ? '#e6edff' : '#0B2545';
   const [isMobile, setIsMobile] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
-  const [isDemo, setIsDemo] = useState(false);
   const { activeDomain, accessibleDomains, setActiveDomain } = useDomains();
   const [domainMenuOpen, setDomainMenuOpen] = useState(false);
   const domainMenuRef = useRef(null);
@@ -65,12 +64,6 @@ export default function TopBar({ theme, onThemeChange }) {
     onResize();
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
-  }, []);
-
-  useEffect(() => {
-    if (typeof document !== 'undefined') {
-      setIsDemo(document.cookie.includes('demo_mode=1'));
-    }
   }, []);
 
   return (
@@ -290,7 +283,7 @@ export default function TopBar({ theme, onThemeChange }) {
                     {role !== 'viewer' && (
                       <Link href="/domains" className={isActive('/domains') ? 'active' : ''}>Domains</Link>
                     )}
-                    {role === 'admin' && !isDemo && <Link href="/admin/users" className={isActive('/admin/users') ? 'active' : ''}>Users</Link>}
+                    {role === 'admin' && <Link href="/admin/users" className={isActive('/admin/users') ? 'active' : ''}>Users</Link>}
                     {role === 'admin' && <Link href="/node-types" className={isActive('/node-types') ? 'active' : ''}>Node types</Link>}
                     {role === 'admin' && <Link href="/relationship-types" className={isActive('/relationship-types') ? 'active' : ''}>Relationship types</Link>}
                   </div>

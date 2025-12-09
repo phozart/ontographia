@@ -92,20 +92,17 @@ export function useAuth() {
 export function useRouteGuard() {
   const { role, hydrated } = useAuth();
   const router = useRouter();
-  const isDemoClient = typeof document !== 'undefined' && document.cookie.includes('demo_mode=1');
-
   const allowedRoutes = useMemo(() => {
-    if (!role) return ['/', '/login', '/demo', '/help'];
+    if (!role) return ['/', '/login', '/help'];
     const studioRoutes = ['/studio', '/graphnavigator'];
     const modelRoutes = ['/semanticmodelbrowser', '/user-view'];
     const homeRoute = ['/home', '/help'];
-    const adminRoutes = ['/', '/demo', ...homeRoute, ...studioRoutes, ...modelRoutes, '/nodes', '/relationships', '/settings', '/domains', '/node-types', '/relationship-types', '/login'];
-    if (!isDemoClient && role === 'admin') return [...adminRoutes, '/admin/users'];
-    if (role === 'admin') return adminRoutes;
-    if (role === 'editor') return ['/', '/demo', ...homeRoute, ...studioRoutes, ...modelRoutes, '/settings', '/domains', '/login'];
-    if (role === 'viewer') return ['/', '/demo', ...homeRoute, ...studioRoutes, ...modelRoutes, '/settings', '/domains', '/login'];
+    const adminRoutes = ['/', ...homeRoute, ...studioRoutes, ...modelRoutes, '/nodes', '/relationships', '/settings', '/domains', '/node-types', '/relationship-types', '/login'];
+    if (role === 'admin') return [...adminRoutes, '/admin/users'];
+    if (role === 'editor') return ['/', ...homeRoute, ...studioRoutes, ...modelRoutes, '/settings', '/domains', '/login'];
+    if (role === 'viewer') return ['/', ...homeRoute, ...studioRoutes, ...modelRoutes, '/settings', '/domains', '/login'];
     return ['/login'];
-  }, [role, isDemoClient]);
+  }, [role]);
 
   const enforceRoute = () => {
     if (!router?.pathname || !hydrated) return;

@@ -181,12 +181,12 @@ export default function HomePage() {
           <Stack direction="row" spacing={2} justifyContent="center" flexWrap="wrap">
             <Button
               component={Link}
-              href="/demo"
+              href="/login"
               size="large"
               variant="contained"
               sx={{ borderRadius: 999, px: 3.4, boxShadow: 'var(--shadow)', fontWeight: 700 }}
             >
-              Try the Demo
+              Log in to explore
             </Button>
           </Stack>
         }
@@ -248,15 +248,6 @@ function Hero() {
                 boxShadow: 'var(--shadow)',
               }}
             />
-            <Chip
-              label="Live demo ready"
-              sx={{
-                background: 'var(--panel)',
-                border: '1px solid var(--border-strong)',
-                color: 'var(--text)',
-                fontWeight: 700,
-              }}
-            />
           </Stack>
           <Typography variant="h2" component="h1" sx={{ fontWeight: 800, lineHeight: 1.05, maxWidth: 720 }}>
             A living map of your knowledge
@@ -282,12 +273,12 @@ function Hero() {
           >
             <Button
               component={Link}
-              href="/demo"
+              href="/login"
               variant="contained"
               size="large"
               sx={{ borderRadius: 999, px: 3.4, boxShadow: 'var(--shadow)', fontWeight: 700 }}
             >
-              Try the Demo
+              Log in to explore
             </Button>
           </Stack>
           <Stack direction="row" spacing={1} justifyContent={{ xs: 'center', md: 'flex-start' }} flexWrap="wrap">

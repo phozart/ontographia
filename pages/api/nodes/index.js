@@ -33,12 +33,10 @@ export default async function handler(req, res) {
         params.typeIds = filterIds;
       }
 
-      if (domain) {
-        const domains = [domain, domainName].filter(Boolean);
-        if (domains.length) {
-          whereParts.push('coalesce(n.domain, t.domain, "core") IN $domains');
-          params.domains = domains;
-        }
+      const domainFilters = domain ? [domain, domainName].filter(Boolean) : [];
+      if (domainFilters.length) {
+        whereParts.push('coalesce(n.domain, t.domain, "core") IN $domains');
+        params.domains = domainFilters;
       }
 
       if (whereParts.length) {
@@ -46,7 +44,7 @@ export default async function handler(req, res) {
       }
 
       if (isDemo) {
-        const nodes = demoListNodes({ typeIds: filterIds });
+        const nodes = demoListNodes({ typeIds: filterIds, domains: domainFilters });
         return res.status(200).json(nodes);
       }
 
