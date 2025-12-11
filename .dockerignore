@@ -1,0 +1,16 @@
+# Backups
+*.tar
+*.tar.gz
+neo4j_data_backup*
+images_backup*
+
+# Node / project churn
+node_modules
+npm-debug.log
+yarn.lock
+pnpm-lock.yaml
+
+# Git + misc
+.git
+.gitignore
+.DS_Store

@@ -1,5 +1,5 @@
 // pages/graphnavigator.js
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
 import nextDynamic from 'next/dynamic';
 import NodeDetailPanel from '../components/NodeDetailPanel';
 import { useFilter } from '../components/FilterContext';
@@ -7,12 +7,23 @@ import { useAuth } from '../components/AuthContext';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import AddIcon from '@mui/icons-material/Add';
+import AccountTreeIcon from '@mui/icons-material/AccountTree';
+import SettingsIcon from '@mui/icons-material/Settings';
+import FileUploadIcon from '@mui/icons-material/FileUpload';
 import { LogoSpinner } from '../components/Logo';
 import { useDomains } from '../components/DomainContext';
+import BulkImportExport from '../components/BulkImportExport';
 
 const GraphView = nextDynamic(() => import('../components/GraphView'), {
   ssr: false,
 });
+
+// Colors for node types
+const TYPE_COLORS = [
+  '#008a7a', '#3b82f6', '#8b5cf6', '#ec4899', '#ef4444',
+  '#f97316', '#eab308', '#22c55e', '#06b6d4', '#6366f1',
+];
 
 export default function GraphNavigatorPage() {
   const { role } = useAuth();
@@ -27,6 +38,7 @@ export default function GraphNavigatorPage() {
   const [editSignal, setEditSignal] = useState(0);
   const [relationshipSignal, setRelationshipSignal] = useState(0);
   const [nodeTypes, setNodeTypes] = useState([]);
+  const [relationshipTypes, setRelationshipTypes] = useState([]);
   const [nodes, setNodes] = useState([]);
   const [rels, setRels] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -37,6 +49,26 @@ export default function GraphNavigatorPage() {
   const [suggestionsOpen, setSuggestionsOpen] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
   const { activeDomain, activeDomainObj } = useDomains();
+
+  // New state for enhanced features
+  const [quickCreateOpen, setQuickCreateOpen] = useState(false);
+  const [showTypeManager, setShowTypeManager] = useState(false);
+  const [typeManagerTab, setTypeManagerTab] = useState('node-types');
+  const [contextMenu, setContextMenu] = useState(null);
+
+  // Quick create form state
+  const [quickCreateForm, setQuickCreateForm] = useState({
+    name: '',
+    typeId: '',
+    description: '',
+  });
+
+  // Type management form state
+  const [newNodeTypeForm, setNewNodeTypeForm] = useState({ name: '', label: '', color: '#8b5cf6', shape: 'ellipse', description: '' });
+  const [newRelTypeForm, setNewRelTypeForm] = useState({ name: '', label: '', description: '' });
+  const [editingNodeType, setEditingNodeType] = useState(null);
+  const [editingRelType, setEditingRelType] = useState(null);
+  const [showImportExport, setShowImportExport] = useState(false);
 
   const domainMatch = useMemo(() => {
     const activeName = activeDomainObj?.name;
@@ -59,22 +91,26 @@ export default function GraphNavigatorPage() {
     setSelectedNode(node);
     setSelectedEdge(null);
     setDetailsOpen(true);
+    setContextMenu(null);
   }
 
   function handleEdgeClick(edge) {
     setSelectedEdge(edge);
     setSelectedNode(null);
     setDetailsOpen(false);
+    setContextMenu(null);
   }
 
   function handleDataChanged() {
     setReloadKey(k => k + 1);
+    loadData();
   }
 
   function clearSelection() {
     setSelectedNode(null);
     setSelectedEdge(null);
     setDetailsOpen(false);
+    setContextMenu(null);
   }
 
   useEffect(() => {
@@ -83,39 +119,43 @@ export default function GraphNavigatorPage() {
     }
   }, [typeFilters]);
 
-  useEffect(() => {
-    async function load() {
-      setLoading(true);
-      try {
-        const qs = activeDomain
-          ? `?domain=${encodeURIComponent(activeDomain)}&domainName=${encodeURIComponent(activeDomainObj?.name || '')}`
-          : '';
-        const [nodesRes, relsRes, typesRes] = await Promise.all([
-          fetch(`/api/nodes${qs}`),
-          fetch(`/api/relationships${qs}`),
-          fetch(`/api/node-types${qs}`),
-        ]);
-        const [nodesData, relsData, typesData] = await Promise.all([
-          nodesRes.ok ? nodesRes.json() : [],
-          relsRes.ok ? relsRes.json() : [],
-          typesRes.ok ? typesRes.json() : [],
-        ]);
-        setNodeTypes(typesData || []);
-        const scopedNodes = (nodesData || []).filter(domainMatch);
-        const scopedIds = new Set(scopedNodes.map(n => n.id));
-        const scopedRels = (relsData || []).filter(
-          r => scopedIds.has(r.sourceId) && scopedIds.has(r.targetId)
-        );
-        setNodes(scopedNodes);
-        setRels(scopedRels);
-      } catch (e) {
-        console.error('Failed to load graph filters', e);
-      } finally {
-        setLoading(false);
-      }
+  const loadData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const qs = activeDomain
+        ? `?domain=${encodeURIComponent(activeDomain)}&domainName=${encodeURIComponent(activeDomainObj?.name || '')}`
+        : '';
+      const [nodesRes, relsRes, typesRes, relTypesRes] = await Promise.all([
+        fetch(`/api/nodes${qs}`),
+        fetch(`/api/relationships${qs}`),
+        fetch(`/api/node-types${qs}`),
+        fetch(`/api/relationship-types${qs}`),
+      ]);
+      const [nodesData, relsData, typesData, relTypesData] = await Promise.all([
+        nodesRes.ok ? nodesRes.json() : [],
+        relsRes.ok ? relsRes.json() : [],
+        typesRes.ok ? typesRes.json() : [],
+        relTypesRes.ok ? relTypesRes.json() : [],
+      ]);
+      setNodeTypes(typesData || []);
+      setRelationshipTypes(relTypesData || []);
+      const scopedNodes = (nodesData || []).filter(domainMatch);
+      const scopedIds = new Set(scopedNodes.map(n => n.id));
+      const scopedRels = (relsData || []).filter(
+        r => scopedIds.has(r.sourceId) && scopedIds.has(r.targetId)
+      );
+      setNodes(scopedNodes);
+      setRels(scopedRels);
+    } catch (e) {
+      console.error('Failed to load graph data', e);
+    } finally {
+      setLoading(false);
     }
-    load();
-  }, [activeDomain, activeDomainObj]);
+  }, [activeDomain, activeDomainObj, domainMatch]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const adjacency = useMemo(() => {
     const map = new Map();
@@ -144,14 +184,17 @@ export default function GraphNavigatorPage() {
         .map(id => nodes.find(x => x.id === id))
         .filter(Boolean)
         .map(x => x.label || x.name);
+      const nodeType = nodeTypes.find(t => t.id === n.typeId);
       return {
         id: n.id,
         label: n.label || n.name,
+        typeName: nodeType?.label || nodeType?.name || n.typeName,
+        typeColor: nodeType?.color || n.color || '#6b7280',
         neighbors: neighborNames,
       };
     });
     return list;
-  }, [filteredNodes, adjacency, nodes]);
+  }, [filteredNodes, adjacency, nodes, nodeTypes]);
 
   const handleTypeChange = val => {
     setSelectedType(val);
@@ -172,80 +215,337 @@ export default function GraphNavigatorPage() {
     setDetailsOpen(true);
   };
 
+  // Quick create node handler
+  const handleQuickCreate = async (e) => {
+    e.preventDefault();
+    if (!quickCreateForm.name || !quickCreateForm.typeId) {
+      alert('Please enter a name and select a type');
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/nodes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: quickCreateForm.name,
+          typeId: quickCreateForm.typeId,
+          description: quickCreateForm.description || undefined,
+          domain: activeDomain || undefined,
+        }),
+      });
+
+      if (res.ok) {
+        const newNode = await res.json();
+        setQuickCreateOpen(false);
+        setQuickCreateForm({ name: '', typeId: '', description: '' });
+        handleDataChanged();
+        // Select the new node
+        setTimeout(() => {
+          setFocusNodeId(newNode.id);
+          setHighlightedIds([newNode.id]);
+        }, 300);
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert(err.error || 'Failed to create node');
+      }
+    } catch (e) {
+      console.error('Failed to create node', e);
+      alert('Failed to create node');
+    }
+  };
+
+  // Node type CRUD
+  const createNodeType = async () => {
+    if (!newNodeTypeForm.name.trim()) return;
+
+    try {
+      const res = await fetch('/api/node-types', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: newNodeTypeForm.name.trim(),
+          label: newNodeTypeForm.label.trim() || newNodeTypeForm.name.trim(),
+          color: newNodeTypeForm.color,
+          shape: newNodeTypeForm.shape,
+          description: newNodeTypeForm.description,
+          domain: activeDomain || undefined,
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setNodeTypes(prev => [...prev, data]);
+        setNewNodeTypeForm({ name: '', label: '', color: TYPE_COLORS[nodeTypes.length % TYPE_COLORS.length], shape: 'ellipse', description: '' });
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert(err.error || 'Failed to create node type');
+      }
+    } catch (e) {
+      console.error('Failed to create node type', e);
+    }
+  };
+
+  const updateNodeType = async () => {
+    if (!editingNodeType) return;
+
+    try {
+      const res = await fetch(`/api/node-types/${encodeURIComponent(editingNodeType.id)}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: editingNodeType.name,
+          label: editingNodeType.label,
+          color: editingNodeType.color,
+          shape: editingNodeType.shape,
+          description: editingNodeType.description,
+        }),
+      });
+
+      if (res.ok) {
+        setNodeTypes(prev => prev.map(t => t.id === editingNodeType.id ? { ...t, ...editingNodeType } : t));
+        setEditingNodeType(null);
+        handleDataChanged();
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert(err.error || 'Failed to update node type');
+      }
+    } catch (e) {
+      console.error('Failed to update node type', e);
+    }
+  };
+
+  const deleteNodeType = async (typeId) => {
+    if (!confirm('Delete this node type? Nodes using this type will not be deleted.')) return;
+
+    try {
+      const res = await fetch(`/api/node-types/${encodeURIComponent(typeId)}`, { method: 'DELETE' });
+      if (res.ok) {
+        setNodeTypes(prev => prev.filter(t => t.id !== typeId));
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert(err.error || 'Failed to delete node type');
+      }
+    } catch (e) {
+      console.error('Failed to delete node type', e);
+    }
+  };
+
+  // Relationship type CRUD
+  const createRelType = async () => {
+    if (!newRelTypeForm.name.trim()) return;
+
+    try {
+      const res = await fetch('/api/relationship-types', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: newRelTypeForm.name.trim().toUpperCase().replace(/\s+/g, '_'),
+          label: newRelTypeForm.label.trim() || newRelTypeForm.name.trim(),
+          description: newRelTypeForm.description,
+          domain: activeDomain || undefined,
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setRelationshipTypes(prev => [...prev, data]);
+        setNewRelTypeForm({ name: '', label: '', description: '' });
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert(err.error || 'Failed to create relationship type');
+      }
+    } catch (e) {
+      console.error('Failed to create relationship type', e);
+    }
+  };
+
+  const updateRelType = async () => {
+    if (!editingRelType) return;
+
+    try {
+      const res = await fetch(`/api/relationship-types/${encodeURIComponent(editingRelType.id)}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: editingRelType.name,
+          label: editingRelType.label,
+          description: editingRelType.description,
+        }),
+      });
+
+      if (res.ok) {
+        setRelationshipTypes(prev => prev.map(t => t.id === editingRelType.id ? { ...t, ...editingRelType } : t));
+        setEditingRelType(null);
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert(err.error || 'Failed to update relationship type');
+      }
+    } catch (e) {
+      console.error('Failed to update relationship type', e);
+    }
+  };
+
+  const deleteRelType = async (typeId) => {
+    if (!confirm('Delete this relationship type?')) return;
+
+    try {
+      const res = await fetch(`/api/relationship-types/${encodeURIComponent(typeId)}`, { method: 'DELETE' });
+      if (res.ok) {
+        setRelationshipTypes(prev => prev.filter(t => t.id !== typeId));
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert(err.error || 'Failed to delete relationship type');
+      }
+    } catch (e) {
+      console.error('Failed to delete relationship type', e);
+    }
+  };
+
+  // Stats for display
+  const stats = useMemo(() => ({
+    nodeCount: nodes.length,
+    relCount: rels.length,
+    typeCount: nodeTypes.length,
+  }), [nodes, rels, nodeTypes]);
+
   return (
     <div className="studio-container" style={{ display: 'flex', flex: 1, minHeight: 0 }}>
       <div className="studio-graph" style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-        <div style={{ padding: '8px 10px 0 10px' }}>
-          <div className="filter-section" style={{ display: 'flex', gap: 12, alignItems: 'flex-end', flexWrap: 'wrap' }}>
-            <div className="form-group" style={{ minWidth: 200 }}>
-              <label>Node type</label>
-              <select value={selectedType} onChange={e => handleTypeChange(e.target.value)}>
-                <option value="">All types</option>
+        {/* Enhanced Toolbar */}
+        <div className="graph-nav-toolbar">
+          {/* Quick Actions */}
+          <div className="toolbar-section">
+            <span className="toolbar-section-label">Actions</span>
+            <div className="toolbar-buttons">
+              {!readOnly && (
+                <>
+                  <Tooltip title="Create Node (N)">
+                    <button
+                      className="toolbar-btn primary"
+                      onClick={() => {
+                        setQuickCreateOpen(true);
+                        setQuickCreateForm(prev => ({ ...prev, typeId: nodeTypes[0]?.id || '' }));
+                      }}
+                    >
+                      <AddIcon fontSize="small" /> Node
+                    </button>
+                  </Tooltip>
+                  <Tooltip title="Add Relationship">
+                    <button
+                      className="toolbar-btn"
+                      onClick={() => {
+                        setDetailsOpen(true);
+                        setRelationshipSignal(s => s + 1);
+                      }}
+                      disabled={!selectedNode}
+                    >
+                      <AccountTreeIcon fontSize="small" /> Link
+                    </button>
+                  </Tooltip>
+                  <Tooltip title="Manage Types">
+                    <button
+                      className="toolbar-btn"
+                      onClick={() => setShowTypeManager(true)}
+                    >
+                      <SettingsIcon fontSize="small" /> Types
+                    </button>
+                  </Tooltip>
+                  <Tooltip title="Import / Export">
+                    <button
+                      className="toolbar-btn"
+                      onClick={() => setShowImportExport(true)}
+                    >
+                      <FileUploadIcon fontSize="small" /> Data
+                    </button>
+                  </Tooltip>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Filters */}
+          <div className="toolbar-section" style={{ flex: 1 }}>
+            <span className="toolbar-section-label">Filter</span>
+            <div style={{ display: 'flex', gap: 8, flex: 1 }}>
+              <select
+                className="toolbar-select"
+                value={selectedType}
+                onChange={e => handleTypeChange(e.target.value)}
+              >
+                <option value="">All types ({nodeTypes.length})</option>
                 {nodeTypes.map(t => (
                   <option key={t.id || t.name || t.label} value={t.id || t.name || t.label}>
                     {t.label || t.name}
                   </option>
                 ))}
               </select>
-            </div>
-            <div className="form-group" style={{ minWidth: 260, position: 'relative', flex: 1 }}>
-              <label>Find node</label>
-              <input
-                type="text"
-                value={nodeQuery}
-                placeholder="Search node name"
-                onChange={e => {
-                  setNodeQuery(e.target.value);
-                  setSuggestionsOpen(true);
-                }}
-                onFocus={() => setSuggestionsOpen(true)}
-                onBlur={() => setTimeout(() => setSuggestionsOpen(false), 150)}
-              />
-              {suggestionsOpen && suggestions.length > 0 && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: '100%',
-                    left: 0,
-                    right: 0,
-                    background: 'var(--bg-alt)',
-                    border: '1px solid var(--border)',
-                    boxShadow: '0 8px 20px rgba(0,0,0,0.1)',
-                    borderRadius: 12,
-                    maxHeight: 240,
-                    overflowY: 'auto',
-                    zIndex: 20,
+              <div style={{ position: 'relative', flex: 1, maxWidth: 300 }}>
+                <input
+                  type="text"
+                  className="toolbar-input"
+                  value={nodeQuery}
+                  placeholder="Search nodes..."
+                  onChange={e => {
+                    setNodeQuery(e.target.value);
+                    setSuggestionsOpen(true);
                   }}
-                >
-                  {suggestions.map(s => (
-                    <button
-                      key={s.id}
-                      type="button"
-                      className="suggestion-item"
-                      onMouseDown={e => {
-                        e.preventDefault(); // prevent input blur before selection
-                        handleSelectSuggestion(s);
-                      }}
-                    >
-                      <strong>{s.label}</strong>
-                      {s.neighbors.length > 0 && (
-                        <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>
-                          Linked to: {s.neighbors.join(', ')}
-                        </span>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              )}
+                  onFocus={() => setSuggestionsOpen(true)}
+                  onBlur={() => setTimeout(() => setSuggestionsOpen(false), 150)}
+                />
+                {suggestionsOpen && suggestions.length > 0 && (
+                  <div className="search-suggestions">
+                    {suggestions.map(s => (
+                      <button
+                        key={s.id}
+                        type="button"
+                        className="suggestion-item"
+                        onMouseDown={e => {
+                          e.preventDefault();
+                          handleSelectSuggestion(s);
+                        }}
+                      >
+                        <span
+                          className="suggestion-dot"
+                          style={{ background: s.typeColor }}
+                        />
+                        <div className="suggestion-content">
+                          <strong>{s.label}</strong>
+                          <span className="suggestion-type">{s.typeName}</span>
+                        </div>
+                        {s.neighbors.length > 0 && (
+                          <span className="suggestion-neighbors">
+                            → {s.neighbors.slice(0, 2).join(', ')}
+                          </span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
-            <div className="form-group" style={{ minWidth: 140 }}>
-              <label>Status</label>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <button className="btn" onClick={() => setReloadKey(k => k + 1)} disabled={loading}>
-                  {loading ? 'Loading...' : 'Refresh'}
+          </div>
+
+          {/* Stats & Actions */}
+          <div className="toolbar-section">
+            <span className="toolbar-section-label">Graph</span>
+            <div className="toolbar-stats">
+              <span className="stat-badge">
+                <span className="stat-value">{stats.nodeCount}</span> nodes
+              </span>
+              <span className="stat-badge">
+                <span className="stat-value">{stats.relCount}</span> links
+              </span>
+            </div>
+            <div className="toolbar-buttons">
+              <Tooltip title="Refresh">
+                <button className="toolbar-btn" onClick={() => setReloadKey(k => k + 1)} disabled={loading}>
+                  {loading ? '...' : '↻'}
                 </button>
+              </Tooltip>
+              <Tooltip title="Clear filters">
                 <button
-                  className="btn-secondary"
+                  className="toolbar-btn"
                   onClick={() => {
                     setSelectedType('');
                     setTypeFilters([]);
@@ -254,29 +554,51 @@ export default function GraphNavigatorPage() {
                     setFocusNodeId(null);
                   }}
                 >
-                  Clear
+                  ✕
                 </button>
-              </div>
-            </div>
-            <div className="form-group" style={{ minWidth: 60, display: 'flex', alignItems: 'flex-end' }}>
-              <Tooltip title="How to use Graph Navigator">
+              </Tooltip>
+              <Tooltip title="Help">
                 <IconButton
                   size="small"
                   onClick={() => setInfoOpen(true)}
-                  aria-label="Graph Navigator info"
                   sx={{ color: 'var(--text)' }}
                 >
                   <InfoOutlinedIcon fontSize="small" />
                 </IconButton>
               </Tooltip>
             </div>
-            {loading && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingBottom: 4 }}>
-                <LogoSpinner size={32} label="Loading graph..." />
-              </div>
+          </div>
+
+          {loading && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <LogoSpinner size={24} />
+            </div>
+          )}
+        </div>
+
+        {/* Type Legend (when types exist) */}
+        {nodeTypes.length > 0 && (
+          <div className="type-legend">
+            {nodeTypes.slice(0, 8).map(t => (
+              <button
+                key={t.id}
+                className={`legend-item ${selectedType === t.id ? 'active' : ''}`}
+                onClick={() => handleTypeChange(selectedType === t.id ? '' : t.id)}
+              >
+                <span className="legend-dot" style={{ background: t.color || '#6b7280' }} />
+                <span className="legend-label">{t.label || t.name}</span>
+                <span className="legend-count">
+                  {nodes.filter(n => n.typeId === t.id).length}
+                </span>
+              </button>
+            ))}
+            {nodeTypes.length > 8 && (
+              <span className="legend-more">+{nodeTypes.length - 8} more</span>
             )}
           </div>
-        </div>
+        )}
+
+        {/* Graph View */}
         <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
           <GraphView
             readOnly={readOnly}
@@ -287,16 +609,12 @@ export default function GraphNavigatorPage() {
             highlightedNodeIds={highlightedIds}
             focusNodeId={focusNodeId}
             onNewNodeShortcut={() => {
-              setDetailsOpen(true);
-              setSelectedNode(null);
-              setSelectedEdge(null);
-              setCreateSignal(s => s + 1);
+              setQuickCreateOpen(true);
+              setQuickCreateForm(prev => ({ ...prev, typeId: nodeTypes[0]?.id || '' }));
             }}
             onCreateNodeRequest={() => {
-              setDetailsOpen(true);
-              setSelectedNode(null);
-              setSelectedEdge(null);
-              setCreateSignal(s => s + 1);
+              setQuickCreateOpen(true);
+              setQuickCreateForm(prev => ({ ...prev, typeId: nodeTypes[0]?.id || '' }));
             }}
             onEditNodeRequest={node => {
               setDetailsOpen(true);
@@ -310,7 +628,33 @@ export default function GraphNavigatorPage() {
             }}
           />
         </div>
+
+        {/* Empty state */}
+        {!loading && nodes.length === 0 && (
+          <div className="graph-empty-state">
+            <div className="empty-icon">🔗</div>
+            <h3>No nodes in this graph yet</h3>
+            <p>Create your first node to get started, or import data from the Graph Editor.</p>
+            {!readOnly && (
+              <button
+                className="btn"
+                onClick={() => {
+                  if (nodeTypes.length === 0) {
+                    setShowTypeManager(true);
+                  } else {
+                    setQuickCreateOpen(true);
+                    setQuickCreateForm(prev => ({ ...prev, typeId: nodeTypes[0]?.id || '' }));
+                  }
+                }}
+              >
+                {nodeTypes.length === 0 ? 'Create Node Type First' : 'Create First Node'}
+              </button>
+            )}
+          </div>
+        )}
       </div>
+
+      {/* Side Panel */}
       {detailsOpen && (
         <div className="studio-sidepanel">
           <NodeDetailPanel
@@ -326,17 +670,357 @@ export default function GraphNavigatorPage() {
           />
         </div>
       )}
+
+      {/* Quick Create Modal */}
+      {quickCreateOpen && (
+        <div className="modal-backdrop" onClick={() => setQuickCreateOpen(false)}>
+          <div className="modal quick-create-modal" onClick={e => e.stopPropagation()}>
+            <h3 style={{ marginTop: 0 }}>Create Node</h3>
+            <form onSubmit={handleQuickCreate}>
+              <div className="form-group">
+                <label>Node Type *</label>
+                <div className="type-grid">
+                  {nodeTypes.map(t => (
+                    <button
+                      key={t.id}
+                      type="button"
+                      className={`type-option ${quickCreateForm.typeId === t.id ? 'selected' : ''}`}
+                      onClick={() => setQuickCreateForm(prev => ({ ...prev, typeId: t.id }))}
+                    >
+                      <span className="type-dot" style={{ background: t.color || '#6b7280' }} />
+                      <span>{t.label || t.name}</span>
+                    </button>
+                  ))}
+                  {nodeTypes.length === 0 && (
+                    <p style={{ color: 'var(--text-muted)', gridColumn: '1/-1', textAlign: 'center' }}>
+                      No types defined.{' '}
+                      <button
+                        type="button"
+                        className="link"
+                        onClick={() => { setQuickCreateOpen(false); setShowTypeManager(true); }}
+                      >
+                        Create one first
+                      </button>
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div className="form-group">
+                <label>Name *</label>
+                <input
+                  type="text"
+                  value={quickCreateForm.name}
+                  onChange={e => setQuickCreateForm(prev => ({ ...prev, name: e.target.value }))}
+                  placeholder="Enter node name..."
+                  autoFocus
+                />
+              </div>
+              <div className="form-group">
+                <label>Description (optional)</label>
+                <textarea
+                  rows={2}
+                  value={quickCreateForm.description}
+                  onChange={e => setQuickCreateForm(prev => ({ ...prev, description: e.target.value }))}
+                  placeholder="Brief description..."
+                />
+              </div>
+              <div className="modal-actions">
+                <button type="button" className="btn-secondary" onClick={() => setQuickCreateOpen(false)}>
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="btn"
+                  disabled={!quickCreateForm.name || !quickCreateForm.typeId}
+                >
+                  Create Node
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Type Manager Modal */}
+      {showTypeManager && (
+        <div className="modal-backdrop" onClick={() => setShowTypeManager(false)}>
+          <div className="modal modal-lg" onClick={e => e.stopPropagation()} style={{ maxWidth: 650 }}>
+            <h3 style={{ marginTop: 0 }}>Manage Schema</h3>
+
+            <div className="type-tabs">
+              <button
+                className={`type-tab ${typeManagerTab === 'node-types' ? 'active' : ''}`}
+                onClick={() => setTypeManagerTab('node-types')}
+              >
+                Node Types ({nodeTypes.length})
+              </button>
+              <button
+                className={`type-tab ${typeManagerTab === 'rel-types' ? 'active' : ''}`}
+                onClick={() => setTypeManagerTab('rel-types')}
+              >
+                Relationship Types ({relationshipTypes.length})
+              </button>
+            </div>
+
+            {typeManagerTab === 'node-types' && (
+              <div className="type-manager-content">
+                {/* Add new node type form */}
+                <div className="add-type-form">
+                  <input
+                    type="text"
+                    placeholder="Type name (e.g., BusinessProcess)"
+                    value={newNodeTypeForm.name}
+                    onChange={e => setNewNodeTypeForm(prev => ({ ...prev, name: e.target.value }))}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Display label"
+                    value={newNodeTypeForm.label}
+                    onChange={e => setNewNodeTypeForm(prev => ({ ...prev, label: e.target.value }))}
+                  />
+                  <input
+                    type="color"
+                    value={newNodeTypeForm.color}
+                    onChange={e => setNewNodeTypeForm(prev => ({ ...prev, color: e.target.value }))}
+                    style={{ width: 50, padding: 2 }}
+                  />
+                  <select
+                    value={newNodeTypeForm.shape}
+                    onChange={e => setNewNodeTypeForm(prev => ({ ...prev, shape: e.target.value }))}
+                    style={{ minWidth: 100 }}
+                  >
+                    <optgroup label="Basic">
+                      <option value="ellipse">Ellipse</option>
+                      <option value="rectangle">Rectangle</option>
+                      <option value="round-rectangle">Rounded</option>
+                    </optgroup>
+                    <optgroup label="Polygons">
+                      <option value="triangle">Triangle</option>
+                      <option value="diamond">Diamond</option>
+                      <option value="hexagon">Hexagon</option>
+                      <option value="octagon">Octagon</option>
+                    </optgroup>
+                    <optgroup label="Special">
+                      <option value="star">Star</option>
+                      <option value="tag">Tag</option>
+                      <option value="vee">Vee</option>
+                    </optgroup>
+                  </select>
+                  <button
+                    className="btn"
+                    onClick={createNodeType}
+                    disabled={!newNodeTypeForm.name.trim()}
+                  >
+                    Add
+                  </button>
+                </div>
+
+                {/* Existing node types */}
+                <div className="type-list">
+                  {nodeTypes.map(t => (
+                    <div key={t.id} className="type-item">
+                      {editingNodeType?.id === t.id ? (
+                        <div className="type-edit-form">
+                          <div className="form-row">
+                            <input
+                              type="text"
+                              placeholder="Name"
+                              value={editingNodeType.name}
+                              onChange={e => setEditingNodeType(prev => ({ ...prev, name: e.target.value }))}
+                            />
+                            <input
+                              type="text"
+                              placeholder="Label"
+                              value={editingNodeType.label}
+                              onChange={e => setEditingNodeType(prev => ({ ...prev, label: e.target.value }))}
+                            />
+                            <input
+                              type="color"
+                              value={editingNodeType.color || '#8b5cf6'}
+                              onChange={e => setEditingNodeType(prev => ({ ...prev, color: e.target.value }))}
+                              style={{ width: 50 }}
+                            />
+                            <select
+                              value={editingNodeType.shape || 'ellipse'}
+                              onChange={e => setEditingNodeType(prev => ({ ...prev, shape: e.target.value }))}
+                              style={{ minWidth: 90 }}
+                            >
+                              <option value="ellipse">Ellipse</option>
+                              <option value="rectangle">Rectangle</option>
+                              <option value="round-rectangle">Rounded</option>
+                              <option value="triangle">Triangle</option>
+                              <option value="diamond">Diamond</option>
+                              <option value="hexagon">Hexagon</option>
+                              <option value="octagon">Octagon</option>
+                              <option value="star">Star</option>
+                              <option value="tag">Tag</option>
+                              <option value="vee">Vee</option>
+                            </select>
+                          </div>
+                          <div className="type-edit-actions">
+                            <button className="btn-small" onClick={updateNodeType}>Save</button>
+                            <button className="btn-secondary btn-small" onClick={() => setEditingNodeType(null)}>Cancel</button>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="type-icon" style={{ background: t.color || '#6b7280' }} />
+                          <div className="type-info">
+                            <div className="type-name">{t.label || t.name}</div>
+                            <div className="type-meta">
+                              {nodes.filter(n => n.typeId === t.id).length} nodes
+                            </div>
+                          </div>
+                          <div className="type-actions">
+                            <button className="btn-icon" title="Edit" onClick={() => setEditingNodeType({ ...t })}>✎</button>
+                            <button className="btn-icon btn-danger-icon" title="Delete" onClick={() => deleteNodeType(t.id)}>×</button>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  ))}
+                  {nodeTypes.length === 0 && (
+                    <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: 20 }}>
+                      No node types yet. Add one above to get started.
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {typeManagerTab === 'rel-types' && (
+              <div className="type-manager-content">
+                {/* Add new relationship type form */}
+                <div className="add-type-form">
+                  <input
+                    type="text"
+                    placeholder="Type name (e.g., RELATES_TO)"
+                    value={newRelTypeForm.name}
+                    onChange={e => setNewRelTypeForm(prev => ({ ...prev, name: e.target.value }))}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Display label"
+                    value={newRelTypeForm.label}
+                    onChange={e => setNewRelTypeForm(prev => ({ ...prev, label: e.target.value }))}
+                  />
+                  <button
+                    className="btn"
+                    onClick={createRelType}
+                    disabled={!newRelTypeForm.name.trim()}
+                  >
+                    Add
+                  </button>
+                </div>
+
+                {/* Existing relationship types */}
+                <div className="type-list">
+                  {relationshipTypes.map(t => (
+                    <div key={t.id} className="type-item">
+                      {editingRelType?.id === t.id ? (
+                        <div className="type-edit-form">
+                          <div className="form-row">
+                            <input
+                              type="text"
+                              placeholder="Name"
+                              value={editingRelType.name}
+                              onChange={e => setEditingRelType(prev => ({ ...prev, name: e.target.value }))}
+                            />
+                            <input
+                              type="text"
+                              placeholder="Label"
+                              value={editingRelType.label}
+                              onChange={e => setEditingRelType(prev => ({ ...prev, label: e.target.value }))}
+                            />
+                          </div>
+                          <div className="type-edit-actions">
+                            <button className="btn-small" onClick={updateRelType}>Save</button>
+                            <button className="btn-secondary btn-small" onClick={() => setEditingRelType(null)}>Cancel</button>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="type-rel-icon">→</div>
+                          <div className="type-info">
+                            <div className="type-name">{t.label || t.name}</div>
+                            <div className="type-code">{t.name}</div>
+                          </div>
+                          <div className="type-actions">
+                            <button className="btn-icon" title="Edit" onClick={() => setEditingRelType({ ...t })}>✎</button>
+                            <button className="btn-icon btn-danger-icon" title="Delete" onClick={() => deleteRelType(t.id)}>×</button>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  ))}
+                  {relationshipTypes.length === 0 && (
+                    <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: 20 }}>
+                      No relationship types yet. Add one above to get started.
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            <div className="modal-actions">
+              <button className="btn" onClick={() => setShowTypeManager(false)}>Done</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Import/Export Modal */}
+      <BulkImportExport
+        visible={showImportExport}
+        onClose={() => setShowImportExport(false)}
+        nodes={nodes}
+        relationships={rels}
+        nodeTypes={nodeTypes}
+        relationshipTypes={relationshipTypes}
+        activeDomain={activeDomain}
+        onDataChanged={handleDataChanged}
+      />
+
+      {/* Help Modal */}
       {infoOpen && (
         <div className="modal-backdrop" onClick={() => setInfoOpen(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
             <h3 style={{ marginTop: 0 }}>Graph Navigator Guide</h3>
-            <ul style={{ paddingLeft: 18, lineHeight: 1.6 }}>
-              <li>Use the filters to limit by node type, or search a node name to highlight and focus it.</li>
-              <li>Click a suggestion to center the graph on that node and open its details panel.</li>
-              <li>Click nodes to view details; edges to see relationship info.</li>
-              <li>Alt+drag a node to resize it (updates its weight).</li>
-              <li>Use Layout controls to rerun layouts; Refresh reloads data.</li>
-            </ul>
+            <div className="help-sections">
+              <div className="help-section">
+                <h4>Navigation</h4>
+                <ul>
+                  <li><strong>Pan:</strong> Click and drag on empty space</li>
+                  <li><strong>Zoom:</strong> Scroll wheel or pinch gesture</li>
+                  <li><strong>Select node:</strong> Click on any node</li>
+                  <li><strong>Search:</strong> Type in the search box to find nodes</li>
+                </ul>
+              </div>
+              <div className="help-section">
+                <h4>Creating</h4>
+                <ul>
+                  <li><strong>New node:</strong> Press <kbd>N</kbd> or click "+ Node" button</li>
+                  <li><strong>New link:</strong> Select a node, then click "Link" button</li>
+                  <li><strong>Manage types:</strong> Click "Types" to add/edit node and relationship types</li>
+                </ul>
+              </div>
+              <div className="help-section">
+                <h4>Editing</h4>
+                <ul>
+                  <li><strong>Edit node:</strong> Double-click a node or select and click "Edit"</li>
+                  <li><strong>Resize node:</strong> Alt+drag on a node to change its weight/size</li>
+                  <li><strong>Delete:</strong> Select a node/link and use the Delete button</li>
+                </ul>
+              </div>
+              <div className="help-section">
+                <h4>Filtering</h4>
+                <ul>
+                  <li>Click a type in the legend to filter by that type</li>
+                  <li>Use the dropdown to select a specific node type</li>
+                  <li>Combine type filter with search for precise results</li>
+                </ul>
+              </div>
+            </div>
             <div className="modal-actions" style={{ marginTop: 12 }}>
               <button className="btn" type="button" onClick={() => setInfoOpen(false)}>
                 Close

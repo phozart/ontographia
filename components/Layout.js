@@ -1,23 +1,35 @@
-﻿import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import TopBar from './TopBar';
+import LeftNav from './LeftNav';
 
 import AnimatedLogoBackground from './AnimatedLogoBackground';
 import { LogoSpinner } from './Logo';
 import { useDomains } from './DomainContext';
+import { useAuth } from './AuthContext';
 
 export default function Layout({ theme, onThemeChange, children }) {
 
   const [routeLoading, setRouteLoading] = useState(false);
   const [showMobileNotice, setShowMobileNotice] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const router = useRouter();
-  const isStudio = router.pathname.startsWith('/studio') || router.pathname.startsWith('/graphnavigator');
+  const { user } = useAuth();
+  const isStudio = router.pathname.startsWith('/studio') || router.pathname.startsWith('/graphnavigator') || router.pathname.startsWith('/graph-editor') || router.pathname.startsWith('/diagram-workspace');
   const routeTimer = useRef(null);
   const routeStart = useRef(0);
   const year = new Date().getFullYear();
   const { activeDomain, activeDomainObj } = useDomains();
+
+  // Check if we're on mobile
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth < 768);
+    onResize();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
 
   useEffect(() => {
     function handleMove(e) {
@@ -83,7 +95,8 @@ export default function Layout({ theme, onThemeChange, children }) {
       <div className={`app app--${theme}`}>
         <TopBar theme={theme} onThemeChange={onThemeChange} />
         <div className="app-body">
-          <main className={`app-main${isStudio ? ' app-main--studio' : ''}`}>
+          {user && !isMobile && <LeftNav />}
+          <main className={`app-main${isStudio ? ' app-main--studio' : ''}${user && !isMobile ? ' has-left-nav' : ''}`}>
             <div className="bg-logo-wrap" aria-hidden>
               <AnimatedLogoBackground />
             </div>

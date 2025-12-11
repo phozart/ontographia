@@ -5,6 +5,8 @@ import { FilterProvider } from '../components/FilterContext';
 import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
 import { AuthProvider, useRouteGuard } from '../components/AuthContext';
 import { DomainProvider } from '../components/DomainContext';
+import { UndoRedoProvider } from '../components/UndoRedoContext';
+import { KeyboardShortcutsProvider } from '../components/KeyboardShortcuts';
 
 
 function MyApp({ Component, pageProps }) {
@@ -58,15 +60,19 @@ function MyApp({ Component, pageProps }) {
     <AuthProvider>
       <DomainProvider>
         <FilterProvider>
-          <ThemeProvider theme={muiTheme}>
-            <CssBaseline />
-            <ServiceWorkerRegister />
-            <Guard>
-              <Layout theme={theme} onThemeChange={handleThemeChange}>
-                <Component {...pageProps} />
-              </Layout>
-            </Guard>
-          </ThemeProvider>
+          <UndoRedoProvider>
+            <KeyboardShortcutsProvider>
+              <ThemeProvider theme={muiTheme}>
+                <CssBaseline />
+                <ServiceWorkerRegister />
+                <Guard>
+                  <Layout theme={theme} onThemeChange={handleThemeChange}>
+                    <Component {...pageProps} />
+                  </Layout>
+                </Guard>
+              </ThemeProvider>
+            </KeyboardShortcutsProvider>
+          </UndoRedoProvider>
         </FilterProvider>
       </DomainProvider>
     </AuthProvider>

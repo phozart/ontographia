@@ -1,8 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Box, Paper, Card, CardHeader, CardContent, Stack, Typography, Grid, IconButton } from '@mui/material';
+import { Box, Paper, Card, CardHeader, CardContent, Stack, Typography, Grid, IconButton, Chip, Tooltip, Badge } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import EditIcon from '@mui/icons-material/Edit';
+import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
+import UnfoldLessIcon from '@mui/icons-material/UnfoldLess';
+import LaunchIcon from '@mui/icons-material/Launch';
+import CircleIcon from '@mui/icons-material/Circle';
 import { SimpleTreeView } from '@mui/x-tree-view/SimpleTreeView';
 import { TreeItem } from '@mui/x-tree-view/TreeItem';
 import AttributeEditor from '../components/AttributeEditor';
@@ -300,6 +304,69 @@ export default function UserViewPage() {
   const treeUid = useRef(`tree-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`);
   const renderCount = useRef(0);
 
+  // Custom label component for nodes with color indicator
+  const NodeLabel = ({ node, childCount }) => {
+    const typeInfo = nodeTypesById.get(node.typeId) || nodeTypesById.get(node.typeName);
+    const color = node.color || typeInfo?.color || '#6b7280';
+    return (
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 0.25 }}>
+        <Box
+          sx={{
+            width: 8,
+            height: 8,
+            borderRadius: '50%',
+            backgroundColor: color,
+            flexShrink: 0,
+          }}
+        />
+        <Typography variant="body2" sx={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {node.label || node.name}
+        </Typography>
+        {childCount > 0 && (
+          <Chip
+            label={childCount}
+            size="small"
+            sx={{
+              height: 18,
+              fontSize: 10,
+              backgroundColor: 'var(--accent-soft)',
+              color: 'var(--text-muted)',
+            }}
+          />
+        )}
+      </Box>
+    );
+  };
+
+  // Custom label for type groups
+  const TypeLabel = ({ typeId, label, count, color }) => (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 0.25 }}>
+      <Box
+        sx={{
+          width: 10,
+          height: 10,
+          borderRadius: 1,
+          backgroundColor: color || '#8b5cf6',
+          flexShrink: 0,
+        }}
+      />
+      <Typography variant="body2" fontWeight={600} sx={{ flex: 1 }}>
+        {label}
+      </Typography>
+      <Chip
+        label={count}
+        size="small"
+        sx={{
+          height: 18,
+          fontSize: 10,
+          fontWeight: 600,
+          backgroundColor: 'var(--accent-soft)',
+          color: 'var(--accent)',
+        }}
+      />
+    </Box>
+  );
+
   const renderBranch = (node, path, visited = new Set(), depth = 0) => {
     if (!node) return null;
     if (depth > 200) return null; // depth guard
@@ -312,7 +379,11 @@ export default function UserViewPage() {
     if (!idToPath.current.has(nodeId)) idToPath.current.set(nodeId, itemId);
     const kids = (linkMap.get(node.id) || []).filter(child => child && child.id && String(child.id) !== nodeId);
     return (
-      <TreeItem key={itemId} itemId={itemId} label={node.label || node.name}>
+      <TreeItem
+        key={itemId}
+        itemId={itemId}
+        label={<NodeLabel node={node} childCount={kids.length} />}
+      >
         {kids.map((child, idx) => renderBranch(child, `${path}-${idx}`, new Set(visited), depth + 1))}
       </TreeItem>
     );
@@ -330,14 +401,39 @@ export default function UserViewPage() {
     .filter(group => group.items.length > 0)
     .map(group => {
       const typeItemId = `${treeUid.current}::type::${group.typeId || 'unknown'}`;
+      const typeInfo = nodeTypesById.get(group.typeId);
       return (
-        <TreeItem key={typeItemId} itemId={typeItemId} label={group.label}>
+        <TreeItem
+          key={typeItemId}
+          itemId={typeItemId}
+          label={<TypeLabel typeId={group.typeId} label={group.label} count={group.items.length} color={typeInfo?.color} />}
+        >
           {group.items.map((node, idx) => renderBranch(node, `${group.typeId}-${idx}`, new Set(), 0))}
         </TreeItem>
       );
     });
 
   const rootItemIds = treeItems.map(item => item?.props?.itemId).filter(Boolean);
+
+  // Collect all item IDs for expand/collapse all
+  const allItemIds = useMemo(() => {
+    const ids = [...rootItemIds];
+    // Add type group IDs
+    typeGroups.forEach(group => {
+      ids.push(`${treeUid.current}::type::${group.typeId || 'unknown'}`);
+    });
+    return ids;
+  }, [rootItemIds, typeGroups]);
+
+  const [expandedItems, setExpandedItems] = useState([]);
+
+  const handleExpandAll = useCallback(() => {
+    setExpandedItems(allItemIds);
+  }, [allItemIds]);
+
+  const handleCollapseAll = useCallback(() => {
+    setExpandedItems([]);
+  }, []);
 
   const selectedPath =
     selectedNodeId && idToPath.current.has(String(selectedNodeId))
@@ -453,31 +549,74 @@ export default function UserViewPage() {
                     boxShadow: '0 10px 30px rgba(15,23,42,0.12)',
                   }}
                 >
-                <SimpleTreeView
-                  aria-label="Nodes"
-                  selectedItems={selectedPath ? [selectedPath] : []}
-                  defaultExpandedItems={rootItemIds}
-                  onSelectedItemsChange={(_, ids) => {
-                    const last = Array.isArray(ids) ? ids[ids.length - 1] : ids;
-                    if (last) {
-                      const parts = String(last).split('::');
-                      if (parts[0] === 'type') return;
-                      const nodeId = parts[1];
-                      if (!nodeId) return;
-                      setSelectedNodeId(nodeId);
-                      const n = nodeById.get(nodeId);
-                      if (n) setNodeQuery(n.name || n.label || '');
-                    }
-                  }}
-                  getItemId={getItemId}
-                  slots={{
-                    collapseIcon: ExpandMoreIcon,
-                    expandIcon: ChevronRightIcon,
-                  }}
-                  sx={{ flex: 1, overflowY: 'auto', minHeight: 0 }}
-                >
-                  {treeItems}
-                </SimpleTreeView>
+                  {/* Tree header with expand/collapse buttons */}
+                  <Box sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    pb: 1,
+                    mb: 1,
+                    borderBottom: '1px solid var(--border)',
+                  }}>
+                    <Typography variant="subtitle2" sx={{ color: 'var(--text-muted)', fontSize: 12 }}>
+                      {domainNodes.length} nodes · {typeGroups.filter(g => g.items.length > 0).length} types
+                    </Typography>
+                    <Box sx={{ display: 'flex', gap: 0.5 }}>
+                      <Tooltip title="Expand all">
+                        <IconButton size="small" onClick={handleExpandAll} sx={{ color: 'var(--text-muted)' }}>
+                          <UnfoldMoreIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Collapse all">
+                        <IconButton size="small" onClick={handleCollapseAll} sx={{ color: 'var(--text-muted)' }}>
+                          <UnfoldLessIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
+                  </Box>
+
+                  {treeItems.length === 0 ? (
+                    <Box sx={{
+                      flex: 1,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: 'var(--text-muted)',
+                      textAlign: 'center',
+                      p: 3,
+                    }}>
+                      <Typography variant="body2" sx={{ mb: 1 }}>No nodes match your filters</Typography>
+                      <Typography variant="caption">Try adjusting the type or layer filters</Typography>
+                    </Box>
+                  ) : (
+                    <SimpleTreeView
+                      aria-label="Nodes"
+                      selectedItems={selectedPath ? [selectedPath] : []}
+                      expandedItems={expandedItems}
+                      onExpandedItemsChange={(_, ids) => setExpandedItems(ids)}
+                      onSelectedItemsChange={(_, ids) => {
+                        const last = Array.isArray(ids) ? ids[ids.length - 1] : ids;
+                        if (last) {
+                          const parts = String(last).split('::');
+                          if (parts[1] === 'type') return;
+                          const nodeId = parts[1];
+                          if (!nodeId) return;
+                          setSelectedNodeId(nodeId);
+                          const n = nodeById.get(nodeId);
+                          if (n) setNodeQuery(n.name || n.label || '');
+                        }
+                      }}
+                      getItemId={getItemId}
+                      slots={{
+                        collapseIcon: ExpandMoreIcon,
+                        expandIcon: ChevronRightIcon,
+                      }}
+                      sx={{ flex: 1, overflowY: 'auto', minHeight: 0 }}
+                    >
+                      {treeItems}
+                    </SimpleTreeView>
+                  )}
                 </Paper>
               </Grid>
               <Grid item xs={12} md={8}>
@@ -486,6 +625,11 @@ export default function UserViewPage() {
                   relationships={selectedRelationships}
                   onEdit={id => {
                     if (id) openEditModal(id);
+                  }}
+                  onNavigateToNode={(nodeId) => {
+                    setSelectedNodeId(nodeId);
+                    const n = nodeById.get(nodeId);
+                    if (n) setNodeQuery(n.name || n.label || '');
                   }}
                 />
               </Grid>
@@ -590,15 +734,38 @@ export default function UserViewPage() {
 }
 
 
-function NodeDetailCard({ node, onEdit, relationships = [] }) {
+function NodeDetailCard({ node, onEdit, relationships = [], onNavigateToNode }) {
   const { role } = useAuth();
   const canEdit = role === 'admin' || role === 'editor';
   if (!node) {
     return (
-      <Card>
-        <CardContent>
-          <Typography variant="body2" color="text.secondary">
-            Select a node to view details.
+      <Card sx={{ height: '100%', boxShadow: '0 10px 30px rgba(15,23,42,0.12)' }}>
+        <CardContent sx={{
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          textAlign: 'center',
+          py: 6,
+        }}>
+          <Box sx={{
+            width: 64,
+            height: 64,
+            borderRadius: '50%',
+            backgroundColor: 'var(--accent-soft)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            mb: 2,
+          }}>
+            <LaunchIcon sx={{ fontSize: 28, color: 'var(--accent)' }} />
+          </Box>
+          <Typography variant="h6" sx={{ mb: 1, color: 'var(--text)' }}>
+            Select a node
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 280 }}>
+            Click on a node in the tree to view its details, attributes, and relationships
           </Typography>
         </CardContent>
       </Card>
@@ -611,7 +778,20 @@ function NodeDetailCard({ node, onEdit, relationships = [] }) {
   return (
     <Card elevation={2} sx={{ height: '100%', boxShadow: '0 10px 30px rgba(15,23,42,0.12)' }}>
       <CardHeader
-        title={node.label || node.name}
+        title={
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box
+              sx={{
+                width: 12,
+                height: 12,
+                borderRadius: '50%',
+                backgroundColor: node.color || '#8b5cf6',
+                flexShrink: 0,
+              }}
+            />
+            {node.label || node.name}
+          </Box>
+        }
         subheader={node.description || 'No description provided.'}
         action={
           canEdit ? (
@@ -629,10 +809,24 @@ function NodeDetailCard({ node, onEdit, relationships = [] }) {
       <CardContent sx={{ pt: 0 }}>
         <Box sx={{ borderBottom: '1px solid var(--border)', mt: -1, mb: 2 }} />
         <Stack spacing={1.5}>
-          <DetailRow label="Data flow element" value={node.label || node.name} />
+          <DetailRow label="Name" value={node.label || node.name} />
           <DetailRow label="Type" value={node.typeLabel || node.typeName || node.typeId} />
           <DetailRow label="Layer" value={node.layer || '-'} />
-          <DetailRow label="Color" value={node.color || '-'} />
+          {node.color && (
+            <Grid container spacing={1}>
+              <Grid item xs={4}>
+                <Typography variant="body2" color="text.secondary" fontWeight={600}>
+                  Color
+                </Typography>
+              </Grid>
+              <Grid item xs={8}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box sx={{ width: 16, height: 16, borderRadius: 1, backgroundColor: node.color }} />
+                  <Typography variant="body2">{node.color}</Typography>
+                </Box>
+              </Grid>
+            </Grid>
+          )}
         </Stack>
         {!attrs || Object.keys(attrs).length === 0 ? (
           <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
@@ -650,25 +844,73 @@ function NodeDetailCard({ node, onEdit, relationships = [] }) {
         )}
         {rels && rels.length > 0 && (
           <Box sx={{ mt: 2 }}>
-            <Typography variant="subtitle2" sx={{ mb: 0.5 }}>Relationships</Typography>
+            <Typography variant="subtitle2" sx={{ mb: 1 }}>
+              Relationships ({rels.length})
+            </Typography>
             <Stack spacing={0.5}>
               {rels.map(rel => {
-                const dir = rel.direction === 'out' ? '->' : '<-';
-                const other =
+                const isOut = rel.direction === 'out';
+                const otherId = rel.otherId || (isOut ? rel.targetId : rel.sourceId);
+                const otherName =
                   rel.otherName ||
-                  rel.otherId ||
                   rel.otherNodeName ||
-                  rel.otherNodeId ||
-                  (rel.direction === 'out' ? rel.targetName || rel.targetId : rel.sourceName || rel.sourceId);
+                  (isOut ? rel.targetName : rel.sourceName) ||
+                  otherId;
                 return (
-                  <DetailRow
+                  <Box
                     key={rel.id || `${rel.sourceId}-${rel.type}-${rel.targetId}`}
-                    label={rel.type}
-                    value={`${dir} ${other || ''}`}
-                  />
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                      p: 1,
+                      borderRadius: 1,
+                      backgroundColor: 'var(--bg-alt)',
+                      cursor: onNavigateToNode ? 'pointer' : 'default',
+                      transition: 'background-color 0.15s ease',
+                      '&:hover': onNavigateToNode ? {
+                        backgroundColor: 'var(--accent-soft)',
+                      } : {},
+                    }}
+                    onClick={() => onNavigateToNode && onNavigateToNode(otherId)}
+                  >
+                    <Box
+                      sx={{
+                        fontSize: 11,
+                        fontWeight: 600,
+                        color: isOut ? '#22c55e' : '#3b82f6',
+                        minWidth: 20,
+                      }}
+                    >
+                      {isOut ? '→' : '←'}
+                    </Box>
+                    <Chip
+                      label={rel.type}
+                      size="small"
+                      sx={{
+                        height: 20,
+                        fontSize: 10,
+                        backgroundColor: 'var(--panel)',
+                        color: 'var(--text-muted)',
+                      }}
+                    />
+                    <Typography variant="body2" sx={{ flex: 1 }}>
+                      {otherName}
+                    </Typography>
+                    {onNavigateToNode && (
+                      <LaunchIcon sx={{ fontSize: 14, color: 'var(--text-muted)' }} />
+                    )}
+                  </Box>
                 );
               })}
             </Stack>
+          </Box>
+        )}
+        {rels.length === 0 && (
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="body2" color="text.secondary">
+              No relationships found for this node.
+            </Typography>
           </Box>
         )}
       </CardContent>

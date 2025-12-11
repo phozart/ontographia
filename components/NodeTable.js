@@ -10,12 +10,32 @@ import {
   IconButton,
   TextField,
   Typography,
+  Paper,
+  Chip,
+  Stack,
+  Tooltip,
+  InputAdornment,
 } from '@mui/material';
 import { DataGrid, GridToolbar } from '@mui/x-data-grid';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
+import SearchIcon from '@mui/icons-material/Search';
+import FilterListIcon from '@mui/icons-material/FilterList';
+import SourceIcon from '@mui/icons-material/Source';
 import AttributeEditor from './AttributeEditor';
 import { useDomains } from './DomainContext';
+
+// Utility to calculate contrasting text color
+function getContrastColor(hexColor) {
+  if (!hexColor || !hexColor.startsWith('#')) return '#000000';
+  const hex = hexColor.replace('#', '');
+  const r = parseInt(hex.substr(0, 2), 16) / 255;
+  const g = parseInt(hex.substr(2, 2), 16) / 255;
+  const b = parseInt(hex.substr(4, 2), 16) / 255;
+  const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
+  return luminance > 0.5 ? '#000000' : '#ffffff';
+}
 
 export default function NodeTable() {
   const [types, setTypes] = useState([]);
@@ -158,134 +178,181 @@ export default function NodeTable() {
     }
   }
 
- const filteredNodes = nodes.filter(n => !typeFilter || n.typeId === typeFilter.id);
+  const filteredNodes = nodes.filter(n => !typeFilter || n.typeId === typeFilter.id);
 
   const columns = useMemo(
     () => [
-      { field: 'name', headerName: 'Name', flex: 1, minWidth: 160 },
+      {
+        field: 'name',
+        headerName: 'Name',
+        flex: 1,
+        minWidth: 180,
+        renderCell: params => {
+          const typeInfo = types.find(t => t.id === params.row.typeId);
+          const color = params.row.color || typeInfo?.color || '#8b5cf6';
+          return (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Box sx={{
+                width: 10, height: 10, borderRadius: '50%',
+                bgcolor: color, flexShrink: 0
+              }} />
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>{params.value}</Typography>
+            </Box>
+          );
+        }
+      },
       {
         field: 'typeName',
         headerName: 'Type',
-        flex: 1,
-        minWidth: 140,
-        valueGetter: params => {
-          if (!params?.row) return '';
-          return params.row.typeName || params.row.typeLabel || params.row.typeId || '';
-        },
+        width: 150,
+        renderCell: params => {
+          const typeInfo = types.find(t => t.id === params.row.typeId);
+          const color = typeInfo?.color || '#888';
+          return (
+            <Chip
+              label={params.row.typeName || params.row.typeLabel || 'Unknown'}
+              size="small"
+              sx={{
+                bgcolor: color,
+                color: getContrastColor(color),
+                fontWeight: 500,
+                fontSize: 11
+              }}
+            />
+          );
+        }
       },
-      { field: 'layer', headerName: 'Layer', flex: 0.6, minWidth: 100 },
+      {
+        field: 'layer',
+        headerName: 'Layer',
+        width: 120,
+        renderCell: params => params.value ? (
+          <Chip label={params.value} size="small" variant="outlined" sx={{ fontSize: 11 }} />
+        ) : <Typography variant="caption" color="text.secondary">-</Typography>
+      },
       {
         field: 'description',
         headerName: 'Description',
         flex: 1.2,
         minWidth: 200,
-      },
-      {
-        field: 'icon',
-        headerName: 'Icon',
-        width: 90,
-        renderCell: params => {
-          const val = params.value;
-          const isUrl =
-            typeof val === 'string' &&
-            (val.startsWith('http://') ||
-              val.startsWith('https://') ||
-              val.startsWith('data:image') ||
-              val.startsWith('/static/') ||
-              val.startsWith('/img/') ||
-              val.startsWith('/images/'));
-          if (isUrl) {
-            return (
-              <img
-                src={val}
-                alt=""
-                style={{ width: 24, height: 24, objectFit: 'contain' }}
-              />
-            );
-          }
-          return <span style={{ color: 'var(--text-muted)' }}>{val ? val : '—'}</span>;
-        },
-        sortable: false,
-        filterable: false,
+        renderCell: params => (
+          <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: 12 }}>
+            {params.value || '-'}
+          </Typography>
+        )
       },
       {
         field: 'shape',
         headerName: 'Shape',
-        width: 130,
-        valueGetter: params => {
-          if (!params?.row) return '';
-          return params.row.shape || params.row.typeShape || 'inherit';
-        },
+        width: 110,
+        renderCell: params => (
+          <Typography variant="caption" sx={{ textTransform: 'capitalize' }}>
+            {params.row.shape || params.row.typeShape || 'inherit'}
+          </Typography>
+        )
       },
       {
         field: 'weight',
         headerName: 'Weight',
-        width: 90,
-        valueGetter: params => {
-          if (!params?.row) return '';
-          const w = params.row.weight;
-          return w === null || w === undefined ? '' : w;
-        },
+        width: 80,
+        align: 'center',
+        headerAlign: 'center',
+        renderCell: params => (
+          <Typography variant="body2">
+            {params.row.weight ?? '-'}
+          </Typography>
+        )
       },
       {
         field: 'actions',
-        headerName: 'Actions',
-        width: 120,
+        headerName: '',
+        width: 100,
         sortable: false,
         filterable: false,
         renderCell: params => (
-          <Box sx={{ display: 'flex', gap: 1 }}>
-            <IconButton size="small" onClick={() => openEdit(params.row)} aria-label="Edit">
-              <EditIcon fontSize="small" />
-            </IconButton>
-            <IconButton
-              size="small"
-              onClick={() => handleDelete(params.row.id)}
-              aria-label="Delete"
-              color="error"
-            >
-              <DeleteIcon fontSize="small" />
-            </IconButton>
+          <Box sx={{ display: 'flex', gap: 0.5 }}>
+            <Tooltip title="Edit">
+              <IconButton size="small" onClick={() => openEdit(params.row)}>
+                <EditIcon sx={{ fontSize: 18 }} />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Delete">
+              <IconButton size="small" onClick={() => handleDelete(params.row.id)} color="error">
+                <DeleteIcon sx={{ fontSize: 18 }} />
+              </IconButton>
+            </Tooltip>
           </Box>
         ),
       },
     ],
-    [typeFilter]
+    [types, typeFilter]
   );
 
   return (
-    <Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2, pt:2.5 , gap: 2 }}>
-        <Typography variant="h5" sx={{ fontWeight: 700 }}>Nodes</Typography>
-        <Button variant="contained" onClick={openCreate}>+ New node</Button>
+    <Box className="page-container">
+      {/* Page Header */}
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+        <Box sx={{
+          width: 48, height: 48, borderRadius: 2,
+          background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center'
+        }}>
+          <SourceIcon sx={{ color: 'white', fontSize: 28 }} />
+        </Box>
+        <Box sx={{ flex: 1 }}>
+          <Typography variant="h4" sx={{ fontWeight: 700, lineHeight: 1.2 }}>Nodes</Typography>
+          <Typography variant="body2" color="text.secondary">
+            {filteredNodes.length} nodes {typeFilter && `of type "${typeFilter.name}"`}
+          </Typography>
+        </Box>
+        <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate}>
+          New Node
+        </Button>
       </Box>
-      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', mb: 2 }}>
+
+      {/* Filters */}
+      <Paper sx={{ p: 2, mb: 2, borderRadius: 2, display: 'flex', gap: 2, alignItems: 'center' }}>
+        <FilterListIcon sx={{ color: 'text.secondary' }} />
         <Autocomplete
           size="small"
-          sx={{ width: 260 }}
+          sx={{ width: 280 }}
           options={types.map(t => ({ ...t, label: t.name }))}
           value={typeFilter}
           onChange={(_, val) => setTypeFilter(val)}
-          renderInput={(params) => <TextField {...params} label="Filter by type" />}
+          renderOption={(props, option) => (
+            <Box component="li" {...props} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box sx={{ width: 12, height: 12, borderRadius: 1, bgcolor: option.color || '#888' }} />
+              {option.name}
+            </Box>
+          )}
+          renderInput={(params) => <TextField {...params} label="Filter by type" placeholder="All types" />}
         />
-      </Box>
+        {typeFilter && (
+          <Chip
+            label={`Showing: ${typeFilter.name}`}
+            onDelete={() => setTypeFilter(null)}
+            size="small"
+            sx={{ bgcolor: (typeFilter.color || '#888') + '20', color: typeFilter.color || '#888' }}
+          />
+        )}
+      </Paper>
 
-      <Box
+      {/* Data Grid */}
+      <Paper
         sx={{
-          height: 'calc(100vh - 280px)',
-          width: '100%',
-          boxShadow: '0 10px 30px rgba(15, 23, 42, 0.12)',
+          height: 'calc(100vh - 300px)',
+          minHeight: 400,
           borderRadius: 2,
           overflow: 'hidden',
+          boxShadow: 'var(--shadow)',
         }}
       >
         <DataGrid
           rows={Array.isArray(filteredNodes) ? filteredNodes : []}
           getRowId={row => row.id}
           columns={columns}
-          density="compact"
+          density="comfortable"
           disableRowSelectionOnClick
-          getRowHeight={() => 'auto'}
           slots={{ toolbar: GridToolbar }}
           slotProps={{
             toolbar: {
@@ -294,39 +361,38 @@ export default function NodeTable() {
             },
           }}
           sx={{
+            border: 'none',
+            '& .MuiDataGrid-columnHeaders': {
+              bgcolor: 'var(--bg)',
+              borderBottom: '1px solid var(--border)',
+            },
             '& .MuiDataGrid-cell': {
-              whiteSpace: 'normal',
-              lineHeight: 1.3,
-              alignItems: 'flex-start',
-              py: 0.5,
+              borderBottom: '1px solid var(--border)',
             },
-            '& .MuiDataGrid-row': {
-              maxHeight: 'none !important',
-            },
-            '& .MuiDataGrid-row:nth-of-type(even)': {
-              backgroundColor: 'rgba(0, 0, 0, 0.02)',
-            },
-            '& .MuiDataGrid-row:nth-of-type(odd)': {
-              backgroundColor: 'rgba(0, 0, 0, 0.01)',
-            },
-            '[data-theme="dark"] & .MuiDataGrid-row:nth-of-type(even)': {
-              backgroundColor: 'rgba(255, 255, 255, 0.04)',
-            },
-            '[data-theme="dark"] & .MuiDataGrid-row:nth-of-type(odd)': {
-              backgroundColor: 'rgba(255, 255, 255, 0.02)',
+            '& .MuiDataGrid-row:hover': {
+              bgcolor: 'var(--accent-soft)',
             },
           }}
         />
-      </Box>
+      </Paper>
 
+      {/* Create/Edit Dialog */}
       <Dialog open={dialogOpen} onClose={closeDialog} fullWidth maxWidth="sm">
-        <DialogTitle>{editingId ? 'Edit node' : 'Create node'}</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 600 }}>
+          {editingId ? 'Edit Node' : 'Create Node'}
+        </DialogTitle>
         <form onSubmit={handleSubmit}>
           <DialogContent dividers>
             <Autocomplete
               options={types.map(t => ({ ...t, label: t.name }))}
               value={form.type}
               onChange={(_, val) => setForm(prev => ({ ...prev, type: val }))}
+              renderOption={(props, option) => (
+                <Box component="li" {...props} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box sx={{ width: 12, height: 12, borderRadius: 1, bgcolor: option.color || '#888' }} />
+                  {option.name} {option.layer && <Typography variant="caption" color="text.secondary">({option.layer})</Typography>}
+                </Box>
+              )}
               renderInput={(params) => <TextField {...params} label="Type" margin="dense" required />}
             />
             <TextField
@@ -340,61 +406,66 @@ export default function NodeTable() {
             <TextField
               fullWidth
               margin="dense"
-              label="Layer (optional)"
+              label="Layer"
               value={form.layer}
               onChange={e => setForm(prev => ({ ...prev, layer: e.target.value }))}
+              placeholder="Optional - inherits from type"
             />
             <TextField
               fullWidth
               margin="dense"
-              label="Description (optional)"
+              label="Description"
               value={form.description}
               onChange={e => setForm(prev => ({ ...prev, description: e.target.value }))}
               multiline
               rows={2}
             />
-            <TextField
-              fullWidth
-              margin="dense"
-              label="Icon URL (optional)"
-              value={form.icon}
-              onChange={e => setForm(prev => ({ ...prev, icon: e.target.value }))}
-            />
-            <TextField
-              fullWidth
-              margin="dense"
-              label="Color (optional)"
-              type="color"
-              value={form.color || '#8b5cf6'}
-              onChange={e => setForm(prev => ({ ...prev, color: e.target.value }))}
-            />
-            <TextField
-              select
-              fullWidth
-              margin="dense"
-              label="Shape (optional)"
-              value={form.shape}
-              onChange={e => setForm(prev => ({ ...prev, shape: e.target.value }))}
-              SelectProps={{ native: true }}
-              helperText="Choose a shape or leave blank to inherit the type default"
-            >
-              <option value="">Inherit type default</option>
-              <option value="ellipse">ellipse</option>
-              <option value="round-rectangle">round-rectangle</option>
-              <option value="rectangle">rectangle</option>
-              <option value="diamond">diamond</option>
-              <option value="hexagon">hexagon</option>
-            </TextField>
-            <TextField
-              fullWidth
-              margin="dense"
-              label="Weight (optional)"
-              type="number"
-              value={form.weight}
-              onChange={e => setForm(prev => ({ ...prev, weight: e.target.value }))}
-            />
-            <Box sx={{ mt: 1 }}>
-              <Typography variant="subtitle2">Attributes</Typography>
+            <Stack direction="row" spacing={2} sx={{ mt: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <input
+                  type="color"
+                  value={form.color || '#8b5cf6'}
+                  onChange={e => setForm(prev => ({ ...prev, color: e.target.value }))}
+                  style={{ width: 40, height: 32, border: 'none', borderRadius: 4, cursor: 'pointer' }}
+                />
+                <TextField
+                  size="small"
+                  label="Color"
+                  value={form.color}
+                  onChange={e => setForm(prev => ({ ...prev, color: e.target.value }))}
+                  placeholder="Inherit"
+                  sx={{ width: 100 }}
+                />
+              </Box>
+              <TextField
+                select
+                size="small"
+                label="Shape"
+                value={form.shape}
+                onChange={e => setForm(prev => ({ ...prev, shape: e.target.value }))}
+                SelectProps={{ native: true }}
+                sx={{ width: 140 }}
+              >
+                <option value="">Inherit</option>
+                <option value="ellipse">Ellipse</option>
+                <option value="round-rectangle">Rounded</option>
+                <option value="rectangle">Rectangle</option>
+                <option value="diamond">Diamond</option>
+                <option value="hexagon">Hexagon</option>
+                <option value="triangle">Triangle</option>
+                <option value="star">Star</option>
+              </TextField>
+              <TextField
+                size="small"
+                label="Weight"
+                type="number"
+                value={form.weight}
+                onChange={e => setForm(prev => ({ ...prev, weight: e.target.value }))}
+                sx={{ width: 100 }}
+              />
+            </Stack>
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="subtitle2" sx={{ mb: 1 }}>Attributes</Typography>
               <AttributeEditor
                 attributes={form.attributes}
                 onChange={attrs => setForm(prev => ({ ...prev, attributes: attrs }))}
@@ -402,7 +473,7 @@ export default function NodeTable() {
               />
             </Box>
           </DialogContent>
-          <DialogActions>
+          <DialogActions sx={{ px: 3, py: 2 }}>
             <Button onClick={closeDialog}>Cancel</Button>
             <Button type="submit" variant="contained">{editingId ? 'Save' : 'Create'}</Button>
           </DialogActions>

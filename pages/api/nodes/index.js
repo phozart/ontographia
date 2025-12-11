@@ -81,6 +81,8 @@ export default async function handler(req, res) {
           weight: typeof n.weight === 'number' ? n.weight : parseFloat(n.weight) || null,
           shape: n.shape || (t ? t.shape : null) || 'ellipse',
           domain: n.domain || t?.domain || null,
+          x: typeof n.x === 'number' ? n.x : null,
+          y: typeof n.y === 'number' ? n.y : null,
         };
       });
 
@@ -88,7 +90,7 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'POST') {
-      const { typeId, name, layer, tags, weight, description, icon, color, attributes, shape, domain } = req.body || {};
+      const { typeId, name, layer, tags, weight, description, icon, color, attributes, shape, domain, x, y } = req.body || {};
 
       if (!typeId) {
         return res.status(400).json({ error: 'typeId is required' });
@@ -114,6 +116,8 @@ export default async function handler(req, res) {
             ? null
             : parseFloat(weight);
       const safeColor = color === undefined || color === '' ? null : color;
+      const safeX = typeof x === 'number' ? x : (typeof x === 'string' && !isNaN(parseFloat(x)) ? parseFloat(x) : null);
+      const safeY = typeof y === 'number' ? y : (typeof y === 'string' && !isNaN(parseFloat(y)) ? parseFloat(y) : null);
 
       if (isDemo) {
         const id = demoCreateNode({
@@ -127,7 +131,9 @@ export default async function handler(req, res) {
           tags: safeTags,
           weight: safeWeight,
           color: safeColor,
-          shape: safeShape
+          shape: safeShape,
+          x: safeX,
+          y: safeY
         });
         return res.status(201).json({ id });
       }
@@ -146,7 +152,9 @@ export default async function handler(req, res) {
           tags: coalesce($tags, []),
           weight: $weight,
           shape: $shape,
-          domain: coalesce($domain, t.domain)
+          domain: coalesce($domain, t.domain),
+          x: $x,
+          y: $y
         })
         MERGE (n)-[:INSTANCE_OF]->(t)
         RETURN n
@@ -164,6 +172,8 @@ export default async function handler(req, res) {
           color: safeColor,
           shape: safeShape,
           domain: safeDomain,
+          x: safeX,
+          y: safeY,
         }
       );
 

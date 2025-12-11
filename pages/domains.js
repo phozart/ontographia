@@ -1,5 +1,10 @@
 import { useMemo, useState } from 'react';
-import { Box, Paper, Stack, Typography, TextField, Button, Chip, Divider } from '@mui/material';
+import { Box, Paper, Stack, Typography, TextField, Button, Chip, Divider, IconButton, Tooltip } from '@mui/material';
+import FolderSpecialIcon from '@mui/icons-material/FolderSpecial';
+import AddIcon from '@mui/icons-material/Add';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import ShareIcon from '@mui/icons-material/Share';
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import { useAuth } from '../components/AuthContext';
 import { useDomains } from '../components/DomainContext';
 
@@ -10,6 +15,7 @@ export default function DomainsPage() {
   const [name, setName] = useState('');
   const [notes, setNotes] = useState('');
   const [shareInputs, setShareInputs] = useState({});
+  const [showCreateForm, setShowCreateForm] = useState(false);
 
   const sortedAccessible = useMemo(
     () => [...accessibleDomains].sort((a, b) => (a.name || '').localeCompare(b.name || '')),
@@ -22,6 +28,7 @@ export default function DomainsPage() {
     addDomain({ name: name.trim(), notes: notes.trim() });
     setName('');
     setNotes('');
+    setShowCreateForm(false);
   }
 
   function canShare(domain) {
@@ -38,162 +45,237 @@ export default function DomainsPage() {
   }
 
   return (
-    <Box sx={{ maxWidth: 960, mx: 'auto', px: { xs: 2, md: 4 }, py: { xs: 4, md: 6 } }}>
-      <Typography variant="h4" sx={{ fontWeight: 800, mb: 1 }}>
-        Domains (workspaces)
-      </Typography>
-      <Typography variant="body1" sx={{ color: 'var(--text-muted)', mb: 3, lineHeight: 1.6 }}>
-        Domains are workspaces for your semantic model. Admins can access every domain. Editors can create their own and
-        share them with others. Viewers see only the domains they have been granted. Nodes and node types are scoped to
-        the currently active domain.
-      </Typography>
+    <Box className="page-container">
+      {/* Page Header */}
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+        <Box sx={{
+          width: 48, height: 48, borderRadius: 2,
+          background: 'linear-gradient(135deg, #06b6d4, #0891b2)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center'
+        }}>
+          <FolderSpecialIcon sx={{ color: 'white', fontSize: 28 }} />
+        </Box>
+        <Box sx={{ flex: 1 }}>
+          <Typography variant="h4" sx={{ fontWeight: 700, lineHeight: 1.2 }}>Domains</Typography>
+          <Typography variant="body2" color="text.secondary">
+            {sortedAccessible.length} workspaces available
+          </Typography>
+        </Box>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={() => setShowCreateForm(!showCreateForm)}
+        >
+          New Domain
+        </Button>
+      </Box>
 
-      <Paper
-        component="form"
-        onSubmit={handleCreate}
-        elevation={0}
-        sx={{
-          p: 3,
-          mb: 3,
-          border: '1px solid var(--border)',
-          borderRadius: 3,
-          background: 'linear-gradient(160deg, var(--panel), var(--bg))',
-          boxShadow: 'var(--shadow)',
-        }}
-      >
-        <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
-          Create a domain
+      {/* Info Banner */}
+      <Paper sx={{
+        p: 2, mb: 3, borderRadius: 2,
+        bgcolor: 'var(--accent-soft)',
+        border: '1px solid var(--border)'
+      }}>
+        <Typography variant="body2" sx={{ color: 'var(--text-muted)' }}>
+          Domains are workspaces for your semantic model. Admins can access every domain.
+          Editors can create their own and share them with others. Nodes and types are scoped to the active domain.
         </Typography>
-        <Typography variant="body2" sx={{ color: 'var(--text-muted)', mb: 2 }}>
-          Domains are stored locally for now. Hook this page up to your API to persist and manage membership.
-        </Typography>
-        <Stack spacing={2}>
-          <TextField label="Domain name" value={name} onChange={e => setName(e.target.value)} required />
-          <TextField
-            label="Notes"
-            value={notes}
-            onChange={e => setNotes(e.target.value)}
-            multiline
-            minRows={2}
-            placeholder="What goes in this workspace?"
-          />
-          <Button variant="contained" type="submit" disabled={!name.trim()}>
-            Add domain
-          </Button>
-        </Stack>
       </Paper>
 
-      <Stack spacing={2}>
-        {sortedAccessible.length === 0 ? (
-          <Typography variant="body2" sx={{ color: 'var(--text-muted)' }}>
-            No domains available yet. Create one above or ask an admin to share access.
+      {/* Create Form */}
+      {showCreateForm && (
+        <Paper
+          component="form"
+          onSubmit={handleCreate}
+          sx={{
+            p: 3,
+            mb: 3,
+            borderRadius: 2,
+            border: '1px solid var(--border)',
+          }}
+        >
+          <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
+            Create New Domain
           </Typography>
-        ) : (
-          sortedAccessible.map(d => (
+          <Stack spacing={2}>
+            <TextField
+              label="Domain name"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              required
+              size="small"
+              placeholder="e.g., My Project, Sales Model"
+            />
+            <TextField
+              label="Notes"
+              value={notes}
+              onChange={e => setNotes(e.target.value)}
+              multiline
+              rows={2}
+              size="small"
+              placeholder="What goes in this workspace?"
+            />
+            <Stack direction="row" spacing={1}>
+              <Button variant="contained" type="submit" disabled={!name.trim()}>
+                Create Domain
+              </Button>
+              <Button variant="outlined" onClick={() => setShowCreateForm(false)}>
+                Cancel
+              </Button>
+            </Stack>
+          </Stack>
+        </Paper>
+      )}
+
+      {/* Domains Grid */}
+      {sortedAccessible.length === 0 ? (
+        <Paper sx={{ p: 4, textAlign: 'center', borderRadius: 2 }}>
+          <Typography color="text.secondary">
+            No domains available yet. Create one to get started.
+          </Typography>
+        </Paper>
+      ) : (
+        <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))' }}>
+          {sortedAccessible.map(d => (
             <Paper
               key={d.id}
-              elevation={0}
               sx={{
                 p: 2.5,
-                borderRadius: 3,
-                border: '1px solid var(--border)',
-                background: activeDomain === d.id ? 'var(--accent-soft)' : 'var(--panel)',
-                boxShadow: 'var(--shadow)',
+                borderRadius: 2,
+                border: activeDomain === d.id ? '2px solid var(--accent)' : '1px solid var(--border)',
+                transition: 'all 0.2s ease',
+                '&:hover': {
+                  boxShadow: 'var(--shadow)',
+                  borderColor: activeDomain === d.id ? 'var(--accent)' : '#06b6d4',
+                },
               }}
             >
-              <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" gap={1} alignItems="start">
-                <div>
-                  <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+              <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+                <Box sx={{
+                  width: 48, height: 48, borderRadius: 2,
+                  bgcolor: activeDomain === d.id ? '#06b6d4' : 'var(--bg)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  flexShrink: 0
+                }}>
+                  {activeDomain === d.id ? (
+                    <CheckCircleIcon sx={{ color: 'white', fontSize: 24 }} />
+                  ) : (
+                    <FolderSpecialIcon sx={{ color: '#06b6d4', fontSize: 24 }} />
+                  )}
+                </Box>
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
                     {d.name}
                   </Typography>
-                  <Typography variant="body2" sx={{ color: 'var(--text-muted)', mb: 1 }}>
-                    Owner: {d.owner || '—'}
+                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: 12 }}>
+                    Owner: {d.owner || 'System'}
                   </Typography>
-                </div>
-                <Stack direction="row" spacing={1} flexWrap="wrap">
-                  <Button
-                    size="small"
-                    variant={activeDomain === d.id ? 'contained' : 'outlined'}
-                    onClick={() => setActiveDomain(d.id)}
-                  >
-                    {activeDomain === d.id ? 'Active' : 'Make active'}
-                  </Button>
+                  {d.notes && (
+                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: 12, mt: 0.5 }}>
+                      {d.notes}
+                    </Typography>
+                  )}
+                </Box>
+                <Button
+                  size="small"
+                  variant={activeDomain === d.id ? 'contained' : 'outlined'}
+                  onClick={() => setActiveDomain(d.id)}
+                  sx={{
+                    minWidth: 80,
+                    ...(activeDomain === d.id && {
+                      bgcolor: '#06b6d4',
+                      '&:hover': { bgcolor: '#0891b2' }
+                    })
+                  }}
+                >
+                  {activeDomain === d.id ? 'Active' : 'Activate'}
+                </Button>
+              </Box>
+
+              {/* Sharing Section */}
+              <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid var(--border)' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                  <ShareIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                  <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary' }}>
+                    Shared with
+                  </Typography>
+                </Box>
+                <Stack direction="row" spacing={0.5} flexWrap="wrap" sx={{ mb: 1.5 }}>
+                  {(d.sharedWith || []).length === 0 && (
+                    <Typography variant="caption" color="text.secondary">
+                      Not shared yet
+                    </Typography>
+                  )}
+                  {(d.sharedWith || []).map(u => (
+                    <Chip
+                      key={u}
+                      label={u === '*admin*' ? 'Admins' : u}
+                      size="small"
+                      onDelete={canShare(d) && u !== '*admin*' ? () => removeShare(d.id, u) : undefined}
+                      sx={{
+                        height: 22,
+                        fontSize: 11,
+                        bgcolor: 'var(--bg)',
+                        border: '1px solid var(--border)',
+                      }}
+                    />
+                  ))}
                 </Stack>
-              </Stack>
-
-              {d.notes && (
-                <Typography variant="body2" sx={{ color: 'var(--text-muted)', mt: 1 }}>
-                  {d.notes}
-                </Typography>
-              )}
-
-              <Divider sx={{ my: 1.5 }} />
-              <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 0.5 }}>
-                Shared with
-              </Typography>
-              <Stack direction="row" spacing={1} flexWrap="wrap" alignItems="center">
-                {(d.sharedWith || []).length === 0 && (
-                  <Typography variant="body2" sx={{ color: 'var(--text-muted)' }}>
-                    Not shared yet.
-                  </Typography>
+                {canShare(d) && (
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <TextField
+                      size="small"
+                      placeholder="Username to share with"
+                      value={shareInputs[d.id] || ''}
+                      onChange={e => setShareInputs(prev => ({ ...prev, [d.id]: e.target.value }))}
+                      sx={{ flex: 1 }}
+                      InputProps={{ sx: { height: 32, fontSize: 13 } }}
+                    />
+                    <Tooltip title="Add access">
+                      <IconButton
+                        size="small"
+                        onClick={() => handleShare(d)}
+                        disabled={!shareInputs[d.id]}
+                        sx={{
+                          bgcolor: 'var(--bg)',
+                          border: '1px solid var(--border)',
+                          '&:hover': { bgcolor: '#06b6d4', color: 'white' }
+                        }}
+                      >
+                        <PersonAddIcon sx={{ fontSize: 18 }} />
+                      </IconButton>
+                    </Tooltip>
+                  </Stack>
                 )}
-                {(d.sharedWith || []).map(u => (
-                  <Chip
-                    key={u}
-                    label={u === '*admin*' ? 'Admins' : u}
-                    onDelete={canShare(d) && u !== '*admin*' ? () => removeShare(d.id, u) : undefined}
-                    sx={{
-                      background: 'var(--bg)',
-                      color: 'var(--text)',
-                      border: '1px solid var(--border)',
-                    }}
-                  />
-                ))}
-              </Stack>
-              {canShare(d) && (
-                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} alignItems="center" sx={{ mt: 1.5 }}>
-                  <TextField
-                    label="Share with user"
-                    size="small"
-                    value={shareInputs[d.id] || ''}
-                    onChange={e => setShareInputs(prev => ({ ...prev, [d.id]: e.target.value }))}
-                    sx={{ minWidth: 220 }}
-                  />
-                  <Button size="small" variant="contained" onClick={() => handleShare(d)} disabled={!shareInputs[d.id]}>
-                    Add access
-                  </Button>
-                </Stack>
-              )}
+              </Box>
             </Paper>
-          ))
-        )}
-      </Stack>
+          ))}
+        </Box>
+      )}
 
+      {/* Next Steps Info */}
       <Paper
-        elevation={0}
         sx={{
           p: 2,
           mt: 3,
-          borderRadius: 3,
+          borderRadius: 2,
           border: '1px dashed var(--border)',
-          background: 'var(--bg)',
+          bgcolor: 'var(--bg)',
         }}
       >
-        <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>
-          Next steps (needs backend wiring)
+        <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1, color: 'var(--text-muted)' }}>
+          Implementation Notes
         </Typography>
-        <ul style={{ margin: 0, paddingLeft: 18, color: 'var(--text-muted)', lineHeight: 1.6 }}>
-          <li>Persist domains and memberships in your database.</li>
-          <li>Use the active domain to scope node types, nodes, and creation forms.</li>
-          <li>Let admins grant access to any domain; owners can share theirs.</li>
-          <li>Expose a quick domain switcher in the header (already available) so users stay in their workspace.</li>
-        </ul>
+        <Typography variant="caption" sx={{ color: 'var(--text-muted)', lineHeight: 1.6, display: 'block' }}>
+          Domains are stored locally for now. Connect this page to your backend API to persist
+          domains and manage membership across sessions. Use the domain switcher in the header
+          to quickly change your active workspace.
+        </Typography>
       </Paper>
     </Box>
   );
 }
 
-// Force SSR so we don't prerender this authenticated page during static export
 export async function getServerSideProps() {
   return { props: {} };
 }

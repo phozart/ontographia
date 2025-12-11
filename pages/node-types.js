@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Box,
   Button,
@@ -7,23 +7,57 @@ import {
   DialogContent,
   DialogActions,
   TextField,
-  Table,
-  TableHead,
-  TableBody,
-  TableRow,
-  TableCell,
-  TableContainer,
   Paper,
   IconButton,
   Typography,
-  Stack
+  Stack,
+  Chip,
+  Tooltip,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
+import CategoryIcon from '@mui/icons-material/Category';
 import { LogoSpinner } from '../components/Logo';
 import { useDomains } from '../components/DomainContext';
 
-const shapeOptions = ['ellipse', 'round-rectangle', 'rectangle', 'diamond', 'hexagon'];
+// Utility to calculate contrasting text color
+function getContrastColor(hexColor) {
+  if (!hexColor || !hexColor.startsWith('#')) return '#ffffff';
+  const hex = hexColor.replace('#', '');
+  const r = parseInt(hex.substr(0, 2), 16) / 255;
+  const g = parseInt(hex.substr(2, 2), 16) / 255;
+  const b = parseInt(hex.substr(4, 2), 16) / 255;
+  const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
+  return luminance > 0.5 ? '#000000' : '#ffffff';
+}
+
+const shapeOptions = {
+  'Basic Shapes': ['ellipse', 'rectangle', 'round-rectangle', 'cut-rectangle', 'barrel'],
+  'Polygons': ['triangle', 'diamond', 'pentagon', 'hexagon', 'heptagon', 'octagon', 'concave-hexagon'],
+  'Special': ['star', 'tag', 'round-tag', 'vee', 'rhomboid', 'bottom-round-rectangle'],
+};
+
+const shapeLabels = {
+  'ellipse': 'Ellipse',
+  'rectangle': 'Rectangle',
+  'round-rectangle': 'Rounded',
+  'cut-rectangle': 'Cut Rectangle',
+  'barrel': 'Barrel',
+  'triangle': 'Triangle',
+  'diamond': 'Diamond',
+  'pentagon': 'Pentagon',
+  'hexagon': 'Hexagon',
+  'heptagon': 'Heptagon',
+  'octagon': 'Octagon',
+  'concave-hexagon': 'Concave Hex',
+  'star': 'Star',
+  'tag': 'Tag',
+  'round-tag': 'Round Tag',
+  'vee': 'Vee',
+  'rhomboid': 'Rhomboid',
+  'bottom-round-rectangle': 'Bottom Rounded',
+};
 
 export default function NodeTypesPage() {
   const [types, setTypes] = useState([]);
@@ -35,13 +69,13 @@ export default function NodeTypesPage() {
     label: '',
     description: '',
     layer: '',
-    color: '#888888',
+    color: '#8b5cf6',
     icon: '',
     domain: 'core',
     shape: 'ellipse'
   });
   const [errorMsg, setErrorMsg] = useState('');
-  const { activeDomain, accessibleDomains, activeDomainObj } = useDomains();
+  const { activeDomain, activeDomainObj } = useDomains();
 
   useEffect(() => {
     loadTypes();
@@ -58,7 +92,6 @@ export default function NodeTypesPage() {
       if (!res.ok) {
         setErrorMsg(`Failed to load node types (${res.status})`);
         setTypes([]);
-        setLoading(false);
         return;
       }
       const data = await res.json();
@@ -78,7 +111,7 @@ export default function NodeTypesPage() {
       label: '',
       description: '',
       layer: '',
-      color: '#888888',
+      color: '#8b5cf6',
       icon: '',
       domain: activeDomainObj?.name || activeDomain || 'core',
       shape: 'ellipse'
@@ -93,7 +126,7 @@ export default function NodeTypesPage() {
       label: t.label || '',
       description: t.description || '',
       layer: t.layer || '',
-      color: t.color || '#888888',
+      color: t.color || '#8b5cf6',
       icon: t.icon || '',
       domain: t.domain || activeDomainObj?.name || 'core',
       shape: t.shape || 'ellipse'
@@ -157,80 +190,111 @@ export default function NodeTypesPage() {
     }
   }
 
-  const rows = useMemo(() => types || [], [types]);
-
   return (
     <Box className="page-container">
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h5">Node Types</Typography>
-        <Button variant="contained" onClick={openCreate}>+ New type</Button>
+      {/* Page Header */}
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+        <Box sx={{
+          width: 48, height: 48, borderRadius: 2,
+          background: 'linear-gradient(135deg, #8b5cf6, #6366f1)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center'
+        }}>
+          <CategoryIcon sx={{ color: 'white', fontSize: 28 }} />
+        </Box>
+        <Box sx={{ flex: 1 }}>
+          <Typography variant="h4" sx={{ fontWeight: 700, lineHeight: 1.2 }}>Node Types</Typography>
+          <Typography variant="body2" color="text.secondary">
+            {types.length} types defined
+          </Typography>
+        </Box>
+        <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate}>
+          New Type
+        </Button>
       </Box>
-      {errorMsg && <p className="error-msg">{errorMsg}</p>}
-      {loading && (
-        <div style={{ display: 'flex', justifyContent: 'center', padding: 16 }}>
-          <LogoSpinner label="Loading node types..." />
-        </div>
-      )}
-      {!loading && rows.length === 0 && <p>No node types found.</p>}
 
-      {!loading && rows.length > 0 && (
-        <TableContainer component={Paper}>
-          <Table size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell>Name</TableCell>
-                <TableCell>Label</TableCell>
-                <TableCell>Layer</TableCell>
-                <TableCell>Domain</TableCell>
-                <TableCell>Color</TableCell>
-                <TableCell>Shape</TableCell>
-                <TableCell>Description</TableCell>
-                <TableCell>Icon</TableCell>
-                <TableCell align="right">Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {rows.map(t => (
-                <TableRow key={t.id}>
-                  <TableCell>{t.name}</TableCell>
-                  <TableCell>{t.label}</TableCell>
-                  <TableCell>{t.layer}</TableCell>
-                  <TableCell>{t.domain || 'core'}</TableCell>
-                  <TableCell>
-                    <Stack direction="row" spacing={1} alignItems="center">
-                      <span
-                        style={{
-                          display: 'inline-block',
-                          width: 14,
-                          height: 14,
-                          borderRadius: 999,
-                          backgroundColor: t.color || '#e5e7eb',
-                          border: '1px solid #9ca3af',
-                        }}
-                      />
-                      {t.color}
-                    </Stack>
-                  </TableCell>
-                  <TableCell>{t.shape || 'ellipse'}</TableCell>
-                  <TableCell>{t.description}</TableCell>
-                  <TableCell>{t.icon}</TableCell>
-                  <TableCell align="right">
-                    <IconButton size="small" onClick={() => openEdit(t)} aria-label="Edit">
-                      <EditIcon fontSize="small" />
+      {errorMsg && (
+        <Paper sx={{ p: 2, mb: 2, bgcolor: '#fef2f2', border: '1px solid #fecaca' }}>
+          <Typography color="error">{errorMsg}</Typography>
+        </Paper>
+      )}
+
+      {loading && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+          <LogoSpinner label="Loading node types..." />
+        </Box>
+      )}
+
+      {!loading && types.length === 0 && (
+        <Paper sx={{ p: 4, textAlign: 'center', borderRadius: 2 }}>
+          <Typography color="text.secondary">No node types found. Create one to get started.</Typography>
+        </Paper>
+      )}
+
+      {!loading && types.length > 0 && (
+        <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))' }}>
+          {types.map(t => (
+            <Paper
+              key={t.id}
+              sx={{
+                p: 2,
+                borderRadius: 2,
+                border: '1px solid var(--border)',
+                transition: 'all 0.2s ease',
+                '&:hover': {
+                  borderColor: t.color || 'var(--accent)',
+                  boxShadow: 'var(--shadow)'
+                }
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+                <Box sx={{
+                  width: 48, height: 48, borderRadius: 2,
+                  bgcolor: t.color || '#888',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  flexShrink: 0
+                }}>
+                  <Typography sx={{ color: getContrastColor(t.color || '#888'), fontWeight: 700, fontSize: 18 }}>
+                    {(t.name || '?')[0].toUpperCase()}
+                  </Typography>
+                </Box>
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>{t.name}</Typography>
+                  <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap sx={{ mb: 1 }}>
+                    {t.layer && <Chip label={t.layer} size="small" variant="outlined" sx={{ height: 20, fontSize: 10 }} />}
+                    <Chip label={t.shape || 'ellipse'} size="small" sx={{ height: 20, fontSize: 10, bgcolor: 'var(--bg)' }} />
+                  </Stack>
+                  {t.description && (
+                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: 12 }}>
+                      {t.description}
+                    </Typography>
+                  )}
+                </Box>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                  <Tooltip title="Edit">
+                    <IconButton size="small" onClick={() => openEdit(t)}>
+                      <EditIcon sx={{ fontSize: 18 }} />
                     </IconButton>
-                    <IconButton size="small" color="error" onClick={() => deleteType(t.id)} aria-label="Delete">
-                      <DeleteIcon fontSize="small" />
+                  </Tooltip>
+                  <Tooltip title="Delete">
+                    <IconButton size="small" color="error" onClick={() => deleteType(t.id)}>
+                      <DeleteIcon sx={{ fontSize: 18 }} />
                     </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+                  </Tooltip>
+                </Box>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1.5, pt: 1.5, borderTop: '1px solid var(--border)' }}>
+                <Box sx={{ width: 16, height: 16, borderRadius: 1, bgcolor: t.color || '#888' }} />
+                <Typography variant="caption" color="text.secondary">{t.color || 'No color'}</Typography>
+                <Box sx={{ flex: 1 }} />
+                <Chip label={t.domain || 'core'} size="small" sx={{ height: 18, fontSize: 10 }} />
+              </Box>
+            </Paper>
+          ))}
+        </Box>
       )}
 
       <Dialog open={dialogOpen} onClose={closeDialog} fullWidth maxWidth="sm">
-        <DialogTitle>{editingId ? 'Edit node type' : 'Create node type'}</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 600 }}>{editingId ? 'Edit Node Type' : 'Create Node Type'}</DialogTitle>
         <form onSubmit={handleSave}>
           <DialogContent dividers>
             <TextField
@@ -247,6 +311,7 @@ export default function NodeTypesPage() {
               label="Label"
               value={form.label}
               onChange={e => setForm(prev => ({ ...prev, label: e.target.value }))}
+              placeholder="Display label (optional)"
             />
             <TextField
               fullWidth
@@ -254,46 +319,8 @@ export default function NodeTypesPage() {
               label="Layer"
               value={form.layer}
               onChange={e => setForm(prev => ({ ...prev, layer: e.target.value }))}
-              placeholder="Physical/Information/Systems/Rules/Governance"
+              placeholder="Physical / Information / Systems / Rules / Governance"
             />
-            <TextField
-              fullWidth
-              margin="dense"
-              label="Domain"
-              select
-              value={form.domain}
-              SelectProps={{ native: true }}
-              helperText="Tied to your active domain"
-              disabled
-            />
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
-              <TextField
-                label="Color"
-                type="color"
-                value={form.color}
-                onChange={e => setForm(prev => ({ ...prev, color: e.target.value }))}
-                sx={{ width: 100 }}
-              />
-              <TextField
-                label="Color hex"
-                value={form.color}
-                onChange={e => setForm(prev => ({ ...prev, color: e.target.value }))}
-                sx={{ flex: 1 }}
-              />
-            </Box>
-            <TextField
-              select
-              fullWidth
-              margin="dense"
-              label="Default shape"
-              value={form.shape}
-              onChange={e => setForm(prev => ({ ...prev, shape: e.target.value }))}
-              SelectProps={{ native: true }}
-            >
-              {shapeOptions.map(opt => (
-                <option key={opt} value={opt}>{opt}</option>
-              ))}
-            </TextField>
             <TextField
               fullWidth
               margin="dense"
@@ -303,16 +330,50 @@ export default function NodeTypesPage() {
               multiline
               rows={2}
             />
+            <Stack direction="row" spacing={2} sx={{ mt: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <input
+                  type="color"
+                  value={form.color}
+                  onChange={e => setForm(prev => ({ ...prev, color: e.target.value }))}
+                  style={{ width: 40, height: 32, border: 'none', borderRadius: 4, cursor: 'pointer' }}
+                />
+                <TextField
+                  size="small"
+                  label="Color"
+                  value={form.color}
+                  onChange={e => setForm(prev => ({ ...prev, color: e.target.value }))}
+                  sx={{ width: 100 }}
+                />
+              </Box>
+              <TextField
+                select
+                size="small"
+                label="Shape"
+                value={form.shape}
+                onChange={e => setForm(prev => ({ ...prev, shape: e.target.value }))}
+                SelectProps={{ native: true }}
+                sx={{ flex: 1 }}
+              >
+                {Object.entries(shapeOptions).map(([group, shapes]) => (
+                  <optgroup key={group} label={group}>
+                    {shapes.map(opt => (
+                      <option key={opt} value={opt}>{shapeLabels[opt] || opt}</option>
+                    ))}
+                  </optgroup>
+                ))}
+              </TextField>
+            </Stack>
             <TextField
               fullWidth
               margin="dense"
               label="Icon"
               value={form.icon}
               onChange={e => setForm(prev => ({ ...prev, icon: e.target.value }))}
-              placeholder="e.g. dot, event, system"
+              placeholder="Icon URL or name (optional)"
             />
           </DialogContent>
-          <DialogActions>
+          <DialogActions sx={{ px: 3, py: 2 }}>
             <Button onClick={closeDialog}>Cancel</Button>
             <Button type="submit" variant="contained">{editingId ? 'Save' : 'Create'}</Button>
           </DialogActions>

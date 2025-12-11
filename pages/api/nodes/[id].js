@@ -66,12 +66,14 @@ export default async function handler(req, res) {
         color: n.color || null,
         attributes: attrs,
         weight: typeof n.weight === 'number' ? n.weight : parseFloat(n.weight) || null,
-        shape: n.shape || t.shape || 'ellipse'
+        shape: n.shape || t.shape || 'ellipse',
+        x: typeof n.x === 'number' ? n.x : null,
+        y: typeof n.y === 'number' ? n.y : null,
       });
     }
 
     if (req.method === 'PUT') {
-      const { name, layer, tags, weight, description, icon, color, attributes, shape } = req.body || {};
+      const { name, layer, tags, weight, description, icon, color, attributes, shape, x, y } = req.body || {};
 
       if (!name) {
         return res.status(400).json({ error: 'name is required' });
@@ -99,6 +101,10 @@ export default async function handler(req, res) {
       const safeAttributes =
         attributesProvided && attributes && typeof attributes === 'object' ? attributes : {};
       const attributesJson = attributesProvided ? JSON.stringify(safeAttributes) : null;
+      const xProvided = x !== undefined;
+      const yProvided = y !== undefined;
+      const safeX = typeof x === 'number' ? x : (typeof x === 'string' && !isNaN(parseFloat(x)) ? parseFloat(x) : null);
+      const safeY = typeof y === 'number' ? y : (typeof y === 'string' && !isNaN(parseFloat(y)) ? parseFloat(y) : null);
 
       if (isDemo) {
         const ok = demoUpdateNode(id, {
@@ -111,6 +117,8 @@ export default async function handler(req, res) {
           weight: safeWeight,
           shape: safeShape,
           attributes: attributesProvided ? safeAttributes : undefined,
+          x: xProvided ? safeX : undefined,
+          y: yProvided ? safeY : undefined,
         });
         if (!ok) return res.status(404).json({ error: 'Node not found' });
         return res.status(200).json({ id });
@@ -135,6 +143,12 @@ export default async function handler(req, res) {
         FOREACH (_ IN CASE WHEN $attributesProvided THEN [1] ELSE [] END |
           SET n.attributesJson = $attributesJson
         )
+        FOREACH (_ IN CASE WHEN $xProvided THEN [1] ELSE [] END |
+          SET n.x = $x
+        )
+        FOREACH (_ IN CASE WHEN $yProvided THEN [1] ELSE [] END |
+          SET n.y = $y
+        )
         RETURN n
         `,
         {
@@ -150,7 +164,11 @@ export default async function handler(req, res) {
           description: safeDescription,
           attributesJson,
           attributesProvided,
-          weight: safeWeight
+          weight: safeWeight,
+          x: safeX,
+          y: safeY,
+          xProvided,
+          yProvided,
         }
       );
 

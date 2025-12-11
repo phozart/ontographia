@@ -6,11 +6,16 @@ import {
   Box,
   Stack,
   Typography,
-  IconButton
+  IconButton,
+  Paper,
+  Chip,
+  Tooltip,
 } from '@mui/material';
 import { DataGrid, GridToolbar } from '@mui/x-data-grid';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
+import FilterListIcon from '@mui/icons-material/FilterList';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import RelationshipFormDialog from './RelationshipFormDialog';
 import { useDomains } from './DomainContext';
 
@@ -26,6 +31,7 @@ export default function RelationshipTable({ onChanged, reloadKey, hideCreate }) 
   const [type, setType] = useState(null);
   const [editOpen, setEditOpen] = useState(false);
   const [editingRel, setEditingRel] = useState(null);
+  const [relTypeFilter, setRelTypeFilter] = useState(null);
   const { activeDomain, activeDomainObj } = useDomains();
 
   async function loadNodes() {
@@ -119,8 +125,12 @@ export default function RelationshipTable({ onChanged, reloadKey, hideCreate }) 
     return `${n.name} (${n.typeName || 'Unassigned'})`;
   }
 
+  function getNodeInfo(id) {
+    return nodes.find(node => node.id === id);
+  }
+
   const typeOptions = useMemo(
-    () => (Array.isArray(types) ? types : []).map(t => ({ id: t.id, label: t.name })),
+    () => (Array.isArray(types) ? types : []).map(t => ({ id: t.id, label: t.name, color: t.color })),
     [types]
   );
   const relTypeOptions = useMemo(
@@ -157,56 +167,165 @@ export default function RelationshipTable({ onChanged, reloadKey, hideCreate }) 
   }
 
   const rows = useMemo(() => {
-    return (Array.isArray(rels) ? rels : []).map(r => ({
+    let filtered = Array.isArray(rels) ? rels : [];
+    if (relTypeFilter) {
+      filtered = filtered.filter(r => r.type === relTypeFilter.name);
+    }
+    return filtered.map(r => ({
       ...r,
       id: r.id || `${r.sourceId}-${r.type}-${r.targetId}`,
       sourceLabel: nodeLabel(r.sourceId),
       targetLabel: nodeLabel(r.targetId),
+      sourceNode: getNodeInfo(r.sourceId),
+      targetNode: getNodeInfo(r.targetId),
+      relTypeInfo: relTypes.find(rt => rt.name === r.type),
     }));
-  }, [rels, nodes]);
+  }, [rels, nodes, relTypes, relTypeFilter]);
 
   const columns = useMemo(
     () => [
-      { field: 'id', headerName: 'ID', width: 140 },
-      { field: 'sourceLabel', headerName: 'Source', flex: 1, minWidth: 180 },
-      { field: 'type', headerName: 'Type', width: 140 },
-      { field: 'targetLabel', headerName: 'Target', flex: 1, minWidth: 180 },
+      {
+        field: 'sourceLabel',
+        headerName: 'Source',
+        flex: 1,
+        minWidth: 180,
+        renderCell: params => {
+          const sourceInfo = params.row.sourceNode;
+          const color = sourceInfo?.color || types.find(t => t.id === sourceInfo?.typeId)?.color || '#3b82f6';
+          return (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Box sx={{
+                width: 10, height: 10, borderRadius: '50%',
+                bgcolor: color, flexShrink: 0
+              }} />
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                {sourceInfo?.name || params.row.sourceId}
+              </Typography>
+            </Box>
+          );
+        }
+      },
+      {
+        field: 'type',
+        headerName: 'Connection',
+        width: 180,
+        renderCell: params => {
+          const relTypeInfo = params.row.relTypeInfo;
+          const color = relTypeInfo?.color || '#9ca3af';
+          return (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box sx={{ width: 24, height: 3, borderRadius: 2, bgcolor: color }} />
+              <ArrowForwardIcon sx={{ fontSize: 14, color }} />
+              <Chip
+                label={params.value}
+                size="small"
+                sx={{
+                  bgcolor: color + '20',
+                  color: color,
+                  fontWeight: 500,
+                  fontSize: 11,
+                  height: 22
+                }}
+              />
+            </Box>
+          );
+        }
+      },
+      {
+        field: 'targetLabel',
+        headerName: 'Target',
+        flex: 1,
+        minWidth: 180,
+        renderCell: params => {
+          const targetInfo = params.row.targetNode;
+          const color = targetInfo?.color || types.find(t => t.id === targetInfo?.typeId)?.color || '#10b981';
+          return (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Box sx={{
+                width: 10, height: 10, borderRadius: '50%',
+                bgcolor: color, flexShrink: 0
+              }} />
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                {targetInfo?.name || params.row.targetId}
+              </Typography>
+            </Box>
+          );
+        }
+      },
       {
         field: 'actions',
-        headerName: 'Actions',
-        width: 130,
+        headerName: '',
+        width: 100,
         sortable: false,
         filterable: false,
         renderCell: params => (
-          <Box sx={{ display: 'flex', gap: 1 }}>
-            <IconButton size="small" onClick={() => openEdit(params.row)} aria-label="Edit relationship">
-              <EditIcon fontSize="small" />
-            </IconButton>
-            {params.row.id && (
-              <IconButton
-                size="small"
-                color="error"
-                onClick={() => handleDelete(params.row.id)}
-                aria-label="Delete relationship"
-              >
-                <DeleteIcon fontSize="small" />
+          <Box sx={{ display: 'flex', gap: 0.5 }}>
+            <Tooltip title="Edit">
+              <IconButton size="small" onClick={() => openEdit(params.row)}>
+                <EditIcon sx={{ fontSize: 18 }} />
               </IconButton>
+            </Tooltip>
+            {params.row.id && (
+              <Tooltip title="Delete">
+                <IconButton
+                  size="small"
+                  color="error"
+                  onClick={() => handleDelete(params.row.id)}
+                >
+                  <DeleteIcon sx={{ fontSize: 18 }} />
+                </IconButton>
+              </Tooltip>
             )}
           </Box>
         ),
       },
     ],
-    []
+    [types, relTypes]
   );
 
   return (
     <Box>
+      {/* Filters */}
+      <Paper sx={{ p: 2, mb: 2, borderRadius: 2, display: 'flex', gap: 2, alignItems: 'center' }}>
+        <FilterListIcon sx={{ color: 'text.secondary' }} />
+        <Autocomplete
+          size="small"
+          sx={{ width: 280 }}
+          options={relTypeOptions}
+          value={relTypeFilter}
+          getOptionLabel={opt => opt?.optionLabel || ''}
+          isOptionEqualToValue={(opt, val) => opt?.id === val?.id}
+          onChange={(_, val) => setRelTypeFilter(val)}
+          renderOption={(props, option) => (
+            <Box component="li" {...props} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box sx={{ width: 20, height: 3, borderRadius: 2, bgcolor: option.color || '#9ca3af' }} />
+              {option.optionLabel}
+            </Box>
+          )}
+          renderInput={(params) => <TextField {...params} label="Filter by type" placeholder="All types" />}
+        />
+        {relTypeFilter && (
+          <Chip
+            label={`Showing: ${relTypeFilter.optionLabel}`}
+            onDelete={() => setRelTypeFilter(null)}
+            size="small"
+            sx={{ bgcolor: (relTypeFilter.color || '#9ca3af') + '20', color: relTypeFilter.color || '#9ca3af' }}
+          />
+        )}
+        <Box sx={{ flex: 1 }} />
+        <Typography variant="body2" color="text.secondary">
+          {rows.length} connections
+        </Typography>
+      </Paper>
+
       {!hideCreate && (
-        <>
-          <Typography variant="h6" gutterBottom>Create relationship</Typography>
-          <Box component="form" onSubmit={handleCreate} sx={{ mb: 2 }}>
-            <Stack spacing={1.5}>
+        <Paper sx={{ p: 2.5, mb: 2, borderRadius: 2 }}>
+          <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>Quick Create</Typography>
+          <Box component="form" onSubmit={handleCreate}>
+            <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems="flex-end">
               <Autocomplete
+                size="small"
+                sx={{ flex: 1, minWidth: 180 }}
                 options={typeOptions}
                 value={sourceType}
                 getOptionLabel={opt => opt?.label || ''}
@@ -215,25 +334,45 @@ export default function RelationshipTable({ onChanged, reloadKey, hideCreate }) 
                   setSourceType(val);
                   setSourceNode(null);
                 }}
-                renderInput={(params) => <TextField {...params} label="Source type" size="small" />}
+                renderOption={(props, option) => (
+                  <Box component="li" {...props} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box sx={{ width: 12, height: 12, borderRadius: 1, bgcolor: option.color || '#888' }} />
+                    {option.label}
+                  </Box>
+                )}
+                renderInput={(params) => <TextField {...params} label="Source type" />}
               />
               <Autocomplete
+                size="small"
+                sx={{ flex: 1.5, minWidth: 200 }}
                 options={sourceOptions}
                 value={sourceNode}
                 getOptionLabel={opt => opt?.label || ''}
                 isOptionEqualToValue={(opt, val) => opt?.id === val?.id}
                 onChange={(_, val) => setSourceNode(val)}
-                renderInput={(params) => <TextField {...params} label="Source node" size="small" />}
+                renderInput={(params) => <TextField {...params} label="Source node" />}
               />
+              <ArrowForwardIcon sx={{ color: 'text.secondary', mx: 1 }} />
               <Autocomplete
+                size="small"
+                sx={{ flex: 1.2, minWidth: 160 }}
                 options={relTypeOptions}
                 value={type}
                 getOptionLabel={opt => opt?.optionLabel || ''}
                 isOptionEqualToValue={(opt, val) => opt?.id === val?.id}
                 onChange={(_, val) => setType(val)}
-                renderInput={params => <TextField {...params} label="Relationship type" size="small" />}
+                renderOption={(props, option) => (
+                  <Box component="li" {...props} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box sx={{ width: 20, height: 3, borderRadius: 2, bgcolor: option.color || '#9ca3af' }} />
+                    {option.optionLabel}
+                  </Box>
+                )}
+                renderInput={params => <TextField {...params} label="Type" />}
               />
+              <ArrowForwardIcon sx={{ color: 'text.secondary', mx: 1 }} />
               <Autocomplete
+                size="small"
+                sx={{ flex: 1, minWidth: 180 }}
                 options={typeOptions}
                 value={targetType}
                 getOptionLabel={opt => opt?.label || ''}
@@ -242,39 +381,46 @@ export default function RelationshipTable({ onChanged, reloadKey, hideCreate }) 
                   setTargetType(val);
                   setTargetNode(null);
                 }}
-                renderInput={(params) => <TextField {...params} label="Target type" size="small" />}
+                renderOption={(props, option) => (
+                  <Box component="li" {...props} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box sx={{ width: 12, height: 12, borderRadius: 1, bgcolor: option.color || '#888' }} />
+                    {option.label}
+                  </Box>
+                )}
+                renderInput={(params) => <TextField {...params} label="Target type" />}
               />
               <Autocomplete
+                size="small"
+                sx={{ flex: 1.5, minWidth: 200 }}
                 options={targetOptions}
                 value={targetNode}
                 getOptionLabel={opt => opt?.label || ''}
                 isOptionEqualToValue={(opt, val) => opt?.id === val?.id}
                 onChange={(_, val) => setTargetNode(val)}
-                renderInput={(params) => <TextField {...params} label="Target node" size="small" />}
+                renderInput={(params) => <TextField {...params} label="Target node" />}
               />
-              <Button variant="contained" type="submit">Create</Button>
+              <Button variant="contained" type="submit" sx={{ height: 40 }}>Create</Button>
             </Stack>
           </Box>
-        </>
+        </Paper>
       )}
 
-    
-      <Box
+      {/* Data Grid */}
+      <Paper
         sx={{
-          height: 'calc(100vh - 240px)',
-          width: '100%',
-          boxShadow: '0 10px 30px rgba(15, 23, 42, 0.12)',
+          height: 'calc(100vh - 380px)',
+          minHeight: 400,
           borderRadius: 2,
           overflow: 'hidden',
+          boxShadow: 'var(--shadow)',
         }}
       >
         <DataGrid
           rows={rows}
           getRowId={row => row.id}
           columns={columns}
-          density="compact"
+          density="comfortable"
           disableRowSelectionOnClick
-          getRowHeight={() => 'auto'}
           slots={{ toolbar: GridToolbar }}
           slotProps={{
             toolbar: {
@@ -283,30 +429,20 @@ export default function RelationshipTable({ onChanged, reloadKey, hideCreate }) 
             },
           }}
           sx={{
+            border: 'none',
+            '& .MuiDataGrid-columnHeaders': {
+              bgcolor: 'var(--bg)',
+              borderBottom: '1px solid var(--border)',
+            },
             '& .MuiDataGrid-cell': {
-              whiteSpace: 'normal',
-              lineHeight: 1.3,
-              alignItems: 'flex-start',
-              py: 0.5,
+              borderBottom: '1px solid var(--border)',
             },
-            '& .MuiDataGrid-row': {
-              maxHeight: 'none !important',
-            },
-            '& .MuiDataGrid-row:nth-of-type(even)': {
-              backgroundColor: 'rgba(0, 0, 0, 0.02)',
-            },
-            '& .MuiDataGrid-row:nth-of-type(odd)': {
-              backgroundColor: 'rgba(0, 0, 0, 0.01)',
-            },
-            '[data-theme="dark"] & .MuiDataGrid-row:nth-of-type(even)': {
-              backgroundColor: 'rgba(255, 255, 255, 0.04)',
-            },
-            '[data-theme="dark"] & .MuiDataGrid-row:nth-of-type(odd)': {
-              backgroundColor: 'rgba(255, 255, 255, 0.02)',
+            '& .MuiDataGrid-row:hover': {
+              bgcolor: 'var(--accent-soft)',
             },
           }}
         />
-      </Box>
+      </Paper>
 
       <RelationshipFormDialog
         open={editOpen}

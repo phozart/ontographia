@@ -7,18 +7,18 @@ import {
   DialogContent,
   DialogActions,
   TextField,
-  Table,
-  TableHead,
-  TableBody,
-  TableRow,
-  TableCell,
-  TableContainer,
   Paper,
   IconButton,
-  Typography
+  Typography,
+  Stack,
+  Chip,
+  Tooltip,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
+import DeviceHubIcon from '@mui/icons-material/DeviceHub';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { LogoSpinner } from '../components/Logo';
 import { useDomains } from '../components/DomainContext';
 
@@ -46,7 +46,6 @@ export default function RelationshipTypesPage() {
       if (!res.ok) {
         setErrorMsg(`Failed to load relationship types (${res.status})`);
         setRows([]);
-        setLoading(false);
         return;
       }
       const data = await res.json();
@@ -98,10 +97,6 @@ export default function RelationshipTypesPage() {
       setErrorMsg('Name is required');
       return;
     }
-    if (!activeDomain && !form.domain) {
-      setErrorMsg('Select a domain');
-      return;
-    }
     const payload = {
       ...form,
       domain: activeDomainObj?.name || activeDomain || form.domain || 'core',
@@ -146,54 +141,116 @@ export default function RelationshipTypesPage() {
 
   return (
     <Box className="page-container">
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h5">Relationship Types</Typography>
-        <Button variant="contained" onClick={openCreate}>+ New type</Button>
+      {/* Page Header */}
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+        <Box sx={{
+          width: 48, height: 48, borderRadius: 2,
+          background: 'linear-gradient(135deg, #10b981, #059669)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center'
+        }}>
+          <DeviceHubIcon sx={{ color: 'white', fontSize: 28 }} />
+        </Box>
+        <Box sx={{ flex: 1 }}>
+          <Typography variant="h4" sx={{ fontWeight: 700, lineHeight: 1.2 }}>Connection Types</Typography>
+          <Typography variant="body2" color="text.secondary">
+            {rows.length} relationship types defined
+          </Typography>
+        </Box>
+        <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate}>
+          New Type
+        </Button>
       </Box>
-      {errorMsg && <p className="error-msg">{errorMsg}</p>}
-      {loading && (
-        <div style={{ display: 'flex', justifyContent: 'center', padding: 16 }}>
-          <LogoSpinner label="Loading relationship types..." />
-        </div>
+
+      {errorMsg && (
+        <Paper sx={{ p: 2, mb: 2, bgcolor: '#fef2f2', border: '1px solid #fecaca' }}>
+          <Typography color="error">{errorMsg}</Typography>
+        </Paper>
       )}
-      {!loading && rows.length === 0 && <p>No relationship types found.</p>}
+
+      {loading && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+          <LogoSpinner label="Loading relationship types..." />
+        </Box>
+      )}
+
+      {!loading && rows.length === 0 && (
+        <Paper sx={{ p: 4, textAlign: 'center', borderRadius: 2 }}>
+          <Typography color="text.secondary">No relationship types found. Create one to get started.</Typography>
+        </Paper>
+      )}
 
       {!loading && rows.length > 0 && (
-        <TableContainer component={Paper}>
-          <Table size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell>Name</TableCell>
-                <TableCell>Label</TableCell>
-                <TableCell>Description</TableCell>
-                <TableCell>Color</TableCell>
-                <TableCell align="right">Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {rows.map(r => (
-                <TableRow key={r.id}>
-                  <TableCell>{r.name}</TableCell>
-                  <TableCell>{r.label}</TableCell>
-                  <TableCell>{r.description}</TableCell>
-                  <TableCell>{r.color}</TableCell>
-                  <TableCell align="right">
-                    <IconButton size="small" onClick={() => openEdit(r)} aria-label="Edit">
-                      <EditIcon fontSize="small" />
+        <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
+          {rows.map(r => (
+            <Paper
+              key={r.id}
+              sx={{
+                p: 2,
+                borderRadius: 2,
+                border: '1px solid var(--border)',
+                transition: 'all 0.2s ease',
+                '&:hover': {
+                  borderColor: r.color || 'var(--accent)',
+                  boxShadow: 'var(--shadow)'
+                }
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+                <Box sx={{
+                  width: 48, height: 48, borderRadius: 2,
+                  bgcolor: 'var(--bg)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  flexShrink: 0, position: 'relative'
+                }}>
+                  <Box sx={{
+                    width: 32, height: 4, borderRadius: 2,
+                    bgcolor: r.color || '#9ca3af',
+                    position: 'absolute'
+                  }} />
+                  <ArrowForwardIcon sx={{
+                    position: 'absolute', right: 2,
+                    color: r.color || '#9ca3af', fontSize: 16
+                  }} />
+                </Box>
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>{r.name}</Typography>
+                  {r.label && (
+                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: 12 }}>
+                      Label: {r.label}
+                    </Typography>
+                  )}
+                  {r.description && (
+                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: 12, mt: 0.5 }}>
+                      {r.description}
+                    </Typography>
+                  )}
+                </Box>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                  <Tooltip title="Edit">
+                    <IconButton size="small" onClick={() => openEdit(r)}>
+                      <EditIcon sx={{ fontSize: 18 }} />
                     </IconButton>
-                    <IconButton size="small" color="error" onClick={() => handleDelete(r.id)} aria-label="Delete">
-                      <DeleteIcon fontSize="small" />
+                  </Tooltip>
+                  <Tooltip title="Delete">
+                    <IconButton size="small" color="error" onClick={() => handleDelete(r.id)}>
+                      <DeleteIcon sx={{ fontSize: 18 }} />
                     </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+                  </Tooltip>
+                </Box>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1.5, pt: 1.5, borderTop: '1px solid var(--border)' }}>
+                <Box sx={{ width: 24, height: 4, borderRadius: 2, bgcolor: r.color || '#9ca3af' }} />
+                <Typography variant="caption" color="text.secondary">{r.color || '#9ca3af'}</Typography>
+                <Box sx={{ flex: 1 }} />
+                <Chip label={r.domain || 'core'} size="small" sx={{ height: 18, fontSize: 10 }} />
+              </Box>
+            </Paper>
+          ))}
+        </Box>
       )}
 
       <Dialog open={dialogOpen} onClose={closeDialog} fullWidth maxWidth="sm">
-        <DialogTitle>{editingId ? 'Edit relationship type' : 'Create relationship type'}</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 600 }}>{editingId ? 'Edit Connection Type' : 'Create Connection Type'}</DialogTitle>
         <form onSubmit={handleSave}>
           <DialogContent dividers>
             <TextField
@@ -203,6 +260,7 @@ export default function RelationshipTypesPage() {
               value={form.name}
               onChange={e => setForm(prev => ({ ...prev, name: e.target.value }))}
               required
+              placeholder="e.g., CONNECTS_TO, DEPENDS_ON"
             />
             <TextField
               fullWidth
@@ -210,6 +268,7 @@ export default function RelationshipTypesPage() {
               label="Label"
               value={form.label}
               onChange={e => setForm(prev => ({ ...prev, label: e.target.value }))}
+              placeholder="Display label (optional)"
             />
             <TextField
               fullWidth
@@ -220,16 +279,25 @@ export default function RelationshipTypesPage() {
               multiline
               rows={2}
             />
-            <TextField
-              fullWidth
-              margin="dense"
-              label="Color"
-              value={form.color}
-              onChange={e => setForm(prev => ({ ...prev, color: e.target.value }))}
-              type="color"
-            />
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 1 }}>
+              <input
+                type="color"
+                value={form.color}
+                onChange={e => setForm(prev => ({ ...prev, color: e.target.value }))}
+                style={{ width: 40, height: 32, border: 'none', borderRadius: 4, cursor: 'pointer' }}
+              />
+              <TextField
+                size="small"
+                label="Color"
+                value={form.color}
+                onChange={e => setForm(prev => ({ ...prev, color: e.target.value }))}
+                sx={{ width: 120 }}
+              />
+              <Box sx={{ flex: 1 }} />
+              <Box sx={{ width: 60, height: 4, borderRadius: 2, bgcolor: form.color }} />
+            </Box>
           </DialogContent>
-          <DialogActions>
+          <DialogActions sx={{ px: 3, py: 2 }}>
             <Button onClick={closeDialog}>Cancel</Button>
             <Button type="submit" variant="contained">{editingId ? 'Save' : 'Create'}</Button>
           </DialogActions>
