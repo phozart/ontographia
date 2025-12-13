@@ -91,6 +91,9 @@ export default function GraphView({
   });
   const [showGrid, setShowGrid] = useState(true);
   const [curvedLines, setCurvedLines] = useState(true);
+  const [showMinimap, setShowMinimap] = useState(true);
+  const minimapRef = useRef(null);
+  const minimapCanvasRef = useRef(null);
   const { activeDomain, activeDomainObj } = useDomains();
 
   const domainMatch = useMemo(() => {
@@ -236,8 +239,8 @@ export default function GraphView({
   function computeSize(n) {
     const rawWeight = typeof n.weight === 'number' ? n.weight : isNaN(parseFloat(n.weight)) ? 1 : parseFloat(n.weight);
     const clamped = Math.max(0, Math.min(rawWeight, 5));
-    // Slightly larger nodes for better visibility
-    return Math.max(70, Math.min(160, 75 + clamped * 17));
+    // Smaller nodes - cleaner look matching home page
+    return Math.max(45, Math.min(100, 50 + clamped * 10));
   }
 
   function computeTextWidth(n) {
@@ -259,7 +262,7 @@ export default function GraphView({
   }
 
   function sizeToWeight(size) {
-    const w = (size - 75) / 17;
+    const w = (size - 50) / 10;
     return Math.max(0, Math.min(5, isNaN(w) ? 0 : w));
   }
 
@@ -347,18 +350,13 @@ export default function GraphView({
           'font-size': 12,
           'font-family': "'Inter', system-ui, -apple-system, sans-serif",
           'font-weight': 600,
-          // Labels outside the node - below
+          // Labels outside the node - below (no background like home page)
           'text-valign': 'bottom',
           'text-halign': 'center',
-          'text-margin-y': 8,
+          'text-margin-y': 6,
           'text-wrap': 'wrap',
-          'text-max-width': 120,
-          // Text background for readability
-          'text-background-color': themeDark ? '#1f2937' : '#ffffff',
-          'text-background-opacity': 0.85,
-          'text-background-padding': '4px',
-          'text-background-shape': 'roundrectangle',
-          padding: '10px',
+          'text-max-width': 100,
+          padding: '8px',
           shape: 'data(shape)',
           width: 'data(size)',
           height: 'data(size)',
@@ -428,18 +426,14 @@ export default function GraphView({
           'curve-style': curvedLines ? 'unbundled-bezier' : 'bezier',
           'control-point-distances': curvedLines ? [50, -50] : [0],
           'control-point-weights': curvedLines ? [0.25, 0.75] : [0.5],
-          // Edge label styling - horizontal on top of edge
+          // Edge label styling - horizontal on top of edge (no background like home page)
           label: 'data(label)',
           'font-size': 10,
           'font-family': "'Inter', system-ui, -apple-system, sans-serif",
           'font-weight': 500,
           'text-rotation': 0,
           color: themeDark ? '#9ca3af' : '#64748b',
-          'text-background-color': themeDark ? '#1f2937' : '#ffffff',
-          'text-background-opacity': 0.9,
-          'text-background-padding': '3px',
-          'text-background-shape': 'roundrectangle',
-          'text-margin-y': -12,
+          'text-margin-y': -10,
           // Smooth edge transitions
           'transition-property': 'line-color, width, target-arrow-color',
           'transition-duration': '0.25s',
@@ -516,6 +510,7 @@ export default function GraphView({
 
   function handleCyReady(cy) {
     cyRef.current = cy;
+    if (onCyReady) onCyReady(cy);
     cy.userPanningEnabled(true);
     cy.userZoomingEnabled(true);
     cy.boxSelectionEnabled(false);
@@ -602,7 +597,7 @@ export default function GraphView({
       const dy = evt.position.y - center.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
       const delta = dist - startRadius;
-      const newSize = Math.max(50, Math.min(180, startSize + delta * 2));
+      const newSize = Math.max(35, Math.min(120, startSize + delta * 2));
       node.data('size', newSize);
       node.data('textWidth', computeTextWidthFromSize(newSize));
       node.data('fontSize', computeFontSizeFromSize(newSize));
@@ -709,6 +704,135 @@ export default function GraphView({
     });
     return () => layout.stop();
   }, [elements, layoutName]);
+
+  // Minimap rendering
+  useEffect(() => {
+    if (!showMinimap) return undefined;
+    const cy = cyRef.current;
+    const canvas = minimapCanvasRef.current;
+    if (!cy || !canvas) return undefined;
+
+    const ctx = canvas.getContext('2d');
+    const minimapWidth = 160;
+    const minimapHeight = 120;
+    canvas.width = minimapWidth;
+    canvas.height = minimapHeight;
+
+    function renderMinimap() {
+      if (!cy || cy.destroyed?.()) return;
+      const nodes = cy.nodes();
+      if (nodes.length === 0) {
+        ctx.clearRect(0, 0, minimapWidth, minimapHeight);
+        return;
+      }
+
+      // Get graph bounds
+      const bb = cy.elements().boundingBox();
+      const padding = 10;
+      const graphWidth = bb.w || 1;
+      const graphHeight = bb.h || 1;
+
+      // Calculate scale
+      const scaleX = (minimapWidth - padding * 2) / graphWidth;
+      const scaleY = (minimapHeight - padding * 2) / graphHeight;
+      const scale = Math.min(scaleX, scaleY, 1);
+
+      // Clear canvas
+      ctx.clearRect(0, 0, minimapWidth, minimapHeight);
+
+      // Fill background
+      ctx.fillStyle = themeDark ? 'rgba(17, 24, 39, 0.9)' : 'rgba(255, 255, 255, 0.9)';
+      ctx.fillRect(0, 0, minimapWidth, minimapHeight);
+
+      // Draw edges
+      ctx.strokeStyle = themeDark ? 'rgba(107, 114, 128, 0.4)' : 'rgba(148, 163, 184, 0.4)';
+      ctx.lineWidth = 0.5;
+      cy.edges().forEach(edge => {
+        const sourcePos = edge.source().position();
+        const targetPos = edge.target().position();
+        const sx = (sourcePos.x - bb.x1) * scale + padding;
+        const sy = (sourcePos.y - bb.y1) * scale + padding;
+        const tx = (targetPos.x - bb.x1) * scale + padding;
+        const ty = (targetPos.y - bb.y1) * scale + padding;
+        ctx.beginPath();
+        ctx.moveTo(sx, sy);
+        ctx.lineTo(tx, ty);
+        ctx.stroke();
+      });
+
+      // Draw nodes
+      nodes.forEach(node => {
+        const pos = node.position();
+        const x = (pos.x - bb.x1) * scale + padding;
+        const y = (pos.y - bb.y1) * scale + padding;
+        const color = node.data('color') || '#6366f1';
+        const size = Math.max(3, (node.data('size') || 50) * scale * 0.5);
+
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(x, y, size, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // Draw viewport rectangle
+      const extent = cy.extent();
+      const vx = (extent.x1 - bb.x1) * scale + padding;
+      const vy = (extent.y1 - bb.y1) * scale + padding;
+      const vw = extent.w * scale;
+      const vh = extent.h * scale;
+
+      ctx.strokeStyle = themeDark ? '#a5b4fc' : '#6366f1';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(vx, vy, vw, vh);
+      ctx.fillStyle = themeDark ? 'rgba(165, 180, 252, 0.1)' : 'rgba(99, 102, 241, 0.1)';
+      ctx.fillRect(vx, vy, vw, vh);
+    }
+
+    // Initial render
+    renderMinimap();
+
+    // Update on viewport changes
+    cy.on('pan zoom', renderMinimap);
+    cy.on('position', 'node', renderMinimap);
+    cy.on('add remove', renderMinimap);
+
+    return () => {
+      cy.off('pan zoom', renderMinimap);
+      cy.off('position', 'node', renderMinimap);
+      cy.off('add remove', renderMinimap);
+    };
+  }, [showMinimap, elements, themeDark]);
+
+  // Minimap click navigation
+  const handleMinimapClick = useCallback((e) => {
+    const cy = cyRef.current;
+    const canvas = minimapCanvasRef.current;
+    if (!cy || !canvas || cy.nodes().length === 0) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const clickY = e.clientY - rect.top;
+
+    const minimapWidth = 160;
+    const minimapHeight = 120;
+    const padding = 10;
+    const bb = cy.elements().boundingBox();
+    const graphWidth = bb.w || 1;
+    const graphHeight = bb.h || 1;
+
+    const scaleX = (minimapWidth - padding * 2) / graphWidth;
+    const scaleY = (minimapHeight - padding * 2) / graphHeight;
+    const scale = Math.min(scaleX, scaleY, 1);
+
+    // Convert minimap coords to graph coords
+    const graphX = (clickX - padding) / scale + bb.x1;
+    const graphY = (clickY - padding) / scale + bb.y1;
+
+    // Pan to center on clicked position
+    cy.animate({
+      center: { x: graphX, y: graphY },
+    }, { duration: 300, easing: 'ease-out' });
+  }, []);
 
   return (
     <div
@@ -836,7 +960,44 @@ export default function GraphView({
         >
           📄
         </button>
+        <div className="layout-divider" />
+        <button
+          className={`layout-btn ${showMinimap ? 'active' : ''}`}
+          onClick={() => setShowMinimap(!showMinimap)}
+          title={showMinimap ? 'Hide minimap' : 'Show minimap'}
+        >
+          🗺
+        </button>
       </div>
+
+      {/* Minimap */}
+      {showMinimap && (
+        <div
+          ref={minimapRef}
+          className="graph-minimap"
+          style={{
+            position: 'absolute',
+            bottom: 16,
+            right: 16,
+            width: 160,
+            height: 120,
+            borderRadius: 8,
+            border: `1px solid ${themeDark ? 'rgba(75, 85, 99, 0.5)' : 'rgba(203, 213, 225, 0.8)'}`,
+            boxShadow: themeDark
+              ? '0 4px 12px rgba(0, 0, 0, 0.3)'
+              : '0 4px 12px rgba(0, 0, 0, 0.1)',
+            overflow: 'hidden',
+            cursor: 'pointer',
+            zIndex: 10,
+          }}
+        >
+          <canvas
+            ref={minimapCanvasRef}
+            onClick={handleMinimapClick}
+            style={{ display: 'block', width: '100%', height: '100%' }}
+          />
+        </div>
+      )}
 
       <CytoscapeComponent
         elements={elements}

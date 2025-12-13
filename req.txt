@@ -1,0 +1,2730 @@
+EPIC 1 – System Dynamics Canvas (Core Interaction Layer)
+Description
+
+Provide a high-performance visual canvas where users create, move, connect, and edit System Dynamics elements (causal variables, stocks, flows, auxiliaries). This is the foundation for both CLD and stock-flow diagrams.
+
+Feature 1.1 – Canvas Rendering & Navigation
+
+Requirements
+
+Infinite or very large 2D drawing surface.
+
+Smooth pan via click-drag, touchpad drag, or spacebar+drag.
+
+Zoom with mouse wheel + UI buttons.
+
+Zoom-to-fit and zoom-to-selection.
+
+Real-time rendering with no flicker.
+
+Acceptance Criteria
+
+User can pan fluidly at 60fps or similar.
+
+Zoom keeps cursor position centered.
+
+No jitter when dragging many elements.
+
+Canvas state persists on page refresh.
+
+Feature 1.2 – Element Creation Mechanisms
+
+Requirements
+
+Toolbar for adding:
+
+Causal Variable
+
+Link
+
+Stock
+
+Flow
+
+Auxiliary Variable
+
+Parameter / Constant
+
+Text / Note
+
+Right-click menu: quick-add element at pointer location.
+
+Keyboard shortcuts:
+
+"C" = Causal Variable
+
+"S" = Stock
+
+"F" = Flow
+
+"A" = Auxiliary
+
+"P" = Parameter
+
+"T" = Text
+
+Acceptance Criteria
+
+Creating an element takes max. two actions.
+
+Newly created element appears directly under cursor.
+
+Keyboard shortcuts work regardless of zoom level.
+
+Feature 1.3 – Element Manipulation
+
+Requirements
+
+Drag elements with snap-to-grid and alignment guides.
+
+Multi-select via lasso or shift-click.
+
+Duplicate, delete, copy/paste.
+
+Undo/redo stack with minimum 50 steps.
+
+Acceptance Criteria
+
+Dragging multiple nodes maintains relative spacing.
+
+Undo restores exact previous canvas state.
+
+Copy/paste preserves metadata (ID, type, properties).
+
+Feature 1.4 – Element Editing Panel
+
+Requirements
+
+Side panel displaying properties of selected element(s).
+
+Fields vary by type:
+
+Causal variable: label, description, polarity notes
+
+Stock: name, unit, initial value
+
+Flow: name, formula
+
+Aux/Parameter: formula/value
+
+Support Markdown in descriptions.
+
+Autocomplete when linking to domain entities.
+
+Acceptance Criteria
+
+Editing updates reflect immediately on canvas.
+
+Invalid formulas produce inline error messages.
+
+Closing and reopening panel preserves unsaved input until explicitly dismissed.
+
+Feature 1.5 – Links & Connectors
+
+Requirements
+
+Create link via dragging from node output handle to target.
+
+Arrow automatically orients to direction.
+
+Link editing panel:
+
+Polarity (for CLD mode)
+
+Delay toggle
+
+Strength (optional)
+
+Auto-routing to minimize overlap.
+
+Acceptance Criteria
+
+Link creation requires a single drag.
+
+Dragging nodes reroutes link paths dynamically.
+
+Delay indicator renders correctly when enabled.
+
+Feature 1.6 – Canvas Layers
+
+Requirements
+
+Predefined layers:
+
+Structural (nodes + links)
+
+Data/metrics overlay
+
+Annotation layer
+
+Toggle layer visibility individually.
+
+Elements know which layer they belong to.
+
+Acceptance Criteria
+
+Hiding a layer visually removes its elements without affecting layout.
+
+Switching layers does not modify model logic.
+
+Feature 1.7 – Dark/Light Mode
+
+Requirements
+
+Canvas adapts to global app theme.
+
+Node shapes, text, arrows adjust for contrast.
+
+Loop labels and colors remain readable in both modes.
+
+Acceptance Criteria
+
+All diagrams remain legible in both modes.
+
+No color clashes or unreadable elements.
+
+Feature 1.8 – Mini-map
+
+Requirements
+
+Small map showing entire model.
+
+Movable viewport box indicating focus area.
+
+Click/drag inside mini-map to reposition main view.
+
+Acceptance Criteria
+
+Mini-map updates in real time.
+
+Dragging viewport moves main canvas smoothly.
+
+Mini-map autoscaling works for very large diagrams.
+
+
+
+EPIC 2 – Causal Loop Diagram (CLD) Modeling
+Description
+
+Deliver a complete set of features to create, edit, visualize, and analyze Causal Loop Diagrams. Users must be able to map relationships, polarities, delays, and feedback loops with clarity and precision. The CLD functionality should be intuitive for fast conceptual sketching but structured enough for analytical use.
+
+Feature 2.1 – CLD Variable Nodes
+Requirements
+
+Node type: Causal Variable
+
+Properties:
+
+Label (short text)
+
+Description (markdown supported)
+
+Optional category (Resource, Process, Demand, KPI, Policy, External Driver, etc.)
+
+Optional domain entity link (ID reference to knowledge graph)
+
+Display:
+
+Rounded rectangle or bubble shape
+
+Auto-resize based on text
+
+Optional icon for category
+
+Interactions:
+
+Double-click to edit
+
+Drag to reposition
+
+Duplicate, group, delete
+
+Acceptance Criteria
+
+Node is created with default label (“Variable”).
+
+Text remains readable at all zoom levels.
+
+Linking to a domain object updates metadata panel immediately.
+
+Node style adapts to dark/light mode.
+
+Feature 2.2 – Causal Links (Arrows)
+Requirements
+
+Relationship type: directed arrow from Source → Target.
+
+Properties:
+
+Polarity: Positive (+) or Negative (–)
+
+Delay: Boolean flag (renders delay symbol)
+
+Optional strength: weak / medium / strong
+
+Optional justification note
+
+Visual:
+
+Arrowhead direction clearly visible
+
+Label near arrow midpoint (“+”, “–”)
+
+Delay drawn as double-line or clock symbol
+
+User Actions:
+
+Drag from node handle to create link
+
+Click link to open property panel
+
+Reposition text label manually (optional)
+
+Acceptance Criteria
+
+Polarity icon always aligns with arrow orientation.
+
+Delay indicator appears exactly on that link.
+
+Link reroutes cleanly when nodes move.
+
+Invalid link attempts (node → same node) are blocked.
+
+Feature 2.3 – Loop Detection & Loop Creation
+Requirements
+
+Automatic loop detection:
+
+Identify cycles in the CLD graph.
+
+Determine loop polarity (Reinforcing vs Balancing).
+
+Manual loop creation tool:
+
+User selects nodes/links → “Create Loop.”
+
+User assigns name (e.g., “R1 Growth Loop”).
+
+Loop visualization:
+
+Loop label displayed on canvas.
+
+Color conventions:
+
+Reinforcing: e.g., blue
+
+Balancing: e.g., red
+
+Clicking label highlights the loop path.
+
+Acceptance Criteria
+
+Loop detection correctly identifies all closed cycles.
+
+Loop type computed via sign product of link polarities.
+
+Hovering loop name highlights all links belonging to that loop.
+
+Loop remains bound to diagram even when nodes are moved.
+
+Feature 2.4 – Loop Inspector Panel
+Requirements
+
+Side panel listing:
+
+All loops (R1, R2, B1, etc.)
+
+Loop type (Reinforcing/Balancing)
+
+Member variables and arrows
+
+Optional narrative description
+
+Sorting:
+
+By loop type
+
+By size (# of elements)
+
+Clicking loop focuses canvas on loop.
+
+Acceptance Criteria
+
+Selecting loop scrolls and zooms the canvas to that loop region.
+
+Loop list updates live when loops are added or removed.
+
+Narrative field persists across sessions.
+
+Feature 2.5 – Delay Modeling Enhancements
+Requirements
+
+Add optional “Delay time category” to links:
+
+Immediate
+
+Short delay
+
+Long delay
+
+Visual styling:
+
+Different icons for each category (optional)
+
+Tooltip:
+
+Shows delay classification and optionally explanation text.
+
+Acceptance Criteria
+
+Delay classification stored in model JSON.
+
+Delay symbol updates instantly when changed.
+
+Delay remains visible even at low zoom levels.
+
+Feature 2.6 – Polarity Toggles & Visual Filters
+Requirements
+
+Canvas-level filter controls:
+
+Show/hide polarity labels.
+
+Show/hide delay icons.
+
+Highlight positive/negative links in different colors.
+
+Highlight only:
+
+Reinforcing loops
+
+Balancing loops
+
+Links connected to selected node
+
+Acceptance Criteria
+
+Filters update instantly without reloading model.
+
+Node selection correctly highlights all connected causal links.
+
+Model export/import retains user filter preferences.
+
+Feature 2.7 – CLD Cognitive Markers
+Requirements
+
+Allow users to annotate variables with cognitive or strategic roles:
+
+Indicator variable
+
+Decision lever
+
+External driver
+
+KPI
+
+Constraint
+
+Risk or bottleneck
+
+Visual:
+
+Small icon in top-right of node.
+
+Different color or border for “Key leverage variable.”
+
+Acceptance Criteria
+
+Marker icons scale with zoom.
+
+Icons toggleable by user preference.
+
+Nodes can have multiple markers.
+
+Feature 2.8 – Quick Subsystem Highlighting
+Requirements
+
+When a user selects a node:
+
+Highlight all upstream variables (causal predecessors).
+
+Highlight all downstream variables (causal successors).
+
+Show optional mini-tree of influence paths.
+
+Acceptance Criteria
+
+Highlight fades in smoothly.
+
+Upstream and downstream paths use different colors.
+
+User can toggle this feature on/off.
+
+Feature 2.9 – CLD Consistency Validation
+Requirements
+
+Provide a real-time validator to detect:
+
+Orphan variables (not connected)
+
+Incomplete feedback loops
+
+Conflicting polarities in parallel paths
+
+Suspicious structures (e.g., self-loop attempts)
+
+Unlabeled nodes (missing descriptions)
+
+Acceptance Criteria
+
+Validation messages appear in a “Model Health” panel.
+
+Clicking a warning zooms to problem element.
+
+Errors/warnings update dynamically as user edits.
+
+Feature 2.10 – Export & Presentation Mode
+Requirements
+
+Export CLD as PNG/SVG.
+
+Presentation mode:
+
+Removes editing tools.
+
+Shows clean diagram.
+
+Allows stepping through loops and paths.
+
+Optional animation of reinforcing/balancing structures.
+
+Acceptance Criteria
+
+SVG export matches on-screen quality.
+
+Presentation mode hides all toolbars and side panels.
+
+Loop highlight animations perform smoothly.
+
+
+
+EPIC 3 – Stock & Flow Modeling
+Description
+
+Enable users to create full stock-and-flow diagrams, including stocks, inflows, outflows, auxiliaries, parameters, and connectors. This module must support qualitative modeling first but be architected so it can evolve into fully quantitative simulation later.
+
+Feature 3.1 – Stock Nodes
+Requirements
+
+Type: Stock
+
+Properties:
+
+Name
+
+Description (markdown)
+
+Unit (text)
+
+Initial value (number or formula)
+
+Optional domain entity link
+
+Visual design:
+
+Rectangle symbol with thick border (standard SD notation)
+
+Auto-resizing based on label
+
+Distinct color/style from CLD variables
+
+Interaction:
+
+Drag and snap alignment
+
+Double-click to edit
+
+Connect inflow/outflow pipes
+
+Acceptance Criteria
+
+Stock is created with default name (“Stock”).
+
+Stock can anchor one or more flows.
+
+Initial value stored correctly in JSON model.
+
+Style adapts properly to dark/light mode.
+
+Feature 3.2 – Flow Elements (Inflow / Outflow)
+Requirements
+
+Types:
+
+Inflow
+
+Outflow
+
+Properties:
+
+Name
+
+Description
+
+Formula (string expression)
+
+Unit
+
+Visual:
+
+Pipe-like arrow entering or leaving a stock
+
+Flow valve icon for clarity
+
+Arrow direction indicates inflow/outflow
+
+Interaction:
+
+Click/drag from stock boundary to create flow
+
+Connect flow to stock or to a source/sink
+
+Edit formula in side panel
+
+Acceptance Criteria
+
+Flow direction always matches the diagram semantics.
+
+Flows can connect stock → stock or source/sink → stock.
+
+Invalid connections (flow to flow) are blocked.
+
+Formula validation triggers inline error messages.
+
+Feature 3.3 – Auxiliary Variables
+Requirements
+
+Properties:
+
+Name
+
+Description
+
+Formula (optional)
+
+Unit
+
+Visual:
+
+Circular or rounded bubble (typical SD notation)
+
+Interaction:
+
+Add via toolbar or shortcut
+
+Drag anywhere on canvas
+
+Connect with connector arrows to flows, stocks, or other auxiliaries
+
+Acceptance Criteria
+
+Aux node displays formula when hovered.
+
+If formula references unknown variables, show error icon.
+
+Aux nodes remain visually distinct at all zoom levels.
+
+Feature 3.4 – Parameters / Constants
+Requirements
+
+Type: Parameter
+
+Properties:
+
+Name
+
+Value (number)
+
+Description
+
+Unit
+
+Visual:
+
+Small square node (constant icon)
+
+Interaction:
+
+Connect to flows or auxiliaries using connectors
+
+Acceptance Criteria
+
+Parameter values persist across model reload.
+
+Changing a parameter instantly updates dependent formulas (future simulation-ready).
+
+Parameter nodes can be used in scenarios later.
+
+Feature 3.5 – Connectors (Information Arrows)
+Requirements
+
+Non-flow influence arrows linking:
+
+Aux → Flow
+
+Aux → Stock (if unit-consistent)
+
+Parameter → Flow or Aux
+
+Stock → Aux/Flow (feedback)
+
+Visual:
+
+Thin dotted or solid line with arrowhead
+
+Interaction:
+
+Drag from small handle on node to target
+
+Prevent connection of connector → connector
+
+Acceptance Criteria
+
+Connectors never look like flows (distinct visual style).
+
+Connectors route cleanly when nodes move.
+
+Connector formulas apply correctly in JSON export.
+
+Feature 3.6 – Stock & Flow Layout Engine
+Requirements
+
+Automatic snapping of stocks and flows for clean diagrams.
+
+Auto-detection of:
+
+Flow direction alignment
+
+Vertical/horizontal balancing
+
+Path routing for connectors to avoid overlaps.
+
+Acceptance Criteria
+
+Auto-routing avoids more than 50% of potential collisions.
+
+Flows stay centered between connected nodes when moved.
+
+Manual override remains possible.
+
+Feature 3.7 – Unit & Dimensional Consistency Framework
+Requirements
+
+Even before simulation, define a minimal structure for unit consistency:
+
+Each variable, stock, flow, param can have a unit string.
+
+Basic checks:
+
+Flow units must match stock units per time.
+
+Aux formulas must combine compatible units.
+
+Non-blocking warnings.
+
+Acceptance Criteria
+
+Warnings appear in “Model Health” panel.
+
+Hover on warning shows expected unit vs provided.
+
+No hard blocks, only guidance.
+
+Feature 3.8 – Formula Editor (Structured Expressions)
+Requirements
+
+Formula input for:
+
+Flows
+
+Aux variables
+
+Stocks (initial value)
+
+Editor capabilities:
+
+Syntax highlighting
+
+Autocomplete variable names in model
+
+Validation rules against unknown identifiers
+
+Support for: +, −, *, /, min(), max(), abs(), if(), parentheses
+
+Store formulas in JSON for later simulation.
+
+Acceptance Criteria
+
+Editor detects and highlights syntax errors.
+
+Hovering over formula shows computed dependencies.
+
+Autocomplete shows variables grouped by type.
+
+Feature 3.9 – Stock & Flow Mode Switching
+Requirements
+
+Canvas can toggle between:
+
+“CLD view only”
+
+“Stock & Flow view only”
+
+“Hybrid mode” (both types allowed)
+
+In hybrid mode:
+
+CLD variables can be converted to Aux or Stock with one action.
+
+Existing causal links can be turned into connectors.
+
+Acceptance Criteria
+
+Switching modes does not lose any elements.
+
+Conversions are reversible until saved.
+
+Node type conversions automatically adjust visuals.
+
+Feature 3.10 – Structural Validation for Stock-Flow Models
+Requirements
+
+Checks:
+
+Stock without inflows/outflows → warning.
+
+Flow without connected stock → error.
+
+Flow missing formula → warning.
+
+Aux with invalid formula → error.
+
+Unused variables → informational warning.
+
+Acceptance Criteria
+
+Model Health panel lists all issues grouped by severity.
+
+Clicking an item scrolls to the corresponding node.
+
+Validation updates in real time.
+
+Feature 3.11 – Presentation Mode for Stock-Flow Diagrams
+Requirements
+
+Clean, read-only view with:
+
+Hidden toolbars
+
+Highlight-by-click
+
+Step-through animations of flow logic
+
+Legend:
+
+Stock symbol
+
+Flow symbol
+
+Auxiliary
+
+Parameter
+
+Connector arrows
+
+Acceptance Criteria
+
+Export to SVG matches presentation mode look.
+
+Animation runs smoothly regardless of diagram size.
+
+No editing possible in presentation mode.
+
+Feature 3.12 – JSON Model Schema for Stock-Flow Diagrams
+Requirements
+
+Define a structured JSON format including:
+
+Metadata (name, description, version)
+
+Node list:
+
+type
+
+id
+
+label
+
+formula
+
+unit
+
+position (x,y)
+
+domainLinks
+
+Edge list:
+
+type: flow | connector
+
+sourceId
+
+targetId
+
+formula (for flows)
+
+delay (optional)
+
+Layout metadata
+
+Acceptance Criteria
+
+Exported JSON fully reconstructs the model visually.
+
+Import resolves missing IDs by generating new ones.
+
+JSON is stable across versions of the app.
+
+
+EPIC 4 – Lightweight Domain Linking (Simplified Integration Layer)
+Description
+
+Provide a minimal but powerful mechanism for System Dynamics elements (variables, stocks, flows, auxiliaries) to reference domain concepts in the tool.
+This is not a deep semantic integration — it is purely a tagging and contextual linking layer so models remain connected to the broader conceptual landscape, without enforcing structure or running knowledge-graph logic.
+
+Feature 4.1 – Optional Domain Tagging for SD Elements
+Requirements
+
+Every SD element must support one optional field:
+domainTag or domainReferenceId
+
+Domain tags can represent:
+
+Processes
+
+KPIs
+
+Events
+
+Systems
+
+Entities
+
+Any high-level category defined in the tool
+
+Tagging interface:
+
+Simple text search with suggestions
+
+Manual free-text allowed if no match is found
+
+Acceptance Criteria
+
+Tagging is optional and non-blocking.
+
+Removing a tag never affects other data.
+
+Tag name visible as a small label or icon on the node.
+
+Feature 4.2 – Simple Tag-Based Visual Overlays
+Requirements
+
+Allow users to enable a visual coloring overlay based on domain tags.
+
+Each unique tag receives a color.
+
+If an element has no tag, it retains the default style.
+
+Option to toggle tag display:
+
+Show tag as small text under the element
+
+Hide for clean presentation
+
+Acceptance Criteria
+
+Coloring responds instantly to toggles.
+
+Tag labels do not clutter the diagram at normal zoom levels.
+
+Export respects tag visibility settings.
+
+Feature 4.3 – Domain Filter Panel
+Requirements
+
+A simple panel listing all domain tags used in the current SD model.
+
+Users can click a tag to:
+
+Highlight all elements with that tag
+
+Dim all others
+
+Multi-tag selection allowed.
+
+Acceptance Criteria
+
+Highlighting is smooth and non-disruptive.
+
+Selecting two tags shows union of tagged nodes.
+
+Dimming preserves diagram readability.
+
+Feature 4.4 – Tag Management (Local to the Model)
+Requirements
+
+Users can:
+
+Add new tags
+
+Rename tags (affects all SD elements using it)
+
+Delete unused tags
+
+No global tag governance — tag scope is model-local.
+
+Acceptance Criteria
+
+Renaming a tag updates all associated elements immediately.
+
+Deleting a tag removes it from all elements silently.
+
+No dependency on external databases.
+
+Feature 4.5 – Tag-Based Grouping
+Requirements
+
+Enable users to optionally group SD elements by domain tag:
+
+Draw a soft rectangular boundary around same-tag elements.
+
+Boundary color matches tag color.
+
+Groups appear only if explicitly enabled.
+
+Acceptance Criteria
+
+Boundary updates when elements move.
+
+Group toggle on/off without losing group assignments.
+
+Works for CLD and Stock-Flow nodes.
+
+Feature 4.6 – Tag Search on Canvas
+Requirements
+
+A quick-search bar:
+
+Typing a domain tag instantly highlights matching elements.
+
+Press Enter to jump to next match.
+
+Works independently from the global search of the tool.
+
+Acceptance Criteria
+
+Search is real-time.
+
+Partial matches highlight correctly.
+
+No performance lag even on larger models.
+
+Feature 4.7 – Presentation Mode Respecting Tags
+Requirements
+
+When switching to Presentation Mode:
+
+User can choose:
+
+Show tags
+
+Hide tags
+
+Show only group boundaries
+
+No editing allowed.
+
+Acceptance Criteria
+
+Presentation mode is clean and uncluttered.
+
+Tag visibility settings persist for exports.
+
+Exported PNG/SVG reflects selected visibility options.
+
+Feature 4.8 – JSON Model Extensions (Lightweight)
+Requirements
+
+Add to JSON export/import:
+
+domainTag string on each element (optional)
+
+tagColorMap for consistent coloring across sessions
+
+Acceptance Criteria
+
+Model import restores tag colors and names.
+
+Missing tags or mismatches do not break import.
+
+File format remains minimal and backward-compatible.
+
+End of EPIC 4 (Simplified)
+
+This version avoids:
+
+Backlinking
+
+Semantic validation
+
+Cross-model reasoning
+
+Neo4j embedding
+
+Anything heavy or graph-driven
+
+It keeps the System Dynamics module light, flexible, creative, and domain-aware, without coupling it deeply to the rest of the system.
+
+If you want, we can proceed with:
+
+EPIC 5 – Story Mode, Insight Markers & Annotation Layer
+
+EPIC 6 – Simulation Architecture
+
+EPIC 7 – Scenarios, Versioning & Experimentation
+
+Just tell me which one you want next.
+
+let's do 5
+
+Below is EPIC 5 – Story Mode, Insight Markers & Annotation Layer, broken down into copy-ready features for Codex. This is intentionally practical: it makes the SD canvas usable as a “thinking and communication tool,” not just a diagram.
+
+EPIC 5 – Story Mode, Insight Markers & Annotation Layer
+Description
+
+Provide a dedicated annotation and storytelling layer on top of CLD and stock–flow diagrams. Users must be able to capture assumptions, hypotheses, evidence, open questions, decisions, and “what this means” narratives, and then present the model in a guided walkthrough.
+
+Feature 5.1 – Annotation Elements (Notes, Callouts, Highlights)
+Requirements
+
+Add annotation element types:
+
+Sticky Note (free text)
+
+Callout (text attached to a node/link)
+
+Highlighter (transparent rectangle / marker stroke)
+
+Divider / Section Header (for “subsystem” labeling)
+
+Annotation text supports:
+
+Markdown
+
+Links (internal or external)
+
+Annotation styling:
+
+Color, size, opacity
+
+Pin/unpin to canvas coordinates
+
+Acceptance Criteria
+
+Notes can be created from toolbar and right-click menu.
+
+Callouts can attach to a node or link and follow it when it moves.
+
+Annotation layer can be toggled on/off without affecting the base model.
+
+Feature 5.2 – Insight Markers (Assumption / Risk / Question / Evidence)
+Requirements
+
+Users can add markers to nodes, links, groups, or the model itself:
+
+Assumption
+
+Question
+
+Risk
+
+Evidence
+
+Decision
+
+Hypothesis
+
+Marker data fields:
+
+Title (short)
+
+Details (long, markdown)
+
+Optional severity (Low/Med/High)
+
+Optional status (Open, In Review, Resolved)
+
+Optional reference link (URL or internal reference)
+
+Visual:
+
+Small icon badge on the element
+
+Hover tooltip summary
+
+Acceptance Criteria
+
+Marker icon appears immediately when added.
+
+Clicking the icon opens the marker editor panel.
+
+Resolved markers can be hidden via filter toggle.
+
+Feature 5.3 – Insight List Panel (Searchable Registry)
+Requirements
+
+Side panel lists all insights in the current model:
+
+Filter by type, status, severity
+
+Full-text search (title + details)
+
+Sort by created date / updated date / severity
+
+Actions:
+
+Click → zoom to element
+
+Edit marker
+
+Change status
+
+Bulk hide/show categories
+
+Acceptance Criteria
+
+Selecting an insight centers and highlights its linked element.
+
+Panel updates live when markers are created/edited/deleted.
+
+Search returns results in <200ms for typical model sizes.
+
+Feature 5.4 – Story Steps (Narrative Walkthrough Builder)
+Requirements
+
+Provide a “Story Builder” where a model can have an ordered list of steps.
+
+Each step contains:
+
+Step title
+
+Narrative text (markdown)
+
+Focus target(s): one or more nodes/links/groups
+
+Optional highlight style (spotlight / outline / dim others)
+
+Optional “key takeaway” field
+
+Step actions:
+
+Add, remove, reorder (drag-and-drop)
+
+Duplicate step
+
+Assign focus targets from canvas selection
+
+Acceptance Criteria
+
+User can build a story without leaving the SD page.
+
+Reordering steps is smooth and persists.
+
+A step can focus multiple elements at once.
+
+Feature 5.5 – Story Mode (Presentation / Playback)
+Requirements
+
+A read-only “Story Mode” playback view:
+
+Next / Previous
+
+Step list (collapsible)
+
+Auto-zoom to focused elements
+
+Dim non-focused elements
+
+Optional autoplay:
+
+Configurable delay per step (off by default)
+
+Mode switch:
+
+Editing tools hidden
+
+Only navigation controls visible
+
+Acceptance Criteria
+
+Entering Story Mode does not modify the model.
+
+Auto-zoom is smooth and does not overshoot.
+
+Focus highlight is clearly visible in light and dark themes.
+
+Feature 5.6 – Subsystem Chapters (Story + Diagram Structure)
+Requirements
+
+Allow users to define “Chapters” that map to subsystems:
+
+Chapter name
+
+Description
+
+Set of tags and/or selected elements
+
+Chapters can be used in:
+
+Filtering (show only chapter elements)
+
+Story steps (quick add: “Create story from chapters”)
+
+Acceptance Criteria
+
+Chapter filter hides everything outside the chapter.
+
+Chapters don’t require tags; manual selection is sufficient.
+
+Chapters can be exported as part of model JSON.
+
+Feature 5.7 – Export Story as Report (Markdown)
+Requirements
+
+Export a model’s story to Markdown including:
+
+Title and model metadata
+
+List of steps with narrative text
+
+Optional embedded images:
+
+Screenshot of each step’s focused view (optional; can be phase 2)
+
+Insights summary section (open items)
+
+Export options:
+
+Include/exclude resolved insights
+
+Include/exclude tags and overlays
+
+Acceptance Criteria
+
+Export produces a single markdown file that can be pasted into docs.
+
+Formatting remains readable and structured.
+
+Story step ordering matches playback order.
+
+Feature 5.8 – Annotation & Story Layer Persistence (JSON)
+Requirements
+
+Extend model JSON schema with:
+
+annotations[]:
+
+id, type, text, style, position, attachedToId (optional)
+
+insights[]:
+
+id, type, title, details, status, severity, targetId(s)
+
+story[]:
+
+id, title, narrative, targetId(s), highlightMode, order
+
+Ensure backward compatibility if these arrays are missing.
+
+Acceptance Criteria
+
+Import/export roundtrip fully preserves story and annotations.
+
+Missing fields do not break model loading.
+
+Deleting a node referenced by story/insight is handled gracefully (see Feature 5.9).
+
+Feature 5.9 – Reference Integrity Handling (Graceful Degradation)
+Requirements
+
+When a base element is deleted:
+
+Any annotations/callouts attached to it:
+
+Either auto-detach (becomes free-floating) or mark as “orphaned”
+
+Any insight marker targeting it:
+
+Mark as orphaned and show warning badge in insights list
+
+Any story step focusing it:
+
+Show “missing target” indicator and allow user to reassign
+
+Acceptance Criteria
+
+No runtime errors due to missing IDs.
+
+Orphaned items are visible and recoverable.
+
+User can repair broken references via UI.
+
+Feature 5.10 – UX Controls for Clarity (Declutter Tools)
+Requirements
+
+Provide “Declutter” toggles:
+
+Hide/show:
+
+All annotations
+
+All insight markers
+
+Only open insights
+
+Callouts
+
+Chapter boundaries (if any)
+
+“Focus Mode”:
+
+Temporarily hide everything except selected subsystem (manual selection)
+
+Acceptance Criteria
+
+Toggling is instant and non-destructive.
+
+Focus Mode is reversible with one click.
+
+Export respects current visibility choices (optional setting).
+
+EPIC 6 – Simulation-Ready Architecture
+Description
+
+Introduce a robust internal representation for stock–flow models (and optionally quantified CLDs) so that models can be validated, parameterized, and executed by a simulation engine in a later phase. This epic defines the data schema, formula language, dependency graph, evaluation rules, and run configuration—all without requiring advanced numerical features up front.
+
+Feature 6.1 – Canonical Model Representation (Simulation Graph)
+Requirements
+
+Maintain an internal canonical “simulation graph” derived from the canvas diagram:
+
+Stocks
+
+Flows
+
+Auxiliaries
+
+Parameters
+
+Connectors (dependencies)
+
+Sources/Sinks (optional)
+
+The simulation graph must be buildable from the diagram JSON deterministically.
+
+Store:
+
+Node IDs and types
+
+Units
+
+Formulas and constants
+
+Dependency edges (who depends on who)
+
+Acceptance Criteria
+
+Loading a model produces the same simulation graph every time.
+
+Each flow lists dependencies (aux/param/stock inputs).
+
+Cycles in auxiliary dependencies are detectable.
+
+Feature 6.2 – Run Configuration (Time Horizon & Step)
+Requirements
+
+Add a “Run Config” object at the model level:
+
+startTime (number)
+
+endTime (number)
+
+dt (time step)
+
+timeUnit (string, e.g. day/week)
+
+integrationMethod (default: Euler; future: RK4)
+
+UI:
+
+Simple panel for editing run config.
+
+Reset to defaults.
+
+Acceptance Criteria
+
+Default config exists for every model.
+
+Invalid dt (<=0) is rejected with clear message.
+
+Config persists in JSON export/import.
+
+Feature 6.3 – Formula Language (Safe Expressions)
+Requirements
+
+Standardize formulas as expressions stored as strings, parsed into an AST (abstract syntax tree).
+
+Supported operations:
+
+Arithmetic: +, -, *, /, ^
+
+Parentheses
+
+Comparators: <, <=, >, >=, ==, !=
+
+Conditional: if(condition, a, b)
+
+Functions: min(), max(), abs(), clamp(x, lo, hi), exp(), log(), sqrt()
+
+Identifiers refer to model elements by stable symbol name resolved to element IDs.
+
+Security:
+
+No arbitrary JS execution.
+
+No eval.
+
+Acceptance Criteria
+
+Parsing detects syntax errors and shows location.
+
+Unknown identifiers are flagged.
+
+AST evaluation works for simple expressions using test variables.
+
+Feature 6.4 – Symbol Table & Naming Rules
+Requirements
+
+Each simulation-relevant element has:
+
+symbol (unique within model, e.g. inventory, demand_rate)
+
+displayName (human-readable label on canvas)
+
+Provide auto-symbol generation:
+
+Based on display name
+
+Sanitized to lowercase snake_case
+
+Uniqueness enforced by suffix _2, _3, etc.
+
+UI shows symbol in advanced mode (optional toggle).
+
+Acceptance Criteria
+
+Two nodes with same display name still get unique symbols.
+
+Renaming display name does not break formulas unless user chooses to sync symbol.
+
+Export/import preserves symbols.
+
+Feature 6.5 – Dependency Graph & Topological Ordering
+Requirements
+
+Build dependency graph from formulas and connectors:
+
+Aux depends on stocks/params/other aux
+
+Flow depends on stocks/params/aux
+
+Stock update depends on its flows
+
+Compute evaluation order:
+
+Parameters first
+
+Auxiliaries next (topologically sorted)
+
+Flows next
+
+Stocks last (state update)
+
+Detect cycles among auxiliaries:
+
+Provide error message listing the cycle path
+
+Suggest breaking cycle or converting to stock/delay (future)
+
+Acceptance Criteria
+
+Order is stable and reproducible.
+
+Cycles are detected reliably.
+
+Cycle error prevents “Run” (when simulation is enabled later).
+
+Feature 6.6 – Stock Update Semantics (Euler-Ready)
+Requirements
+
+Define the stock update equation for later execution:
+
+For each stock:
+
+Stock(t+dt) = Stock(t) + dt * (sum(inflows) - sum(outflows))
+
+Flow values are computed at time t (explicit Euler).
+
+Support multiple inflows/outflows per stock.
+
+Acceptance Criteria
+
+System can compute next-step values for a trivial model (1 stock, 1 inflow, 1 outflow) using internal tests.
+
+Units are not enforced strictly yet, but warnings can appear (from Epic 3).
+
+Feature 6.7 – Initial Values & Reset Behavior
+Requirements
+
+Stocks must have an initial value:
+
+Numeric constant OR formula evaluated at t=startTime
+
+Provide “Reset model state” semantics:
+
+Clears runtime state to initial values
+
+Does not modify the design-time model
+
+Acceptance Criteria
+
+Model can restore initial stock values reliably.
+
+Initial value formula errors are reported clearly.
+
+Feature 6.8 – Scenario Parameterization (Simulation-Oriented, Minimal)
+Requirements
+
+Define “Scenario” as a named override set:
+
+Overrides parameter values
+
+Optionally overrides initial stock values
+
+UI:
+
+Create scenario
+
+Set overrides in a simple table
+
+Select active scenario (no simulation run required yet)
+
+Acceptance Criteria
+
+Selecting scenario updates displayed parameter values in inspector.
+
+Export/import preserves scenario definitions.
+
+If an overridden parameter is deleted, override is marked as orphaned.
+
+Feature 6.9 – Validation Rules for Simulation Readiness
+Requirements
+
+Add a “Simulation Readiness” section to Model Health:
+
+Errors:
+
+Flow without formula
+
+Stock without initial value
+
+Formula parse error
+
+Unknown identifier
+
+Dependency cycle among auxiliaries
+
+Warnings:
+
+Unused parameter
+
+Unit mismatch (soft)
+
+Missing run config fields
+
+Acceptance Criteria
+
+Errors prevent enabling “Run” in future.
+
+Warnings are visible but non-blocking.
+
+Clicking a validation issue focuses the element.
+
+Feature 6.10 – Simulation API Contract (Internal Interface)
+Requirements
+
+Define an internal engine interface (even if not fully implemented):
+
+Input:
+
+Canonical simulation graph
+
+Run config
+
+Scenario overrides
+
+Output:
+
+Time series per stock and optionally per flow/aux
+
+Metadata (run duration, warnings, errors)
+
+Must allow plugging in:
+
+Local engine
+
+Worker thread
+
+External service (future)
+
+Acceptance Criteria
+
+A stub engine can be called and returns mock time series for UI testing.
+
+Contract is stable and documented in code.
+
+Feature 6.11 – Results Data Model (Time Series Storage)
+Requirements
+
+Introduce a standard structure for results:
+
+runId
+
+timestamp
+
+series:
+
+per elementId: array of values aligned to timestamps
+
+Support storing:
+
+Last run only (MVP)
+
+Optional persistence later (future epic)
+
+Acceptance Criteria
+
+Results structure supports charting without transformation hacks.
+
+Clearing results does not alter the model definition.
+
+Feature 6.12 – Future Hooks (Non-Blocking)
+Requirements
+
+Add non-breaking placeholders for later:
+
+Delay functions (material delay, exponential smoothing)
+
+Lookup tables / piecewise functions
+
+Stochastic noise inputs
+
+Calibration hooks (fit to observed data)
+
+Acceptance Criteria
+
+Schema can be extended without breaking old models.
+
+Unknown function tokens fail gracefully with actionable messages.
+
+
+
+EPIC 7 – Scenarios, Versioning & Experimentation
+Description
+
+Enable controlled iteration on System Dynamics models by introducing versioning, branching, scenario management, comparison views, and experiment tracking. Users must be able to explore alternatives (“what-if” variants) without losing the main narrative or model integrity.
+
+Feature 7.1 – Model Versions (Immutable Snapshots)
+Requirements
+
+Every model supports version snapshots:
+
+Version ID
+
+Created timestamp
+
+Author
+
+Change note (required)
+
+Optional tags (e.g., “baseline”, “reviewed”)
+
+Snapshot captures:
+
+Diagram JSON (nodes, links, layout)
+
+Annotations/insights/story (Epic 5)
+
+Run config + scenarios (Epic 6)
+
+Versions are read-only; editing happens only in the current working copy.
+
+Acceptance Criteria
+
+User can create a version snapshot with a single action (“Save version”).
+
+Opening an older version loads a read-only view.
+
+Restoring a version creates a new working copy (does not overwrite history).
+
+Feature 7.2 – Branching / Forking Models (Scenario Branches)
+Requirements
+
+Allow creating a branch from any version:
+
+Branch name
+
+Description
+
+Parent version reference
+
+Branch is a full model clone with independent evolution.
+
+UI shows:
+
+Branch list
+
+Parent relationship (lightweight tree view)
+
+Acceptance Criteria
+
+Branch creation duplicates the complete model state.
+
+Changes in one branch do not affect another.
+
+User can switch branches without losing unsaved changes (prompt to save/discard).
+
+Feature 7.3 – Scenario Management (Within a Branch)
+Requirements
+
+A model branch can define multiple scenarios:
+
+Scenario name, description
+
+Parameter overrides
+
+Initial stock overrides (optional)
+
+Optional “notes” for rationale
+
+One scenario is marked as “active” at a time for preview and future runs.
+
+Acceptance Criteria
+
+Scenario list is editable: add/rename/delete.
+
+Activating a scenario changes displayed parameter values immediately.
+
+Deleting a parameter does not break the model; overrides become “orphaned” and flagged.
+
+Feature 7.4 – Experiment Records (Structured What-If Log)
+Requirements
+
+Introduce “Experiment” entity tied to a branch:
+
+Name
+
+Hypothesis (markdown)
+
+Changes made (auto-captured summary)
+
+Expected outcome (text)
+
+Observed outcome (text; optional)
+
+Status: Planned / Running / Completed / Abandoned
+
+Link to scenario(s) and/or version(s)
+
+Support attachments:
+
+Optional link(s) to exported PNG/SVG/Markdown
+
+Optional reference URLs
+
+Acceptance Criteria
+
+User can create an experiment from current model state in <30 seconds.
+
+Experiment can be linked to a specific version snapshot.
+
+Experiments are searchable and sortable.
+
+Feature 7.5 – Change Tracking (What Changed Since Last Version)
+Requirements
+
+Track a structured change log between:
+
+Working copy and last saved version
+
+Any two versions
+
+Change categories:
+
+Added/removed/edited nodes
+
+Added/removed/edited links
+
+Formula changes
+
+Run config changes
+
+Scenario changes
+
+Story/annotation changes
+
+UI:
+
+“Changes” panel with categorized list
+
+Click item → focus affected element(s)
+
+Acceptance Criteria
+
+Changes are detected reliably for all element types.
+
+Formula diffs show before/after strings.
+
+Clicking a change focuses the canvas and highlights impacted elements.
+
+Feature 7.6 – Visual Diff View (Diagram Comparison)
+Requirements
+
+Provide a comparison mode for two versions/branches:
+
+Side-by-side canvas view OR overlay mode (user selectable)
+
+Visual highlighting:
+
+Added elements (green outline)
+
+Removed elements (red ghost outline)
+
+Changed elements (yellow outline)
+
+Optional filter: show only changed area
+
+Acceptance Criteria
+
+Overlay mode dims unchanged elements.
+
+Side-by-side view maintains independent pan/zoom, with optional “sync pan/zoom.”
+
+Diff view works for both CLD and stock-flow models.
+
+Feature 7.7 – Merge Assistance (Manual, Safe Merge)
+Requirements
+
+Support a non-destructive merge workflow (MVP):
+
+User selects:
+
+Source branch/version
+
+Target branch (current working copy)
+
+System computes changes and offers merge options:
+
+Accept selected changes
+
+Reject selected changes
+
+Conflicts detected when:
+
+Same element modified differently in both branches
+
+Element deleted in one branch and edited in another
+
+Conflict resolution UI:
+
+Show both versions of the element properties
+
+User chooses which to keep (or duplicates element)
+
+Acceptance Criteria
+
+No automatic silent merges—user must confirm selections.
+
+Conflicts are explicitly listed and resolvable.
+
+Merge creates a new version snapshot on success.
+
+Feature 7.8 – Baseline Lock & Review Workflow
+Requirements
+
+Allow marking one version as “Baseline” (read-only, protected).
+
+Support “Review status”:
+
+Draft / Under Review / Approved / Archived
+
+Optional reviewers list (names only; no deep permissions needed at MVP)
+
+UI indicates baseline clearly.
+
+Acceptance Criteria
+
+Baseline cannot be edited directly.
+
+Baseline can be cloned to start new work.
+
+Review status changes are tracked in version metadata.
+
+Feature 7.9 – Run Comparison (Future-Proof, Even Without Full Simulation)
+Requirements
+
+Even before simulation, provide a unified comparison concept:
+
+Compare scenarios by:
+
+Parameter differences (table)
+
+Structural differences (diff view)
+
+If simulation exists later:
+
+Compare time series outputs between scenarios (charts)
+
+Store “comparison presets”:
+
+Which scenarios
+
+Which metrics/stocks to compare
+
+Acceptance Criteria
+
+Parameter comparison table always works.
+
+Structural diff works between two scenarios if they are branch-based; otherwise fall back to parameter diff.
+
+Comparison presets persist in model state.
+
+Feature 7.10 – Export Package for Experiments
+Requirements
+
+Export an “Experiment Package” (zip later; MVP can be multiple downloads):
+
+Model JSON (current)
+
+Version metadata
+
+Scenario definitions
+
+Story markdown export (Epic 5)
+
+Diagram image(s) (optional)
+
+Experiment record markdown summary
+
+Acceptance Criteria
+
+Export includes enough information to reproduce the experiment.
+
+Exports are stable across app updates (backward compatible).
+
+User can export from experiment detail view in one action.
+
+Feature 7.11 – Permissions (Simple, Non-Enterprise)
+Requirements
+
+Minimal permission model at MVP:
+
+Owner can edit.
+
+Viewers can view.
+
+Editors can edit (optional).
+
+Branching allowed for editors and owners.
+
+Version snapshots allowed for editors and owners.
+
+Acceptance Criteria
+
+Viewers cannot modify working copy, scenarios, or experiments.
+
+Permission failures show clear message.
+
+Sharing links respect permission.
+
+Feature 7.12 – UX: Safe Editing & Autosave Rules
+Requirements
+
+Autosave working copy frequently.
+
+“Save version” is explicit and requires a change note.
+
+Warn user on switching branches if unsaved edits exist.
+
+Provide “Restore previous autosave” if crash or tab closes.
+
+Acceptance Criteria
+
+Working copy recovers after refresh without losing changes.
+
+Version snapshots are never overwritten.
+
+Users can reliably identify “what is baseline vs what is working.”
+
+
+
+EPIC 9 – UX Excellence Pack (Speed, Clarity, Onboarding, Productivity)
+Description
+
+Make the SD module feel “premium”: fast, discoverable, efficient, and resilient. Provide power-user tooling (command palette, shortcuts), onboarding (templates, guided hints), declutter controls, performance optimizations, and accessibility.
+
+Feature 9.1 – Command Palette (Quick Actions)
+Requirements
+
+A universal command palette (Ctrl/Cmd+K):
+
+Create elements (stock, flow, variable)
+
+Toggle overlays (tags, markers, annotations)
+
+Jump to element by name
+
+Run validations
+
+Export actions
+
+Search results are grouped by action type.
+
+Acceptance Criteria
+
+Palette opens instantly (<100ms).
+
+Typing filters results in real time.
+
+Selecting “Go to X” centers and highlights element.
+
+Feature 9.2 – Keyboard Shortcuts & Cheat Sheet
+Requirements
+
+Define core shortcuts:
+
+Create node types (C/S/F/A/P/T)
+
+Undo/redo
+
+Copy/paste
+
+Group/ungroup
+
+Align left/center/right/top/middle/bottom
+
+Zoom to fit / selection
+
+Provide a help overlay (“?”) listing shortcuts.
+
+Acceptance Criteria
+
+Shortcuts work reliably across browsers.
+
+Conflicts with browser defaults are avoided or handled.
+
+Cheat sheet always matches actual bindings.
+
+Feature 9.3 – Smart Auto-Layout (Assistive, Not Destructive)
+Requirements
+
+Provide optional layout helpers:
+
+“Tidy selection”
+
+“Tidy entire diagram”
+
+“Align flows horizontally”
+
+“Distribute nodes evenly”
+
+Auto-layout should preserve overall structure and avoid wild rearrangement.
+
+Acceptance Criteria
+
+Tidy selection affects only selected items.
+
+Undo restores prior positions exactly.
+
+Auto-layout improves readability in most cases.
+
+Feature 9.4 – Contextual Right-Click Menus
+Requirements
+
+Right-click on:
+
+Empty canvas: add elements, paste, toggle grid
+
+Node: duplicate, delete, group, convert type, add marker
+
+Link: set polarity/delay, convert link type (if hybrid), add note
+
+Menus show only relevant actions.
+
+Acceptance Criteria
+
+Context menus are responsive and consistent.
+
+No “dead” actions; everything shown must work.
+
+Keyboard navigation supported (optional).
+
+Feature 9.5 – Declutter Controls (Cognitive Load Reduction)
+Requirements
+
+One-click toggles:
+
+Hide all markers
+
+Hide annotations
+
+Hide tags
+
+Hide link labels
+
+Show only selected subsystem (focus mode)
+
+A “Clean Export Mode” preset that hides noisy overlays.
+
+Acceptance Criteria
+
+Declutter state persists per user or per model (your choice).
+
+Export can respect declutter mode.
+
+Focus mode exits with one click.
+
+Feature 9.6 – Onboarding: Templates & Starter Models
+Requirements
+
+Provide starter templates:
+
+Basic CLD (reinforcing + balancing example)
+
+Basic stock-flow (inventory with inflow/outflow)
+
+Common archetype skeletons (optional)
+
+“New Model Wizard”:
+
+Choose CLD / Stock-Flow / Hybrid
+
+Select template or blank
+
+Acceptance Criteria
+
+Wizard creates a usable model in <10 seconds.
+
+Templates are editable and do not enforce constraints.
+
+Users can disable wizard in settings.
+
+Feature 9.7 – Inline Guidance & Micro-Hints
+Requirements
+
+Subtle hints (dismissible):
+
+“Drag from handle to create link”
+
+“Use Ctrl/Cmd+K for quick actions”
+
+Tooltips on icons and notation (polarity, delay, valves).
+
+Acceptance Criteria
+
+Hints appear only when relevant (first-use logic optional).
+
+Users can disable all hints permanently.
+
+Tooltips do not block interaction.
+
+Feature 9.8 – Performance Optimization & Large Model Mode
+Requirements
+
+Optimize for large diagrams:
+
+Virtualize rendering where possible
+
+Reduce shadows/animations in “Large Model Mode”
+
+Debounce layout recalculations
+
+Provide a performance indicator in dev mode (optional).
+
+Acceptance Criteria
+
+Diagram with 200+ elements remains usable.
+
+Dragging does not freeze the UI.
+
+Large Model Mode can be toggled automatically or manually.
+
+Feature 9.9 – Accessibility & Usability Standards
+Requirements
+
+Keyboard navigation basics:
+
+Tab through elements in list panel
+
+Enter selects and focuses on canvas
+
+Contrast compliance for light/dark themes.
+
+Screen-reader friendly labels in panels.
+
+Acceptance Criteria
+
+All primary actions are reachable without a mouse (minimum).
+
+Text contrast remains readable.
+
+Focus indicators visible.
+
+Feature 9.10 – Error Resilience & Recovery
+Requirements
+
+Autosave with recoverable drafts:
+
+“Restore last autosave” after crash
+
+Non-blocking error toasts for recoverable issues.
+
+Structured error boundary for canvas rendering failures.
+
+Acceptance Criteria
+
+Users do not lose work after refresh.
+
+Errors are logged with context (model id, action, timestamp).
+
+Recovery path is clear and reliable.
+
+EPIC 10 – Quantum-Inspired Modelling Layer (Conceptual Extension)
+Description
+
+Extend the System Dynamics environment with a quantum-inspired thinking layer that helps users reason about uncertainty, observer effects, multiple potential futures, non-local influence, and probabilistic outcomes in business systems.
+This epic does not simulate physics; it introduces formal conceptual constructs that coexist with classical system dynamics models and enrich problem framing, experimentation, and decision thinking.
+
+Design Principles (Non-Functional)
+
+Quantum concepts are:
+
+Explicit
+
+Optional
+
+Conceptual, not mystical
+
+Classical SD remains the default.
+
+Quantum-inspired elements:
+
+Never break existing models
+
+Always degrade gracefully into classical representations
+
+Every quantum construct must have:
+
+A visible representation
+
+A clear business interpretation
+
+A defined interaction with scenarios and stories
+
+Feature 10.1 – System State Superposition (Multiple Coexisting States)
+Requirements
+
+Allow a model to define multiple potential system states existing simultaneously:
+
+Each state has:
+
+Name
+
+Description
+
+Probability weight (0–1, sum ≤ 1)
+
+States can differ in:
+
+Parameter values
+
+Initial stock values
+
+Structural assumptions (optional, later)
+
+One model can have:
+
+Classical mode (single state)
+
+Superposition mode (multiple states)
+
+Acceptance Criteria
+
+User can define at least 2 parallel states.
+
+Probabilities are editable and validated.
+
+Switching between states updates visible values without modifying base model.
+
+Feature 10.2 – Observation / Measurement Events (Collapse Triggers)
+Requirements
+
+Introduce Observation Events:
+
+Represent decisions, measurements, audits, reviews, or market signals.
+
+Observation event properties:
+
+Name
+
+Description
+
+Trigger condition (manual for MVP)
+
+Collapse rule:
+
+Select most probable state
+
+Select random weighted state
+
+User chooses state
+
+Visual:
+
+Special icon placed on canvas or timeline bar.
+
+Acceptance Criteria
+
+Observation events are optional.
+
+Triggering an observation collapses superposition into one active state.
+
+Collapse is logged (what collapsed, why, when).
+
+Feature 10.3 – Observer Effect (Decision Feedback Annotation)
+Requirements
+
+Allow marking certain variables or flows as Observer-Sensitive.
+
+Observer-sensitive elements:
+
+Change behavior when “observed” or measured
+
+Example business meanings:
+
+KPIs gamed when monitored
+
+Staff behavior changes when audited
+
+Implementation:
+
+Add an “Observer Effect” flag with explanatory text.
+
+Optional modifier applied when observation occurs (qualitative or numeric).
+
+Acceptance Criteria
+
+Observer-sensitive elements are visually marked.
+
+Observation event highlights impacted elements.
+
+No automatic numeric enforcement required at MVP.
+
+Feature 10.4 – Probability-Weighted Scenarios (Beyond Deterministic What-If)
+Requirements
+
+Extend scenarios (Epic 7) with probability weights:
+
+Scenario weight represents likelihood, not preference.
+
+Allow grouping scenarios into:
+
+Scenario Sets (mutually exclusive futures)
+
+UI:
+
+Probability sliders
+
+Visual distribution indicator
+
+Acceptance Criteria
+
+Total probability validation with warnings.
+
+Scenario comparison supports weighted reasoning.
+
+Export includes probability metadata.
+
+Feature 10.5 – Entanglement Links (Non-Local Influence)
+Requirements
+
+Introduce Entanglement Link:
+
+A special relationship between two elements.
+
+Meaning:
+
+Change in one element immediately influences another
+
+Without explicit causal chain
+
+Use cases:
+
+Organizational trust & morale
+
+Market sentiment across regions
+
+Regulatory signaling effects
+
+Visual:
+
+Dashed double-line with entanglement icon
+
+Properties:
+
+Strength (qualitative)
+
+Explanation text
+
+Acceptance Criteria
+
+Entanglement links are visually distinct from causal links.
+
+They do not participate in classical loop calculations.
+
+They appear in story and insight layers clearly labeled.
+
+Feature 10.6 – Uncertainty Fields (Probability Clouds)
+Requirements
+
+Allow attaching Uncertainty Fields to:
+
+Variables
+
+Stocks
+
+Flows
+
+Uncertainty field properties:
+
+Type: Low / Medium / High
+
+Shape (distribution type – informational only at MVP)
+
+Rationale text
+
+Visual:
+
+Soft halo or blur around element
+
+Opacity reflects uncertainty level
+
+Acceptance Criteria
+
+Uncertainty visualization does not obscure labels.
+
+Fields can be toggled on/off globally.
+
+Export respects visibility settings.
+
+Feature 10.7 – Time as Non-Linear (Temporal Perspective Lens)
+Requirements
+
+Allow marking elements with temporal behavior:
+
+Immediate
+
+Delayed
+
+Anticipatory (future expectations influencing now)
+
+Anticipatory behavior:
+
+Example: expected regulation affects investment today
+
+Visual:
+
+Small time-arrow icons
+
+Used mainly for explanation and story mode.
+
+Acceptance Criteria
+
+Temporal markers are visible but subtle.
+
+Used in story steps and presentation mode.
+
+No simulation enforcement required initially.
+
+Feature 10.8 – Quantum Perspective Overlay (View Mode)
+Requirements
+
+Add a toggle:
+
+“Quantum Perspective View”
+
+When enabled:
+
+Show uncertainty fields
+
+Show entanglement links
+
+Show superposition states indicator
+
+Dim classical-only elements
+
+Read-only by default to avoid accidental edits.
+
+Acceptance Criteria
+
+Toggle is reversible without state loss.
+
+Overlay is clearly labeled as “Conceptual View”.
+
+Export optionally includes this view.
+
+Feature 10.9 – Quantum Narrative Blocks (Interpretive Layer)
+Requirements
+
+Add a new annotation type:
+
+Quantum Insight
+
+Used to capture:
+
+Ambiguity
+
+Paradox
+
+Irreducible uncertainty
+
+“We cannot know X before decision Y”
+
+Linked to:
+
+Elements
+
+States
+
+Observations
+
+Appears prominently in story mode.
+
+Acceptance Criteria
+
+Quantum insights are visually distinct from normal notes.
+
+They appear in story export under a separate section.
+
+Can be filtered independently.
+
+Feature 10.10 – Experimentation with Quantum Frames
+Requirements
+
+Experiments (Epic 7) can specify:
+
+Classical assumption
+
+Quantum-inspired assumption
+
+Example:
+
+Classical: “Demand responds linearly to price”
+
+Quantum-inspired: “Demand state depends on perception at decision time”
+
+Experiments can compare:
+
+Deterministic vs probabilistic framing
+
+Observed vs unobserved behavior
+
+Acceptance Criteria
+
+Experiment records capture framing explicitly.
+
+Comparison view highlights framing differences.
+
+Export includes framing rationale.
+
+Feature 10.11 – Guardrails & Clarity Controls
+Requirements
+
+Explicit disclaimers in UI:
+
+“Quantum-inspired ≠ physical quantum simulation”
+
+Ability to:
+
+Hide all quantum constructs
+
+Lock model into “Classical SD Only”
+
+Admin/model setting:
+
+Enable/disable quantum features per model.
+
+Acceptance Criteria
+
+Classical users are never forced into quantum concepts.
+
+Quantum elements never affect classical simulation unless explicitly enabled later.
+
+Model remains understandable without quantum layer.
+
+Feature 10.12 – JSON Extensions (Non-Breaking)
+Requirements
+
+Extend model schema with optional sections:
+
+quantumStates[]
+
+observationEvents[]
+
+entanglementLinks[]
+
+uncertaintyFields[]
+
+quantumInsights[]
+
+All fields optional and ignorable by older versions.
+
+Acceptance Criteria
+
+Import/export roundtrip preserves quantum data.
+
+Models without quantum data load unchanged.
+
+Schema versioning handles absence gracefully.
+
+End of EPIC 10 – Quantum-Inspired Modelling Layer

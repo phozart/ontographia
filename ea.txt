@@ -1,0 +1,712 @@
+You are an Enterprise Architecture and Business Analysis platform implementor.
+
+You MUST follow these rules strictly:
+
+1. This system is a single integrated platform combining:
+   - BABOK-aligned Business Analysis
+   - TOGAF-aligned Enterprise Architecture
+   - Delivery alignment (tickets, roadmaps)
+
+2. There is ONE Project model and ONE underlying artefact graph.
+   Business Analysis and Enterprise Architecture are VIEWPOINTS over the same data.
+
+3. Every object in the system MUST be an Artefact with:
+   - type
+   - lifecycle status
+   - ownership
+   - traceability
+   - auditability
+
+4. Diagrams are NOT drawings.
+   - Every node maps to a real artefact.
+   - Every edge maps to a typed relationship.
+   - Invalid relationships MUST be blocked.
+
+5. You MUST NOT invent new artefact types, relationship types, or lifecycle states.
+   Use ONLY those defined in the provided schema.
+
+6. TOGAF and BABOK rules are enforced by the system:
+   - Capabilities anchor business change
+   - Architecture constrains delivery
+   - Delivery implements approved analysis
+
+7. BA artefacts (Epics, Features, User Stories, Tickets) MUST trace to:
+   - Capabilities
+   - Target Architecture artefacts
+
+8. Enterprise Architecture artefacts MUST support:
+   - Baseline, Transition, Target states
+   - Roadmaps and plateaus
+   - Governance and compliance
+
+9. The UI must resemble professional EA tooling:
+   - repository-centric
+   - multi-pane
+   - dense, analytical
+   - no playful or card-only metaphors
+
+10. If an artefact cannot answer:
+    - “Why does this exist?”
+    - “What depends on this?”
+    - “What changes if this changes?”
+    then the model is invalid.
+
+You are to generate:
+- Backend logic
+- API contracts
+- Validation rules
+- UI behaviour
+ONLY within this specification.
+
+Do not simplify. Do not omit traceability. Do not merge concepts loosely.
+
+
+
+INTEGRATED BUSINESS ANALYSIS & ENTERPRISE ARCHITECTURE PLATFORM
+
+(BABOK + TOGAF, Single Project, Unified Ontology)
+
+0. PURPOSE & POSITIONING
+Purpose
+
+Build a professional-grade platform that enables:
+
+Business Analysis (BABOK-aligned)
+
+Enterprise Architecture (TOGAF-aligned)
+
+Delivery alignment (tickets, roadmaps)
+
+Full traceability from strategy → architecture → requirements → implementation
+
+Positioning
+
+This is not:
+
+a documentation tool
+
+a drawing tool
+
+a ticketing tool
+
+This is:
+
+A semantic operating system for change in complex enterprises.
+
+1. CORE ARCHITECTURAL PRINCIPLES (MANDATORY)
+
+Single Project Container
+
+One Project = one change initiative
+
+BA and EA operate inside the same Project
+
+Single Ontology (Artefact Graph)
+
+All objects are typed artefacts
+
+All connections are typed relationships
+
+No free-floating content
+
+Multiple Viewpoints
+
+BA and EA are not separate systems
+
+They are views over the same graph
+
+Methodology Encoded
+
+BABOK and TOGAF rules are enforced by the system
+
+Users cannot “model incorrectly” without explicit override
+
+2. CANONICAL DATA MODEL (IMPLEMENTATION BASE)
+2.1 Project
+Project {
+  id: UUID
+  key: string
+  name: string
+  description: richtext
+  status: Draft | Active | Closed | Archived
+  startDate: date
+  endDate: date?
+  members: [{ userId, role }]
+  createdAt
+  updatedAt
+}
+
+2.2 Artefact (Supertype – EVERYTHING inherits from this)
+Artefact {
+  id: UUID
+  projectId: UUID
+  artefactType: ENUM
+  name: string
+  description: richtext
+  status: Draft | InReview | Approved | Deprecated | Superseded
+  architectureState: Baseline | Transition | Target | N/A
+  ownerId: UUID
+  priority: Low | Medium | High | Critical
+  version: integer
+  tags: string[]
+  customFields: JSON
+  createdAt
+  updatedAt
+}
+
+2.3 Artefact Types (Unified)
+Strategy & Business (EA)
+
+Capability (L1/L2/L3)
+
+ValueStream
+
+BusinessProcess
+
+OrganizationUnit
+
+Principle
+
+Architecture (EA)
+
+DataDomain
+
+BusinessObject
+
+Application
+
+ApplicationService
+
+Interface
+
+TechnologyComponent
+
+Environment
+
+ArchitectureRequirement
+
+DecisionRecord
+
+RoadmapItem
+
+Analysis & Delivery (BA)
+
+BusinessNeed
+
+BusinessRequirement
+
+StakeholderRequirement
+
+SolutionRequirement (Functional / Non-Functional)
+
+Epic
+
+Feature
+
+UserStory
+
+UseCase
+
+Ticket
+
+Risk
+
+Assumption
+
+Constraint
+
+2.4 Relationship (STRICT)
+Relationship {
+  id: UUID
+  projectId: UUID
+  fromArtefactId: UUID
+  toArtefactId: UUID
+  relationshipType: ENUM
+  createdAt
+}
+
+Allowed Relationship Dictionary (Extract)
+From	Relationship	To	Rule
+Capability	decomposesTo	Capability	L1→L2→L3 only
+Capability	realizedBy	BusinessProcess	Mandatory for L2+
+Capability	drives	Epic	Cross-discipline
+Epic	refines	Feature	Mandatory
+Feature	decomposesTo	UserStory	Optional
+UserStory	implementedBy	Ticket	Mandatory for delivery
+BusinessProcess	supportedBy	Application	Mandatory (Target)
+Application	uses	DataDomain	Optional
+Application	deployedOn	TechnologyComponent	Mandatory (Target)
+RoadmapItem	changes	Any Artefact	Mandatory
+ArchitectureRequirement	constrains	Any Artefact	Mandatory
+
+Hard Rules
+
+Cycles forbidden (except relatedTo)
+
+Approved artefacts cannot be deleted
+
+Baseline artefacts cannot depend on Target artefacts
+
+3. VIEWPOINT CONFIGURATION (THE HEART OF THE SYSTEM)
+
+Viewpoints control:
+
+Visible artefact types
+
+Visible relationships
+
+Allowed actions
+
+Validation rules
+
+UI defaults
+
+3.1 Viewpoint Object
+Viewpoint {
+  id: string
+  name: string
+  visibleArtefactTypes: []
+  visibleRelationshipTypes: []
+  editableArtefactTypes: []
+  validationProfile: ENUM
+  defaultLayers: []
+}
+
+3.2 Standard Viewpoints (MANDATORY)
+Strategy View
+
+Visible:
+
+Capability
+
+ValueStream
+
+RoadmapItem
+
+Epic (read-only)
+
+Use:
+
+Strategic alignment, executive discussion
+
+Enterprise Architecture View (TOGAF)
+
+Visible:
+
+Capability
+
+BusinessProcess
+
+Application
+
+DataDomain
+
+TechnologyComponent
+
+ArchitectureRequirement
+
+DecisionRecord
+
+BA artefacts:
+
+Epics (collapsed)
+
+Features (read-only)
+
+Business Analysis View (BABOK)
+
+Visible:
+
+BusinessNeed
+
+BusinessRequirement
+
+StakeholderRequirement
+
+SolutionRequirement
+
+Epic
+
+Feature
+
+UserStory
+
+UseCase
+
+BusinessProcess
+
+Capability (context anchor)
+
+Delivery View
+
+Visible:
+
+Ticket
+
+UserStory
+
+Feature
+
+RoadmapItem
+
+Application
+
+Target Architecture artefacts
+
+4. SCREEN SPECIFICATION (IMPLEMENTATION-GRADE)
+4.1 Global Layout (Professional EA Tool)
+┌───────────────────────────────┐
+│ Viewpoint Selector            │
+├──────────────┬────────────────┤
+│ Repository   │ Integrated     │
+│ Tree         │ Canvas         │
+├──────────────┴────────────────┤
+│ Detail | Trace | Governance   │
+└───────────────────────────────┘
+
+4.2 Repository Tree
+
+Hierarchical by artefact type
+
+Filtered by viewpoint
+
+Supports:
+
+search
+
+drag (re-parent where allowed)
+
+bulk select
+
+4.3 Integrated Canvas
+
+Diagram types:
+
+Capability Map
+
+Architecture Overview
+
+Process Flow
+
+Delivery Flow
+
+Layer toggles:
+
+Strategy
+
+Business
+
+Application
+
+Technology
+
+Delivery
+
+Relationship validation enforced at draw-time
+
+4.4 Artefact Detail Panel
+
+Tabs:
+
+Overview
+
+Relationships
+
+Traceability (up/downstream)
+
+Governance (status, approvals)
+
+History (audit)
+
+4.5 Kanban / Roadmap
+
+Tickets and roadmap items are visual only
+
+All semantics live in artefacts & relationships
+
+5. UX / UI DESIGN RULES (NON-NEGOTIABLE)
+Look & Feel
+
+Dense, professional, analytical
+
+Similar to Archi / BiZZdesign / MEGA
+
+Avoid:
+
+card-only UIs
+
+playful interactions
+
+freeform drawing
+
+Interaction Rules
+
+Every visible object must be selectable
+
+Every line must be meaningful
+
+Hover = context, click = control
+
+6. TEMPLATES (ACCELERATION, NOT REPLACEMENT)
+Mandatory Templates
+Capability Template
+
+L1/L2/L3 structure
+
+Required relationships
+
+Default descriptions
+
+Epic Template
+
+Links to Capability
+
+Business value
+
+Acceptance criteria scaffold
+
+Architecture Requirement Template
+
+Type
+
+Fit criteria
+
+Verification method
+
+Roadmap Item Template
+
+Impacted artefacts
+
+Linked tickets
+
+Transition state
+
+Templates generate real artefacts, not text.
+
+7. GOVERNANCE & VALIDATION RULES
+Examples
+
+A Feature cannot be Approved unless:
+
+Linked to an Epic
+
+Epic linked to a Capability
+
+A Ticket cannot move to “In Build” unless:
+
+UserStory Approved
+
+Architecture constraints satisfied
+
+EA Approval blocks BA approval if violated
+
+8. AUDIT & SNAPSHOTS
+
+Every change logged (immutable)
+
+Approved architecture creates:
+
+frozen snapshot
+
+read-only baseline
+
+Snapshots referenced by:
+
+roadmaps
+
+decisions
+
+compliance
+
+9. API CONTRACT (OUTLINE)
+POST   /projects
+POST   /projects/{id}/artefacts
+PATCH  /artefacts/{id}
+POST   /relationships
+GET    /artefacts/{id}/trace
+POST   /diagrams
+GET    /viewpoints
+POST   /approvals
+POST   /snapshots
+
+10. FINAL IMPLEMENTATION DIRECTIVE
+
+This system encodes how organisations think about change.
+
+If something cannot be traced, governed, or explained,
+it does not belong in the system.
+
+
+
+canonical JSON{
+  "$id": "Project",
+  "type": "object",
+  "required": ["id", "key", "name", "status"],
+  "properties": {
+    "id": { "type": "string", "format": "uuid" },
+    "key": { "type": "string" },
+    "name": { "type": "string" },
+    "description": { "type": "string" },
+    "status": {
+      "type": "string",
+      "enum": ["Draft", "Active", "Closed", "Archived"]
+    },
+    "startDate": { "type": "string", "format": "date" },
+    "endDate": { "type": "string", "format": "date" }
+  }
+}
+{
+  "$id": "Artefact",
+  "type": "object",
+  "required": ["id", "projectId", "artefactType", "name", "status"],
+  "properties": {
+    "id": { "type": "string", "format": "uuid" },
+    "projectId": { "type": "string", "format": "uuid" },
+    "artefactType": {
+      "type": "string",
+      "enum": [
+        "Capability", "ValueStream", "BusinessProcess",
+        "Application", "DataDomain", "TechnologyComponent",
+        "ArchitectureRequirement", "DecisionRecord", "RoadmapItem",
+        "BusinessNeed", "BusinessRequirement", "StakeholderRequirement",
+        "SolutionRequirement", "Epic", "Feature", "UserStory", "Ticket"
+      ]
+    },
+    "name": { "type": "string" },
+    "description": { "type": "string" },
+    "status": {
+      "type": "string",
+      "enum": ["Draft", "InReview", "Approved", "Deprecated", "Superseded"]
+    },
+    "architectureState": {
+      "type": "string",
+      "enum": ["Baseline", "Transition", "Target", "N/A"]
+    },
+    "ownerId": { "type": "string", "format": "uuid" },
+    "priority": {
+      "type": "string",
+      "enum": ["Low", "Medium", "High", "Critical"]
+    },
+    "version": { "type": "integer" },
+    "customFields": { "type": "object" }
+  }
+}
+{
+  "$id": "Relationship",
+  "type": "object",
+  "required": ["id", "projectId", "from", "to", "type"],
+  "properties": {
+    "id": { "type": "string", "format": "uuid" },
+    "projectId": { "type": "string", "format": "uuid" },
+    "from": { "type": "string", "format": "uuid" },
+    "to": { "type": "string", "format": "uuid" },
+    "type": {
+      "type": "string",
+      "enum": [
+        "decomposesTo", "realizedBy", "drives",
+        "refines", "implementedBy",
+        "supportedBy", "uses", "deployedOn",
+        "constrains", "changes", "relatedTo"
+      ]
+    }
+  }
+}
+{
+  "$id": "Viewpoint",
+  "type": "object",
+  "required": ["id", "visibleArtefactTypes"],
+  "properties": {
+    "id": { "type": "string" },
+    "name": { "type": "string" },
+    "visibleArtefactTypes": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "visibleRelationshipTypes": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "editableArtefactTypes": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "defaultLayers": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}
+Seed demo data
+{
+  "id": "11111111-1111-1111-1111-111111111111",
+  "key": "NETVIS-2025",
+  "name": "Network Visibility Improvement",
+  "status": "Active"
+}
+{
+  "id": "cap-001",
+  "projectId": "11111111-1111-1111-1111-111111111111",
+  "artefactType": "Capability",
+  "name": "Network Performance Visibility",
+  "status": "Approved",
+  "architectureState": "Target"
+}
+
+{
+  "id": "app-001",
+  "projectId": "11111111-1111-1111-1111-111111111111",
+  "artefactType": "Application",
+  "name": "Analytics Platform",
+  "status": "Approved",
+  "architectureState": "Target"
+}
+{
+  "id": "epic-001",
+  "projectId": "11111111-1111-1111-1111-111111111111",
+  "artefactType": "Epic",
+  "name": "Improve Network Monitoring",
+  "status": "Approved"
+}
+{
+  "id": "feature-001",
+  "projectId": "11111111-1111-1111-1111-111111111111",
+  "artefactType": "Feature",
+  "name": "Leg-based KPI Reporting",
+  "status": "Approved"
+}
+{
+  "id": "story-001",
+  "projectId": "11111111-1111-1111-1111-111111111111",
+  "artefactType": "UserStory",
+  "name": "As an analyst, I want leg-level KPIs",
+  "status": "Approved"
+}
+{
+  "id": "ticket-001",
+  "projectId": "11111111-1111-1111-1111-111111111111",
+  "artefactType": "Ticket",
+  "name": "Implement EMA ingestion",
+  "status": "Draft"
+}
+[
+  { "id": "r1", "projectId": "11111111-1111-1111-1111-111111111111", "from": "cap-001", "to": "epic-001", "type": "drives" },
+  { "id": "r2", "projectId": "11111111-1111-1111-1111-111111111111", "from": "epic-001", "to": "feature-001", "type": "refines" },
+  { "id": "r3", "projectId": "11111111-1111-1111-1111-111111111111", "from": "feature-001", "to": "story-001", "type": "decomposesTo" },
+  { "id": "r4", "projectId": "11111111-1111-1111-1111-111111111111", "from": "story-001", "to": "ticket-001", "type": "implementedBy" },
+  { "id": "r5", "projectId": "11111111-1111-1111-1111-111111111111", "from": "app-001", "to": "cap-001", "type": "supportedBy" }
+]
+
+FINAL NOTE (IMPORTANT)
+
+With this prompt + schemas + seed data, an implementor can now:
+
+Build backend models without guessing
+
+Enforce TOGAF/BABOK rules programmatically
+
+Build UI views that cannot drift into chaos
+
+Demonstrate real end-to-end traceability in a demo
+
+And final remark: combine the EA and BA view into that single view we describe here together what we build already in the BA view.
+use pg for storage, no neo4j, we keep that for the knowledge graph.

@@ -1,0 +1,241 @@
+/* styles/layout.css - App shell, navigation, and layout components */
+
+/* ============================================
+   APP SHELL
+   ============================================ */
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  padding-bottom: 0;
+}
+
+.page-container {
+  padding: var(--space-lg);
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ============================================
+   TOPBAR
+   ============================================ */
+
+.topbar {
+  height: var(--topbar-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  padding-left: 10px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(135deg, var(--bg-alt), var(--panel));
+  box-shadow: var(--shadow);
+}
+
+.app--dark .topbar {
+  background: linear-gradient(135deg, #262d3a, #2f3646);
+  border-bottom: 1px solid #3b4558;
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 0 0 auto;
+}
+
+.topbar-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.topbar-icon-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.center-nav {
+  flex: 1;
+  justify-content: flex-start;
+  min-width: 0;
+}
+
+/* ============================================
+   LEFT NAVIGATION
+   ============================================ */
+
+.left-nav {
+  width: var(--sidebar-width);
+  min-width: var(--sidebar-width);
+  background: var(--panel);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.nav-section {
+  padding: var(--space-md);
+}
+
+.nav-section-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: var(--space-sm);
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: all var(--transition-fast);
+}
+
+.nav-item:hover {
+  background: var(--nav-hover-bg);
+  color: var(--nav-hover-color);
+  text-decoration: none;
+}
+
+.nav-item.active {
+  background: var(--nav-active-bg);
+  color: var(--nav-active-color);
+}
+
+/* ============================================
+   MAIN CONTENT
+   ============================================ */
+
+.main-content {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.content-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-lg);
+}
+
+/* ============================================
+   SIDEBAR PANELS
+   ============================================ */
+
+.sidebar-panel {
+  width: 320px;
+  min-width: 320px;
+  background: var(--panel);
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-md);
+  border-bottom: 1px solid var(--border);
+}
+
+.sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-md);
+}
+
+/* ============================================
+   FOOTER
+   ============================================ */
+
+.footer {
+  height: var(--footer-height);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-top: 1px solid var(--border);
+  background: var(--panel);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* ============================================
+   EMBEDDED MODE (for iframe embedding)
+   ============================================ */
+
+.app--embedded {
+  height: 100%;
+}
+
+.app--embedded .app-body {
+  height: 100%;
+}
+
+.app-main--embedded {
+  margin-left: 0 !important;
+  padding: 0;
+}
+
+.app-main--embedded .app-main__content {
+  padding: 0;
+}
+
+.app-main--embedded .page-container {
+  padding: 0;
+  max-width: none;
+}
+
+/* ============================================
+   ROUTE LOADER
+   ============================================ */
+
+.route-loader {
+  position: fixed;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  backdrop-filter: blur(2px);
+}
+
+:root[data-theme='dark'] .route-loader {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+/* ============================================
+   RESPONSIVE UTILITIES
+   ============================================ */
+
+@media (max-width: 768px) {
+  .left-nav {
+    display: none;
+  }
+
+  .sidebar-panel {
+    position: fixed;
+    right: 0;
+    top: var(--topbar-height);
+    bottom: 0;
+    z-index: 100;
+    transform: translateX(100%);
+    transition: transform var(--transition-normal);
+  }
+
+  .sidebar-panel.open {
+    transform: translateX(0);
+  }
+}

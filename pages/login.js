@@ -1,139 +1,185 @@
 import { useState, useEffect } from 'react';
-import { Box, Grid, Paper, Stack, Typography } from '@mui/material';
+import { useRouter } from 'next/router';
+import Link from 'next/link';
+import { Box, Paper, Typography, Button, Chip } from '@mui/material';
 import { useAuth } from '../components/AuthContext';
-import { LogoWordmark } from '../components/Logo';
+import BrandPoster from '../components/BrandPoster';
+import LoginIcon from '@mui/icons-material/Login';
+import ArchitectureIcon from '@mui/icons-material/Architecture';
+import AssignmentIcon from '@mui/icons-material/Assignment';
+import LoopIcon from '@mui/icons-material/Loop';
+
+const features = [
+  { icon: <ArchitectureIcon />, title: 'Enterprise Architecture', desc: 'Map capabilities and applications' },
+  { icon: <AssignmentIcon />, title: 'Requirements Management', desc: 'Trace from needs to delivery' },
+  { icon: <LoopIcon />, title: 'System Dynamics', desc: 'Model feedback loops' },
+];
 
 export default function LoginPage() {
-  const { login } = useAuth();
+  const { login, user } = useAuth();
+  const router = useRouter();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Math challenge for bot protection
   const nextChallenge = () => ({
-    a: Math.floor(Math.random() * 8) + 2, // 2-9
+    a: Math.floor(Math.random() * 8) + 2,
     b: Math.floor(Math.random() * 8) + 2,
   });
   const [challenge, setChallenge] = useState({ a: 0, b: 0 });
   const [hydrated, setHydrated] = useState(false);
   const [answer, setAnswer] = useState('');
 
-  // Avoid SSR/CSR mismatch by seeding the challenge after mount
   useEffect(() => {
     setChallenge(nextChallenge());
     setHydrated(true);
   }, []);
 
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      router.replace('/home');
+    }
+  }, [user, router]);
+
   async function handleSubmit(e) {
     e.preventDefault();
     if (!hydrated) return;
     setError('');
+
     const expected = challenge.a + challenge.b;
     if (Number(answer) !== expected) {
-      setError('Please solve the math check to continue.');
+      setError('Please solve the math check correctly.');
       setChallenge(nextChallenge());
       setAnswer('');
       return;
     }
+
     setLoading(true);
     try {
       await login({ username, password });
     } catch (err) {
-      setError(err?.message || 'Login failed');
+      setError(err?.message || 'Login failed. Please check your credentials.');
+      setChallenge(nextChallenge());
+      setAnswer('');
     } finally {
       setLoading(false);
     }
   }
 
+  if (user) {
+    return (
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
+        <Typography>Redirecting...</Typography>
+      </Box>
+    );
+  }
+
   return (
-    <Box
-      sx={{
-        minHeight: '60vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'top',
-        px: { xs: 2, md: 4 },
-        py: { xs: 3, md: 4 },
-      }}
-    >
-      <Grid container spacing={4} alignItems="center" maxWidth="lg">
-        <Grid item xs={12} md={6}>
-          <Stack spacing={2.5} sx={{ maxWidth: 560, mx: 'auto' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <LogoWordmark width={520} height={140} color="var(--text)" />
-            </Box>
-            <Typography variant="body1">
-              Ontographia helps you model concepts, map relationships, and keep meaning consistent as work crosses teams.
-              It blends semantic modeling, graph navigation, and relationship analysis into one studio, so you can see
-              how ideas connect and how changes ripple through your ecosystem.
-            </Typography>
-            <Typography variant="body1">
-              Use it to align vocabulary, surface implicit assumptions, and make reasoning visible. Whether you are
-              documenting a business process or exploring a philosophical taxonomy, Ontographia gives you a coherent
-              landscape of nodes, links, and context that stays in sync as your organization evolves.
-            </Typography>
-            <Typography variant="body1" sx={{ fontWeight: 600 }}>
-              Ready to explore? Sign in to browse models, traverse graphs, and manage the knowledge that powers your
-              work.
-            </Typography>
-          </Stack>
-        </Grid>
-        <Grid item xs={12} md={6} sx={{ mt: { xs: 1, md: 0 } }}>
-          <Paper
-            elevation={4}
-            sx={{
-              p: { xs: 3, md: 4 },
-              background: 'var(--bg-alt)',
-              border: '1px solid var(--border)',
-              borderRadius: 3,
-              boxShadow: 'var(--shadow)',
-              maxWidth: 460,
-              mx: 'auto',
-            }}
-          >
-            <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
-              Login
-            </Typography>
-            {error && <p className="error-msg">{error}</p>}
-            <form onSubmit={handleSubmit} className="modal-form">
-              <label>
-                Username
+    <Box className="login-page">
+      <div className="login-container">
+        {/* Left Side - Branding */}
+        <div className="login-brand">
+          <div className="login-brand-content">
+            <BrandPoster width={180} color="white" />
+            <h1>Welcome to Ontographia</h1>
+            <p className="login-tagline">
+              Connect your organization's knowledge into a living, navigable graph.
+            </p>
+
+            <div className="login-features">
+              {features.map((f, i) => (
+                <div key={i} className="login-feature">
+                  <span className="login-feature-icon">{f.icon}</span>
+                  <div>
+                    <strong>{f.title}</strong>
+                    <span>{f.desc}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Right Side - Form */}
+        <div className="login-form-side">
+          <div className="login-form-container">
+            <div className="login-form-header">
+              <LoginIcon className="login-form-icon" />
+              <h2>Sign In</h2>
+              <p>Enter your credentials to access your workspace</p>
+            </div>
+
+            {error && (
+              <div className="login-error">
+                {error}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="login-form">
+              <div className="form-group">
+                <label htmlFor="username">Username</label>
                 <input
                   type="text"
+                  id="username"
                   value={username}
                   onChange={e => setUsername(e.target.value)}
                   required
+                  placeholder="Enter your username"
+                  autoComplete="username"
                 />
-              </label>
-              <label>
-                Password
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="password">Password</label>
                 <input
                   type="password"
+                  id="password"
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   required
+                  placeholder="Enter your password"
+                  autoComplete="current-password"
                 />
-              </label>
-              <label>
-                Role is assigned by admin
-              </label>
-              <label>
-                Human check: {challenge.a} + {challenge.b} = ?
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="answer">
+                  Verify: What is {challenge.a} + {challenge.b}?
+                </label>
                 <input
                   type="number"
+                  id="answer"
                   value={answer}
                   onChange={e => setAnswer(e.target.value)}
                   required
                   placeholder="Your answer"
                   min="0"
                 />
-              </label>
-              <button type="submit" className="btn" disabled={loading || !hydrated}>
-                {loading ? 'Signing in...' : 'Login'}
+              </div>
+
+              <button
+                type="submit"
+                className="login-submit"
+                disabled={loading || !hydrated}
+              >
+                {loading ? 'Signing in...' : 'Sign In'}
               </button>
             </form>
-          </Paper>
-        </Grid>
-      </Grid>
+
+            <div className="login-footer">
+              <p>
+                Don't have an account? Contact your administrator.
+              </p>
+              <Link href="/" className="login-back-link">
+                Back to home
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
     </Box>
   );
 }

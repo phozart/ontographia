@@ -6,3 +6,4 @@ gitignore
 gitignore.txt
 data/app.db
 neo4j_data_backup.tar.gz
+.claude/

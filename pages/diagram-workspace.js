@@ -1,7 +1,10 @@
 // pages/diagram-workspace.js
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { useAuth } from '../components/AuthContext';
 import { useDomains } from '../components/DomainContext';
+
+// Generate unique comment ID
+const generateCommentId = () => `comment-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
 // Available colors for nodes
 const COLORS = [
@@ -16,12 +19,16 @@ const COLORS = [
   { id: 'gray', value: '#6b7280', name: 'Gray' },
 ];
 
-// Shape types
+// Mindmap node types
 const SHAPES = [
-  { id: 'rectangle', name: 'Rectangle', icon: '▭' },
-  { id: 'circle', name: 'Circle', icon: '○' },
-  { id: 'diamond', name: 'Diamond', icon: '◇' },
+  { id: 'central', name: 'Central Topic', icon: '⬤', width: 160, height: 80, defaultColor: '#008a7a' },
+  { id: 'branch', name: 'Main Branch', icon: '◼', width: 120, height: 50, defaultColor: '#3b82f6' },
+  { id: 'sub', name: 'Sub-Branch', icon: '▪', width: 100, height: 40, defaultColor: '#8b5cf6' },
+  { id: 'note', name: 'Note', icon: '📝', width: 120, height: 60, defaultColor: '#f97316' },
 ];
+
+// Generate unique label ID
+const generateLabelId = () => `label-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
 // Generate unique ID
 const generateId = () => `node-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -30,7 +37,7 @@ const generateConnectionId = () => `conn-${Date.now()}-${Math.random().toString(
 const STORAGE_KEY = 'ontographia-diagrams-v2';
 
 export default function DiagramWorkspacePage() {
-  const { role } = useAuth();
+  const { role, user } = useAuth();
   const { activeDomain } = useDomains();
   const canvasRef = useRef(null);
 
@@ -41,7 +48,10 @@ export default function DiagramWorkspacePage() {
   // Current diagram state
   const [nodes, setNodes] = useState([]);
   const [connections, setConnections] = useState([]);
+  const [labels, setLabels] = useState([]);
+  const [comments, setComments] = useState([]);
   const [diagramName, setDiagramName] = useState('Untitled Diagram');
+  const [selectedLabel, setSelectedLabel] = useState(null);
 
   // Editor state
   const [selectedNode, setSelectedNode] = useState(null);
@@ -60,6 +70,9 @@ export default function DiagramWorkspacePage() {
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [nodeTypesForImport, setNodeTypesForImport] = useState([]);
   const [typeMapping, setTypeMapping] = useState({});
+  const [showCommentsPanel, setShowCommentsPanel] = useState(false);
+  const [newCommentText, setNewCommentText] = useState('');
+  const [replyingTo, setReplyingTo] = useState(null);
 
   // Pan and zoom state
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
@@ -68,14 +81,19 @@ export default function DiagramWorkspacePage() {
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
   const [contextMenu, setContextMenu] = useState(null); // { x, y, type, nodeId?, connectionId? }
 
-  // Load diagrams from localStorage
+  // Load diagrams from localStorage and restore last active diagram
   useEffect(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
         setDiagrams(parsed);
-        if (parsed.length > 0) {
+        // Try to load last active diagram
+        const lastActiveId = localStorage.getItem('diagram-workspace-last-active');
+        const lastActive = lastActiveId ? parsed.find(d => d.id === lastActiveId) : null;
+        if (lastActive) {
+          loadDiagram(lastActive);
+        } else if (parsed.length > 0) {
           loadDiagram(parsed[0]);
         }
       }
@@ -93,6 +111,8 @@ export default function DiagramWorkspacePage() {
       name: diagramName,
       nodes,
       connections,
+      labels,
+      comments,
       updatedAt: Date.now(),
     };
 
@@ -101,7 +121,7 @@ export default function DiagramWorkspacePage() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
       return updated;
     });
-  }, [activeDiagramId, diagramName, nodes, connections]);
+  }, [activeDiagramId, diagramName, nodes, connections, labels, comments]);
 
   // Auto-save on changes
   useEffect(() => {
@@ -109,7 +129,7 @@ export default function DiagramWorkspacePage() {
       const timeout = setTimeout(saveDiagram, 500);
       return () => clearTimeout(timeout);
     }
-  }, [nodes, connections, diagramName, saveDiagram]);
+  }, [nodes, connections, labels, comments, diagramName, saveDiagram]);
 
   // Load a diagram
   const loadDiagram = (diagram) => {
@@ -117,8 +137,13 @@ export default function DiagramWorkspacePage() {
     setDiagramName(diagram.name);
     setNodes(diagram.nodes || []);
     setConnections(diagram.connections || []);
+    setLabels(diagram.labels || []);
+    setComments(diagram.comments || []);
     setSelectedNode(null);
     setSelectedConnection(null);
+    setSelectedLabel(null);
+    // Remember last active diagram
+    localStorage.setItem('diagram-workspace-last-active', diagram.id);
   };
 
   // Create new diagram
@@ -128,6 +153,8 @@ export default function DiagramWorkspacePage() {
       name: newDiagramName || 'Untitled Diagram',
       nodes: [],
       connections: [],
+      labels: [],
+      comments: [],
       createdAt: Date.now(),
       updatedAt: Date.now(),
     };
@@ -166,7 +193,7 @@ export default function DiagramWorkspacePage() {
     });
   };
 
-  // Handle canvas click to add new node
+  // Handle canvas click to add new node or text label
   const handleCanvasClick = useCallback((e) => {
     if (activeTool === 'select' || isDragging) return;
     if (connectingFrom) {
@@ -179,19 +206,41 @@ export default function DiagramWorkspacePage() {
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
-    if (['rectangle', 'circle', 'diamond'].includes(activeTool)) {
+    // Handle text tool - creates a text annotation
+    if (activeTool === 'text') {
+      const newLabel = {
+        id: generateLabelId(),
+        x,
+        y,
+        text: 'Text label',
+        fontSize: 14,
+        fontWeight: 'normal',
+        fontStyle: 'normal',
+        color: activeColor || '#6b7280',
+      };
+      setLabels(prev => [...prev, newLabel]);
+      setSelectedLabel(newLabel.id);
+      setSelectedNode(null);
+      setSelectedConnection(null);
+      setActiveTool('select');
+      return;
+    }
+
+    const shapeDef = SHAPES.find(s => s.id === activeTool);
+    if (shapeDef) {
       const newNode = {
         id: generateId(),
         type: activeTool,
-        x: x - (activeTool === 'rectangle' ? 60 : 40),
-        y: y - (activeTool === 'rectangle' ? 30 : 40),
-        width: activeTool === 'rectangle' ? 120 : 80,
-        height: activeTool === 'rectangle' ? 60 : 80,
-        text: 'New Node',
-        color: activeColor,
+        x: x - shapeDef.width / 2,
+        y: y - shapeDef.height / 2,
+        width: shapeDef.width,
+        height: shapeDef.height,
+        text: shapeDef.name,
+        color: activeColor || shapeDef.defaultColor,
       };
       setNodes(prev => [...prev, newNode]);
       setSelectedNode(newNode.id);
+      setSelectedLabel(null);
       setActiveTool('select');
     }
   }, [activeTool, activeColor, isDragging, connectingFrom]);
@@ -340,68 +389,236 @@ export default function DiagramWorkspacePage() {
     e.stopPropagation();
     setSelectedConnection(connectionId);
     setSelectedNode(null);
+    setSelectedLabel(null);
   }, []);
+
+  // Handle label click
+  const handleLabelClick = useCallback((e, labelId) => {
+    e.stopPropagation();
+    setSelectedLabel(labelId);
+    setSelectedNode(null);
+    setSelectedConnection(null);
+  }, []);
+
+  // Update selected label
+  const updateSelectedLabel = useCallback((updates) => {
+    if (!selectedLabel) return;
+    setLabels(prev => prev.map(label =>
+      label.id === selectedLabel ? { ...label, ...updates } : label
+    ));
+  }, [selectedLabel]);
+
+  // Delete selected label
+  const deleteSelectedLabel = useCallback(() => {
+    if (!selectedLabel) return;
+    setLabels(prev => prev.filter(l => l.id !== selectedLabel));
+    setSelectedLabel(null);
+  }, [selectedLabel]);
+
+  // Handle label drag
+  const [draggingLabel, setDraggingLabel] = useState(null);
+  const [labelDragOffset, setLabelDragOffset] = useState({ x: 0, y: 0 });
+
+  const handleLabelDragStart = useCallback((e, labelId) => {
+    e.stopPropagation();
+    const label = labels.find(l => l.id === labelId);
+    if (!label) return;
+
+    const rect = canvasRef.current.getBoundingClientRect();
+    setLabelDragOffset({
+      x: e.clientX - rect.left - label.x,
+      y: e.clientY - rect.top - label.y,
+    });
+    setDraggingLabel(labelId);
+    setSelectedLabel(labelId);
+  }, [labels]);
+
+  const handleLabelDrag = useCallback((e) => {
+    if (!draggingLabel) return;
+
+    const rect = canvasRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left - labelDragOffset.x;
+    const y = e.clientY - rect.top - labelDragOffset.y;
+
+    setLabels(prev => prev.map(label =>
+      label.id === draggingLabel
+        ? { ...label, x: Math.max(0, x), y: Math.max(0, y) }
+        : label
+    ));
+  }, [draggingLabel, labelDragOffset]);
+
+  const handleLabelDragEnd = useCallback(() => {
+    setDraggingLabel(null);
+  }, []);
+
+  // Attach label drag listeners
+  useEffect(() => {
+    if (draggingLabel) {
+      window.addEventListener('mousemove', handleLabelDrag);
+      window.addEventListener('mouseup', handleLabelDragEnd);
+      return () => {
+        window.removeEventListener('mousemove', handleLabelDrag);
+        window.removeEventListener('mouseup', handleLabelDragEnd);
+      };
+    }
+  }, [draggingLabel, handleLabelDrag, handleLabelDragEnd]);
 
   // Clear canvas
   const clearCanvas = useCallback(() => {
     if (confirm('Are you sure you want to clear the canvas?')) {
       setNodes([]);
       setConnections([]);
+      setLabels([]);
       setSelectedNode(null);
       setSelectedConnection(null);
+      setSelectedLabel(null);
     }
   }, []);
 
-  // Load template
+  // Get current user info for comments
+  const currentUserName = user?.name || user?.email || 'Anonymous';
+
+  // Add a new comment
+  const addComment = useCallback((text, parentId = null) => {
+    if (!text.trim()) return;
+
+    const newComment = {
+      id: generateCommentId(),
+      text: text.trim(),
+      author: currentUserName,
+      createdAt: Date.now(),
+      parentId,
+      resolved: false,
+    };
+
+    setComments(prev => [...prev, newComment]);
+    setNewCommentText('');
+    setReplyingTo(null);
+  }, [currentUserName]);
+
+  // Delete a comment
+  const deleteComment = useCallback((commentId) => {
+    setComments(prev => prev.filter(c => c.id !== commentId && c.parentId !== commentId));
+  }, []);
+
+  // Toggle comment resolved
+  const toggleResolveComment = useCallback((commentId) => {
+    setComments(prev => prev.map(c =>
+      c.id === commentId ? { ...c, resolved: !c.resolved } : c
+    ));
+  }, []);
+
+  // Parse @mentions in comment text
+  const parseCommentText = useCallback((text) => {
+    const mentionRegex = /@(\w+)/g;
+    const parts = [];
+    let lastIndex = 0;
+    let match;
+
+    while ((match = mentionRegex.exec(text)) !== null) {
+      if (match.index > lastIndex) {
+        parts.push({ type: 'text', content: text.slice(lastIndex, match.index) });
+      }
+      parts.push({ type: 'mention', content: match[1] });
+      lastIndex = match.index + match[0].length;
+    }
+
+    if (lastIndex < text.length) {
+      parts.push({ type: 'text', content: text.slice(lastIndex) });
+    }
+
+    return parts;
+  }, []);
+
+  // Get top-level comments and their replies
+  const organizedComments = useMemo(() => {
+    const topLevel = comments.filter(c => !c.parentId);
+    return topLevel.map(comment => ({
+      ...comment,
+      replies: comments.filter(c => c.parentId === comment.id)
+    }));
+  }, [comments]);
+
+  // Format timestamp
+  const formatTime = (timestamp) => {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diff = now - date;
+
+    if (diff < 60000) return 'Just now';
+    if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
+    if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
+    return date.toLocaleDateString();
+  };
+
+  // Load template - Mindmap focused templates
   const loadTemplate = useCallback((template) => {
     let newNodes = [];
     let newConnections = [];
-    const baseX = 200;
-    const baseY = 150;
+    const baseX = 300;
+    const baseY = 200;
 
-    if (template === 'flowchart') {
+    if (template === 'radial') {
+      // Radial mindmap - central topic with branches radiating outward
       newNodes = [
-        { id: 'fc-1', type: 'rectangle', x: baseX, y: baseY, width: 120, height: 60, text: 'Start', color: '#22c55e' },
-        { id: 'fc-2', type: 'rectangle', x: baseX, y: baseY + 120, width: 120, height: 60, text: 'Process', color: '#3b82f6' },
-        { id: 'fc-3', type: 'diamond', x: baseX + 20, y: baseY + 240, width: 80, height: 80, text: 'Decision', color: '#f97316' },
-        { id: 'fc-4', type: 'rectangle', x: baseX - 150, y: baseY + 380, width: 120, height: 60, text: 'Option A', color: '#8b5cf6' },
-        { id: 'fc-5', type: 'rectangle', x: baseX + 150, y: baseY + 380, width: 120, height: 60, text: 'Option B', color: '#ec4899' },
-        { id: 'fc-6', type: 'rectangle', x: baseX, y: baseY + 500, width: 120, height: 60, text: 'End', color: '#ef4444' },
+        { id: 'rm-1', type: 'central', x: baseX, y: baseY, width: 160, height: 80, text: 'Central Topic', color: '#008a7a' },
+        { id: 'rm-2', type: 'branch', x: baseX - 200, y: baseY - 80, width: 120, height: 50, text: 'Branch 1', color: '#3b82f6' },
+        { id: 'rm-3', type: 'branch', x: baseX + 200, y: baseY - 80, width: 120, height: 50, text: 'Branch 2', color: '#8b5cf6' },
+        { id: 'rm-4', type: 'branch', x: baseX - 200, y: baseY + 100, width: 120, height: 50, text: 'Branch 3', color: '#22c55e' },
+        { id: 'rm-5', type: 'branch', x: baseX + 200, y: baseY + 100, width: 120, height: 50, text: 'Branch 4', color: '#f97316' },
+        { id: 'rm-6', type: 'sub', x: baseX - 340, y: baseY - 120, width: 100, height: 40, text: 'Sub 1.1', color: '#3b82f6' },
+        { id: 'rm-7', type: 'sub', x: baseX - 340, y: baseY - 60, width: 100, height: 40, text: 'Sub 1.2', color: '#3b82f6' },
+        { id: 'rm-8', type: 'sub', x: baseX + 340, y: baseY - 120, width: 100, height: 40, text: 'Sub 2.1', color: '#8b5cf6' },
       ];
       newConnections = [
-        { id: 'fcc-1', from: 'fc-1', to: 'fc-2', fromDirection: 'bottom', toDirection: 'top', color: '#6b7280', type: 'straight' },
-        { id: 'fcc-2', from: 'fc-2', to: 'fc-3', fromDirection: 'bottom', toDirection: 'top', color: '#6b7280', type: 'straight' },
-        { id: 'fcc-3', from: 'fc-3', to: 'fc-4', fromDirection: 'left', toDirection: 'top', color: '#6b7280', type: 'curved' },
-        { id: 'fcc-4', from: 'fc-3', to: 'fc-5', fromDirection: 'right', toDirection: 'top', color: '#6b7280', type: 'curved' },
-        { id: 'fcc-5', from: 'fc-4', to: 'fc-6', fromDirection: 'bottom', toDirection: 'left', color: '#6b7280', type: 'curved' },
-        { id: 'fcc-6', from: 'fc-5', to: 'fc-6', fromDirection: 'bottom', toDirection: 'right', color: '#6b7280', type: 'curved' },
+        { id: 'rmc-1', from: 'rm-1', to: 'rm-2', fromDirection: 'left', toDirection: 'right', color: '#3b82f6', type: 'curved' },
+        { id: 'rmc-2', from: 'rm-1', to: 'rm-3', fromDirection: 'right', toDirection: 'left', color: '#8b5cf6', type: 'curved' },
+        { id: 'rmc-3', from: 'rm-1', to: 'rm-4', fromDirection: 'left', toDirection: 'right', color: '#22c55e', type: 'curved' },
+        { id: 'rmc-4', from: 'rm-1', to: 'rm-5', fromDirection: 'right', toDirection: 'left', color: '#f97316', type: 'curved' },
+        { id: 'rmc-5', from: 'rm-2', to: 'rm-6', fromDirection: 'left', toDirection: 'right', color: '#3b82f6', type: 'curved' },
+        { id: 'rmc-6', from: 'rm-2', to: 'rm-7', fromDirection: 'left', toDirection: 'right', color: '#3b82f6', type: 'curved' },
+        { id: 'rmc-7', from: 'rm-3', to: 'rm-8', fromDirection: 'right', toDirection: 'left', color: '#8b5cf6', type: 'curved' },
       ];
-    } else if (template === 'mindmap') {
+    } else if (template === 'hierarchical') {
+      // Hierarchical mindmap - top-down tree structure
       newNodes = [
-        { id: 'mm-1', type: 'circle', x: baseX + 100, y: baseY + 100, width: 100, height: 100, text: 'Main Idea', color: '#008a7a' },
-        { id: 'mm-2', type: 'rectangle', x: baseX - 80, y: baseY - 30, width: 100, height: 50, text: 'Topic 1', color: '#3b82f6' },
-        { id: 'mm-3', type: 'rectangle', x: baseX + 280, y: baseY - 30, width: 100, height: 50, text: 'Topic 2', color: '#8b5cf6' },
-        { id: 'mm-4', type: 'rectangle', x: baseX - 80, y: baseY + 230, width: 100, height: 50, text: 'Topic 3', color: '#22c55e' },
-        { id: 'mm-5', type: 'rectangle', x: baseX + 280, y: baseY + 230, width: 100, height: 50, text: 'Topic 4', color: '#f97316' },
+        { id: 'hm-1', type: 'central', x: baseX, y: baseY - 100, width: 160, height: 80, text: 'Main Topic', color: '#008a7a' },
+        { id: 'hm-2', type: 'branch', x: baseX - 180, y: baseY + 30, width: 120, height: 50, text: 'Category A', color: '#3b82f6' },
+        { id: 'hm-3', type: 'branch', x: baseX + 60, y: baseY + 30, width: 120, height: 50, text: 'Category B', color: '#8b5cf6' },
+        { id: 'hm-4', type: 'sub', x: baseX - 260, y: baseY + 130, width: 100, height: 40, text: 'Item A.1', color: '#3b82f6' },
+        { id: 'hm-5', type: 'sub', x: baseX - 140, y: baseY + 130, width: 100, height: 40, text: 'Item A.2', color: '#3b82f6' },
+        { id: 'hm-6', type: 'sub', x: baseX + 20, y: baseY + 130, width: 100, height: 40, text: 'Item B.1', color: '#8b5cf6' },
+        { id: 'hm-7', type: 'sub', x: baseX + 140, y: baseY + 130, width: 100, height: 40, text: 'Item B.2', color: '#8b5cf6' },
+        { id: 'hm-8', type: 'note', x: baseX + 260, y: baseY - 100, width: 120, height: 60, text: 'Notes here...', color: '#f97316' },
       ];
       newConnections = [
-        { id: 'mmc-1', from: 'mm-1', to: 'mm-2', fromDirection: 'left', toDirection: 'right', color: '#3b82f6', type: 'curved' },
-        { id: 'mmc-2', from: 'mm-1', to: 'mm-3', fromDirection: 'right', toDirection: 'left', color: '#8b5cf6', type: 'curved' },
-        { id: 'mmc-3', from: 'mm-1', to: 'mm-4', fromDirection: 'left', toDirection: 'right', color: '#22c55e', type: 'curved' },
-        { id: 'mmc-4', from: 'mm-1', to: 'mm-5', fromDirection: 'right', toDirection: 'left', color: '#f97316', type: 'curved' },
+        { id: 'hmc-1', from: 'hm-1', to: 'hm-2', fromDirection: 'bottom', toDirection: 'top', color: '#3b82f6', type: 'curved' },
+        { id: 'hmc-2', from: 'hm-1', to: 'hm-3', fromDirection: 'bottom', toDirection: 'top', color: '#8b5cf6', type: 'curved' },
+        { id: 'hmc-3', from: 'hm-2', to: 'hm-4', fromDirection: 'bottom', toDirection: 'top', color: '#3b82f6', type: 'curved' },
+        { id: 'hmc-4', from: 'hm-2', to: 'hm-5', fromDirection: 'bottom', toDirection: 'top', color: '#3b82f6', type: 'curved' },
+        { id: 'hmc-5', from: 'hm-3', to: 'hm-6', fromDirection: 'bottom', toDirection: 'top', color: '#8b5cf6', type: 'curved' },
+        { id: 'hmc-6', from: 'hm-3', to: 'hm-7', fromDirection: 'bottom', toDirection: 'top', color: '#8b5cf6', type: 'curved' },
       ];
-    } else if (template === 'causal') {
+    } else if (template === 'brainstorm') {
+      // Brainstorm - free-form with notes
       newNodes = [
-        { id: 'cl-1', type: 'circle', x: baseX, y: baseY + 100, width: 90, height: 90, text: 'Variable A', color: '#3b82f6' },
-        { id: 'cl-2', type: 'circle', x: baseX + 200, y: baseY, width: 90, height: 90, text: 'Variable B', color: '#22c55e' },
-        { id: 'cl-3', type: 'circle', x: baseX + 400, y: baseY + 100, width: 90, height: 90, text: 'Variable C', color: '#f97316' },
-        { id: 'cl-4', type: 'circle', x: baseX + 200, y: baseY + 200, width: 90, height: 90, text: 'Variable D', color: '#8b5cf6' },
+        { id: 'bs-1', type: 'central', x: baseX, y: baseY, width: 160, height: 80, text: 'Problem Statement', color: '#008a7a' },
+        { id: 'bs-2', type: 'branch', x: baseX - 250, y: baseY - 50, width: 120, height: 50, text: 'Idea 1', color: '#3b82f6' },
+        { id: 'bs-3', type: 'branch', x: baseX + 230, y: baseY - 80, width: 120, height: 50, text: 'Idea 2', color: '#8b5cf6' },
+        { id: 'bs-4', type: 'branch', x: baseX - 220, y: baseY + 100, width: 120, height: 50, text: 'Idea 3', color: '#22c55e' },
+        { id: 'bs-5', type: 'branch', x: baseX + 200, y: baseY + 120, width: 120, height: 50, text: 'Idea 4', color: '#ec4899' },
+        { id: 'bs-6', type: 'note', x: baseX - 380, y: baseY - 100, width: 120, height: 60, text: 'Research needed', color: '#f97316' },
+        { id: 'bs-7', type: 'note', x: baseX + 360, y: baseY - 30, width: 120, height: 60, text: 'Priority: High', color: '#ef4444' },
+        { id: 'bs-8', type: 'sub', x: baseX - 350, y: baseY + 50, width: 100, height: 40, text: 'Detail 3.1', color: '#22c55e' },
       ];
       newConnections = [
-        { id: 'clc-1', from: 'cl-1', to: 'cl-2', fromDirection: 'right', toDirection: 'left', color: '#22c55e', type: 'curved' },
-        { id: 'clc-2', from: 'cl-2', to: 'cl-3', fromDirection: 'right', toDirection: 'left', color: '#22c55e', type: 'curved' },
-        { id: 'clc-3', from: 'cl-3', to: 'cl-4', fromDirection: 'bottom', toDirection: 'right', color: '#ef4444', type: 'curved' },
-        { id: 'clc-4', from: 'cl-4', to: 'cl-1', fromDirection: 'left', toDirection: 'bottom', color: '#ef4444', type: 'curved' },
+        { id: 'bsc-1', from: 'bs-1', to: 'bs-2', fromDirection: 'left', toDirection: 'right', color: '#3b82f6', type: 'curved' },
+        { id: 'bsc-2', from: 'bs-1', to: 'bs-3', fromDirection: 'right', toDirection: 'left', color: '#8b5cf6', type: 'curved' },
+        { id: 'bsc-3', from: 'bs-1', to: 'bs-4', fromDirection: 'left', toDirection: 'right', color: '#22c55e', type: 'curved' },
+        { id: 'bsc-4', from: 'bs-1', to: 'bs-5', fromDirection: 'right', toDirection: 'left', color: '#ec4899', type: 'curved' },
+        { id: 'bsc-5', from: 'bs-2', to: 'bs-6', fromDirection: 'left', toDirection: 'right', color: '#f97316', type: 'curved' },
+        { id: 'bsc-6', from: 'bs-3', to: 'bs-7', fromDirection: 'right', toDirection: 'left', color: '#ef4444', type: 'curved' },
+        { id: 'bsc-7', from: 'bs-4', to: 'bs-8', fromDirection: 'left', toDirection: 'right', color: '#22c55e', type: 'curved' },
       ];
     }
 
@@ -561,26 +778,54 @@ export default function DiagramWorkspacePage() {
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e) => {
+      // Skip if typing in input/textarea
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+      // Ctrl/Cmd+S = Save
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        saveDiagram();
+        return;
+      }
+
+      // Delete/Backspace = Delete selected
       if (e.key === 'Delete' || e.key === 'Backspace') {
-        if (selectedNode && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
-          e.preventDefault();
+        e.preventDefault();
+        if (selectedNode) {
           deleteSelectedNode();
         } else if (selectedConnection) {
-          e.preventDefault();
           deleteSelectedConnection();
+        } else if (selectedLabel) {
+          deleteSelectedLabel();
         }
+        return;
       }
+
+      // Escape = Deselect
       if (e.key === 'Escape') {
         setSelectedNode(null);
         setSelectedConnection(null);
+        setSelectedLabel(null);
         setConnectingFrom(null);
         setActiveTool('select');
         setContextMenu(null);
+        return;
+      }
+
+      // Tool shortcuts (lowercase keys only when not holding Ctrl/Cmd)
+      if (!e.ctrlKey && !e.metaKey) {
+        const key = e.key.toLowerCase();
+        if (key === 'v') { setActiveTool('select'); return; }
+        if (key === 't') { setActiveTool('text'); return; }
+        if (key === 'c') { setActiveTool('central'); return; }
+        if (key === 'b') { setActiveTool('branch'); return; }
+        if (key === 's') { setActiveTool('sub'); return; }
+        if (key === 'n') { setActiveTool('note'); return; }
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedNode, selectedConnection, deleteSelectedNode, deleteSelectedConnection]);
+  }, [selectedNode, selectedConnection, selectedLabel, deleteSelectedNode, deleteSelectedConnection, deleteSelectedLabel, saveDiagram]);
 
   // Canvas panning with mouse drag (click and drag directly on canvas)
   const handleCanvasMouseDown = useCallback((e) => {
@@ -667,6 +912,7 @@ export default function DiagramWorkspacePage() {
 
   const selectedNodeData = nodes.find(n => n.id === selectedNode);
   const selectedConnectionData = connections.find(c => c.id === selectedConnection);
+  const selectedLabelData = labels.find(l => l.id === selectedLabel);
 
   return (
     <div className="diagram-editor-container">
@@ -704,19 +950,19 @@ export default function DiagramWorkspacePage() {
 
         {/* Templates */}
         <div className="sidebar-section">
-          <h4>Templates</h4>
+          <h4>Mindmap Templates</h4>
           <div className="template-grid">
-            <button className="template-btn" onClick={() => loadTemplate('flowchart')}>
-              <span className="template-icon">📊</span>
-              <span>Flowchart</span>
+            <button className="template-btn" onClick={() => loadTemplate('radial')}>
+              <span className="template-icon">🎯</span>
+              <span>Radial</span>
             </button>
-            <button className="template-btn" onClick={() => loadTemplate('mindmap')}>
-              <span className="template-icon">🧠</span>
-              <span>Mind Map</span>
+            <button className="template-btn" onClick={() => loadTemplate('hierarchical')}>
+              <span className="template-icon">🌲</span>
+              <span>Hierarchical</span>
             </button>
-            <button className="template-btn" onClick={() => loadTemplate('causal')}>
-              <span className="template-icon">🔄</span>
-              <span>Causal Loop</span>
+            <button className="template-btn" onClick={() => loadTemplate('brainstorm')}>
+              <span className="template-icon">💡</span>
+              <span>Brainstorm</span>
             </button>
           </div>
         </div>
@@ -735,31 +981,30 @@ export default function DiagramWorkspacePage() {
             >
               ↖
             </button>
+            <button
+              className={`tool-btn ${activeTool === 'text' ? 'active' : ''}`}
+              onClick={() => setActiveTool('text')}
+              title="Text Label (T)"
+            >
+              T
+            </button>
           </div>
 
           <div className="toolbar-group">
-            <span className="toolbar-label">Shapes</span>
-            <button
-              className={`tool-btn ${activeTool === 'rectangle' ? 'active' : ''}`}
-              onClick={() => setActiveTool('rectangle')}
-              title="Rectangle"
-            >
-              ▭
-            </button>
-            <button
-              className={`tool-btn ${activeTool === 'circle' ? 'active' : ''}`}
-              onClick={() => setActiveTool('circle')}
-              title="Circle"
-            >
-              ○
-            </button>
-            <button
-              className={`tool-btn ${activeTool === 'diamond' ? 'active' : ''}`}
-              onClick={() => setActiveTool('diamond')}
-              title="Diamond"
-            >
-              ◇
-            </button>
+            <span className="toolbar-label">Mindmap</span>
+            {SHAPES.map(shape => (
+              <button
+                key={shape.id}
+                className={`tool-btn ${activeTool === shape.id ? 'active' : ''}`}
+                onClick={() => {
+                  setActiveTool(shape.id);
+                  setActiveColor(shape.defaultColor);
+                }}
+                title={shape.name}
+              >
+                {shape.icon}
+              </button>
+            ))}
           </div>
 
           <div className="toolbar-group">
@@ -794,6 +1039,17 @@ export default function DiagramWorkspacePage() {
           </div>
 
           <div className="toolbar-group" style={{ marginLeft: 'auto', borderRight: 'none' }}>
+            <button
+              className={`tool-btn ${showCommentsPanel ? 'active' : ''}`}
+              onClick={() => setShowCommentsPanel(!showCommentsPanel)}
+              title="Toggle comments"
+              style={{ position: 'relative' }}
+            >
+              💬
+              {comments.length > 0 && (
+                <span className="comment-badge">{comments.length}</span>
+              )}
+            </button>
             <button className="btn-secondary" onClick={clearCanvas}>Clear</button>
             <button className="btn-secondary" onClick={exportDiagram}>Export</button>
             <button className="btn" onClick={handleImport}>Import to Graph</button>
@@ -905,8 +1161,46 @@ export default function DiagramWorkspacePage() {
             </div>
           ))}
 
+          {/* Text Labels */}
+          {labels.map(label => (
+            <div
+              key={label.id}
+              className={`diagram-label ${selectedLabel === label.id ? 'selected' : ''}`}
+              style={{
+                left: label.x,
+                top: label.y,
+                fontSize: label.fontSize,
+                fontWeight: label.fontWeight,
+                fontStyle: label.fontStyle,
+                color: label.color,
+              }}
+              onClick={(e) => handleLabelClick(e, label.id)}
+              onMouseDown={(e) => handleLabelDragStart(e, label.id)}
+            >
+              {selectedLabel === label.id ? (
+                <input
+                  type="text"
+                  className="label-input"
+                  value={label.text}
+                  onChange={(e) => updateSelectedLabel({ text: e.target.value })}
+                  onClick={(e) => e.stopPropagation()}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  autoFocus
+                  style={{
+                    fontSize: label.fontSize,
+                    fontWeight: label.fontWeight,
+                    fontStyle: label.fontStyle,
+                    color: label.color,
+                  }}
+                />
+              ) : (
+                label.text
+              )}
+            </div>
+          ))}
+
           {/* Empty state */}
-          {nodes.length === 0 && activeDiagramId && (
+          {nodes.length === 0 && labels.length === 0 && activeDiagramId && (
             <div className="empty-canvas">
               <div className="empty-icon">📐</div>
               <div className="empty-title">Start creating your diagram</div>
@@ -925,9 +1219,9 @@ export default function DiagramWorkspacePage() {
           )}
 
           {/* Help text */}
-          {nodes.length > 0 && (
+          {(nodes.length > 0 || labels.length > 0) && (
             <div className="help-text">
-              Tip: Click the + buttons on nodes to quickly add connected nodes. Drag canvas to pan, scroll to pan, pinch to zoom.
+              Tip: Click the + buttons on nodes to quickly add connected nodes. Use T to add text labels. Drag canvas to pan, scroll to pan, pinch to zoom.
             </div>
           )}
           </div>{/* End canvas-content */}
@@ -944,24 +1238,27 @@ export default function DiagramWorkspacePage() {
             >
               {contextMenu.type === 'canvas' && (
                 <>
-                  <button onClick={() => { setActiveTool('rectangle'); setContextMenu(null); }}>
-                    <span className="context-icon">▭</span> Add Rectangle
+                  <button onClick={() => { setActiveTool('central'); setContextMenu(null); }}>
+                    <span className="context-icon">⬤</span> Add Central Topic
                   </button>
-                  <button onClick={() => { setActiveTool('circle'); setContextMenu(null); }}>
-                    <span className="context-icon">○</span> Add Circle
+                  <button onClick={() => { setActiveTool('branch'); setContextMenu(null); }}>
+                    <span className="context-icon">◼</span> Add Main Branch
                   </button>
-                  <button onClick={() => { setActiveTool('diamond'); setContextMenu(null); }}>
-                    <span className="context-icon">◇</span> Add Diamond
+                  <button onClick={() => { setActiveTool('sub'); setContextMenu(null); }}>
+                    <span className="context-icon">▪</span> Add Sub-Branch
+                  </button>
+                  <button onClick={() => { setActiveTool('note'); setContextMenu(null); }}>
+                    <span className="context-icon">📝</span> Add Note
                   </button>
                   <div className="context-divider" />
-                  <button onClick={() => { loadTemplate('flowchart'); setContextMenu(null); }}>
-                    <span className="context-icon">📊</span> Flowchart Template
+                  <button onClick={() => { loadTemplate('radial'); setContextMenu(null); }}>
+                    <span className="context-icon">🎯</span> Radial Template
                   </button>
-                  <button onClick={() => { loadTemplate('mindmap'); setContextMenu(null); }}>
-                    <span className="context-icon">🧠</span> Mind Map Template
+                  <button onClick={() => { loadTemplate('hierarchical'); setContextMenu(null); }}>
+                    <span className="context-icon">🌲</span> Hierarchical Template
                   </button>
-                  <button onClick={() => { loadTemplate('causal'); setContextMenu(null); }}>
-                    <span className="context-icon">🔄</span> Causal Loop Template
+                  <button onClick={() => { loadTemplate('brainstorm'); setContextMenu(null); }}>
+                    <span className="context-icon">💡</span> Brainstorm Template
                   </button>
                   <div className="context-divider" />
                   <button onClick={() => { resetView(); setContextMenu(null); }}>
@@ -1029,7 +1326,7 @@ export default function DiagramWorkspacePage() {
       {/* Right Sidebar - Properties */}
       <div className="diagram-editor-properties">
         <h4 className="panel-title">
-          {selectedNodeData ? 'Node Properties' : selectedConnectionData ? 'Connection Properties' : 'Properties'}
+          {selectedNodeData ? 'Node Properties' : selectedConnectionData ? 'Connection Properties' : selectedLabelData ? 'Text Label Properties' : 'Properties'}
         </h4>
 
         {selectedNodeData ? (
@@ -1076,6 +1373,33 @@ export default function DiagramWorkspacePage() {
             </div>
 
             <div className="panel-section">
+              <label className="panel-label">Size</label>
+              <div className="size-controls">
+                <div className="size-input-group">
+                  <label>W</label>
+                  <input
+                    type="number"
+                    min="40"
+                    max="300"
+                    value={selectedNodeData.width || 100}
+                    onChange={e => updateSelectedNode({ width: parseInt(e.target.value) || 100 })}
+                  />
+                </div>
+                <span className="size-separator">×</span>
+                <div className="size-input-group">
+                  <label>H</label>
+                  <input
+                    type="number"
+                    min="30"
+                    max="200"
+                    value={selectedNodeData.height || 60}
+                    onChange={e => updateSelectedNode({ height: parseInt(e.target.value) || 60 })}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="panel-section">
               <button className="btn-danger" onClick={deleteSelectedNode}>Delete Node</button>
             </div>
           </>
@@ -1118,22 +1442,110 @@ export default function DiagramWorkspacePage() {
               <button className="btn-danger" onClick={deleteSelectedConnection}>Delete Connection</button>
             </div>
           </>
+        ) : selectedLabelData ? (
+          <>
+            <div className="panel-section">
+              <label className="panel-label">Text</label>
+              <input
+                type="text"
+                className="panel-input"
+                value={selectedLabelData.text}
+                onChange={(e) => updateSelectedLabel({ text: e.target.value })}
+              />
+            </div>
+
+            <div className="panel-section">
+              <label className="panel-label">Font Size</label>
+              <select
+                className="panel-select"
+                value={selectedLabelData.fontSize}
+                onChange={(e) => updateSelectedLabel({ fontSize: parseInt(e.target.value) })}
+              >
+                <option value="10">10px</option>
+                <option value="12">12px</option>
+                <option value="14">14px</option>
+                <option value="16">16px</option>
+                <option value="18">18px</option>
+                <option value="20">20px</option>
+                <option value="24">24px</option>
+                <option value="28">28px</option>
+                <option value="32">32px</option>
+              </select>
+            </div>
+
+            <div className="panel-section">
+              <label className="panel-label">Style</label>
+              <div className="shape-picker">
+                <button
+                  className={`shape-option ${selectedLabelData.fontWeight === 'bold' ? 'active' : ''}`}
+                  onClick={() => updateSelectedLabel({ fontWeight: selectedLabelData.fontWeight === 'bold' ? 'normal' : 'bold' })}
+                  title="Bold"
+                >
+                  B
+                </button>
+                <button
+                  className={`shape-option ${selectedLabelData.fontStyle === 'italic' ? 'active' : ''}`}
+                  onClick={() => updateSelectedLabel({ fontStyle: selectedLabelData.fontStyle === 'italic' ? 'normal' : 'italic' })}
+                  title="Italic"
+                  style={{ fontStyle: 'italic' }}
+                >
+                  I
+                </button>
+              </div>
+            </div>
+
+            <div className="panel-section">
+              <label className="panel-label">Color</label>
+              <div className="color-picker">
+                {COLORS.map(color => (
+                  <button
+                    key={color.id}
+                    className={`color-btn ${selectedLabelData.color === color.value ? 'active' : ''}`}
+                    style={{ background: color.value }}
+                    onClick={() => updateSelectedLabel({ color: color.value })}
+                    title={color.name}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <div className="panel-section">
+              <button className="btn-danger" onClick={deleteSelectedLabel}>Delete Label</button>
+            </div>
+          </>
         ) : (
-          <p className="panel-hint">Select a node or connection to edit its properties</p>
+          <p className="panel-hint">Select a node, connection, or text label to edit its properties</p>
         )}
 
         {/* Elements List */}
         <div className="panel-section" style={{ marginTop: 24 }}>
-          <label className="panel-label">Elements ({nodes.length})</label>
+          <label className="panel-label">Elements ({nodes.length + labels.length})</label>
           <div className="element-list">
             {nodes.map(node => (
               <div
                 key={node.id}
                 className={`element-item ${selectedNode === node.id ? 'active' : ''}`}
-                onClick={() => setSelectedNode(node.id)}
+                onClick={() => { setSelectedNode(node.id); setSelectedLabel(null); }}
               >
-                <div className="element-icon" style={{ background: node.color, borderRadius: node.type === 'circle' ? '50%' : node.type === 'diamond' ? '2px' : '4px' }} />
+                <div className="element-icon" style={{
+                  background: node.color,
+                  borderRadius: node.type === 'central' ? '8px' : node.type === 'note' ? '4px 12px 4px 12px' : '4px',
+                  width: node.type === 'central' ? '18px' : node.type === 'sub' ? '10px' : '14px',
+                  height: node.type === 'central' ? '12px' : node.type === 'sub' ? '8px' : '10px',
+                }} />
                 <span>{node.text}</span>
+              </div>
+            ))}
+            {labels.map(label => (
+              <div
+                key={label.id}
+                className={`element-item ${selectedLabel === label.id ? 'active' : ''}`}
+                onClick={() => { setSelectedLabel(label.id); setSelectedNode(null); }}
+              >
+                <div className="element-icon element-icon-text" style={{ color: label.color }}>
+                  T
+                </div>
+                <span>{label.text}</span>
               </div>
             ))}
           </div>
@@ -1189,6 +1601,125 @@ export default function DiagramWorkspacePage() {
               <button className="btn-secondary" onClick={() => setShowImportDialog(false)}>Cancel</button>
               <button className="btn" onClick={executeImport}>Import</button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Comments Panel */}
+      {showCommentsPanel && (
+        <div className="comments-panel">
+          <div className="comments-header">
+            <h4>Comments</h4>
+            <button className="comments-close" onClick={() => setShowCommentsPanel(false)}>×</button>
+          </div>
+
+          <div className="comments-list">
+            {organizedComments.length === 0 ? (
+              <div className="comments-empty">
+                <span className="comments-empty-icon">💬</span>
+                <p>No comments yet</p>
+                <p className="comments-empty-hint">Add a comment to start a discussion</p>
+              </div>
+            ) : (
+              organizedComments.map(comment => (
+                <div key={comment.id} className={`comment-thread ${comment.resolved ? 'resolved' : ''}`}>
+                  <div className="comment-item">
+                    <div className="comment-header">
+                      <span className="comment-author">{comment.author}</span>
+                      <span className="comment-time">{formatTime(comment.createdAt)}</span>
+                    </div>
+                    <div className="comment-body">
+                      {parseCommentText(comment.text).map((part, i) =>
+                        part.type === 'mention' ? (
+                          <span key={i} className="comment-mention">@{part.content}</span>
+                        ) : (
+                          <span key={i}>{part.content}</span>
+                        )
+                      )}
+                    </div>
+                    <div className="comment-actions">
+                      <button onClick={() => setReplyingTo(comment.id)}>Reply</button>
+                      <button onClick={() => toggleResolveComment(comment.id)}>
+                        {comment.resolved ? 'Reopen' : 'Resolve'}
+                      </button>
+                      <button onClick={() => deleteComment(comment.id)}>Delete</button>
+                    </div>
+                  </div>
+
+                  {/* Replies */}
+                  {comment.replies.map(reply => (
+                    <div key={reply.id} className="comment-reply">
+                      <div className="comment-header">
+                        <span className="comment-author">{reply.author}</span>
+                        <span className="comment-time">{formatTime(reply.createdAt)}</span>
+                      </div>
+                      <div className="comment-body">
+                        {parseCommentText(reply.text).map((part, i) =>
+                          part.type === 'mention' ? (
+                            <span key={i} className="comment-mention">@{part.content}</span>
+                          ) : (
+                            <span key={i}>{part.content}</span>
+                          )
+                        )}
+                      </div>
+                      <div className="comment-actions">
+                        <button onClick={() => deleteComment(reply.id)}>Delete</button>
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* Reply input */}
+                  {replyingTo === comment.id && (
+                    <div className="comment-reply-input">
+                      <input
+                        type="text"
+                        placeholder="Write a reply... Use @name to mention"
+                        value={newCommentText}
+                        onChange={(e) => setNewCommentText(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && newCommentText.trim()) {
+                            addComment(newCommentText, comment.id);
+                          }
+                          if (e.key === 'Escape') {
+                            setReplyingTo(null);
+                            setNewCommentText('');
+                          }
+                        }}
+                        autoFocus
+                      />
+                      <div className="comment-reply-actions">
+                        <button className="btn-small" onClick={() => { setReplyingTo(null); setNewCommentText(''); }}>Cancel</button>
+                        <button className="btn-small btn" onClick={() => addComment(newCommentText, comment.id)}>Reply</button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* New comment input */}
+          <div className="comment-input-container">
+            <input
+              type="text"
+              className="comment-input"
+              placeholder="Add a comment... Use @name to tag users"
+              value={replyingTo ? '' : newCommentText}
+              onChange={(e) => !replyingTo && setNewCommentText(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && newCommentText.trim() && !replyingTo) {
+                  addComment(newCommentText);
+                }
+              }}
+              disabled={!!replyingTo}
+            />
+            <button
+              className="btn comment-submit"
+              onClick={() => addComment(newCommentText)}
+              disabled={!newCommentText.trim() || !!replyingTo}
+            >
+              Post
+            </button>
           </div>
         </div>
       )}

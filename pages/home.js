@@ -1,6 +1,8 @@
 import { Box, Typography, Paper, Grid, Button, Chip, Stack } from '@mui/material';
 import Link from 'next/link';
 import { useAuth } from '../components/AuthContext';
+import { useDomains } from '../components/DomainContext';
+import { useProjects } from '../components/ProjectContext';
 import BrandPoster from '../components/BrandPoster';
 import ExploreIcon from '@mui/icons-material/Explore';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
@@ -10,46 +12,98 @@ import DeviceHubIcon from '@mui/icons-material/DeviceHub';
 import CategoryIcon from '@mui/icons-material/Category';
 import SettingsIcon from '@mui/icons-material/Settings';
 import FolderSpecialIcon from '@mui/icons-material/FolderSpecial';
+import BusinessIcon from '@mui/icons-material/Business';
+import AssignmentIcon from '@mui/icons-material/Assignment';
+import LoopIcon from '@mui/icons-material/Loop';
+import ArchitectureIcon from '@mui/icons-material/Architecture';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import SchoolIcon from '@mui/icons-material/School';
+import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
+import LightbulbIcon from '@mui/icons-material/Lightbulb';
+import HubIcon from '@mui/icons-material/Hub';
 
 export default function HomePage() {
-  const { role } = useAuth();
+  const { role, user } = useAuth();
+  const { activeDomainObj, accessibleDomains } = useDomains();
+  const { activeProject, projects } = useProjects();
   const canEdit = role === 'admin' || role === 'editor';
 
-  const features = [
+  // Main workspaces - what users do most
+  const mainWorkspaces = [
     {
-      title: 'Semantic Model Browser',
-      description: 'View node types, drill into linked nodes, and inspect attributes and metadata without clutter.',
-      href: '/semanticmodelbrowser',
-      icon: <ExploreIcon sx={{ fontSize: 28 }} />,
-      gradient: 'linear-gradient(135deg, #6366f1, #4f46e5)',
-      badge: 'Explore',
-    },
-    {
-      title: 'Graph Navigator',
-      description: 'Search nodes, highlight neighbors, and see relationships visually. Ideal for quick impact checks.',
-      href: '/graphnavigator',
-      icon: <AccountTreeIcon sx={{ fontSize: 28 }} />,
-      gradient: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
-      badge: 'Navigate',
+      title: 'Knowledge Studio',
+      subtitle: 'Explore your knowledge graph',
+      description: 'Navigate, browse, and manage your semantic knowledge graph. Visual exploration, model browsing, and data management in one unified workspace.',
+      href: '/knowledge-studio',
+      icon: <HubIcon sx={{ fontSize: 32 }} />,
+      gradient: 'linear-gradient(135deg, #8b5cf6, #6366f1)',
+      quickStart: 'Start with Graph Navigator',
+      level: 'Domain-level',
       featured: true,
     },
     {
-      title: 'Flow Designer',
-      description: 'Create flowcharts and diagrams with drag-and-drop. Import your designs to the knowledge graph when ready.',
-      href: '/flow-designer',
-      icon: <TimelineIcon sx={{ fontSize: 28 }} />,
-      gradient: 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
-      badge: 'Design',
+      title: 'System Dynamics',
+      subtitle: 'Model complex systems',
+      description: 'Create causal loop diagrams and stock-flow models. Understand feedback loops and system behavior.',
+      href: '/system-dynamics',
+      icon: <LoopIcon sx={{ fontSize: 32 }} />,
+      gradient: 'linear-gradient(135deg, #f59e0b, #d97706)',
+      quickStart: 'Start with a causal loop',
+      level: 'Domain-level',
     },
     {
-      title: 'Diagram Workspace',
-      description: 'Build flowcharts, causal loops, and mindmaps in a sandbox before importing to the graph.',
-      href: '/diagram-workspace',
-      icon: <AccountTreeIcon sx={{ fontSize: 28 }} />,
-      gradient: 'linear-gradient(135deg, #ec4899, #db2777)',
-      badge: 'Create',
+      title: 'Product Design',
+      subtitle: 'Discovery before commitment',
+      description: 'Explore ideas responsibly, frame problems, surface assumptions, and record learning before delivery planning.',
+      href: '/product-design-workspace',
+      icon: <LightbulbIcon sx={{ fontSize: 32 }} />,
+      gradient: 'linear-gradient(135deg, #22c55e, #16a34a)',
+      quickStart: 'Capture an idea and its intent',
+      level: 'Domain-level or scratch',
+    },
+    {
+      title: 'Requirements Studio',
+      subtitle: 'Manage requirements',
+      description: 'Capture requirements from business needs to user stories. Track traceability and ensure delivery coverage.',
+      href: '/requirements-studio',
+      icon: <AssignmentIcon sx={{ fontSize: 32 }} />,
+      gradient: 'linear-gradient(135deg, #10b981, #059669)',
+      quickStart: 'Start with a Business Requirement',
+      level: 'Project-level',
+    },
+    {
+      title: 'Enterprise Architecture',
+      subtitle: 'Map your enterprise',
+      description: 'Define capabilities, map applications to processes, and analyze change impact. Question-based navigation guides you through EA concepts.',
+      href: '/ea-studio',
+      icon: <ArchitectureIcon sx={{ fontSize: 32 }} />,
+      gradient: 'linear-gradient(135deg, #0ea5e9, #0284c7)',
+      quickStart: 'Start by creating a Capability',
+      level: 'Domain-level',
     },
   ];
+
+  // Supporting tools
+  const supportingTools = [
+    {
+      title: 'Diagram Workspace',
+      description: 'Create flowcharts and architecture diagrams',
+      href: '/diagram-workspace',
+      icon: <AccountTreeIcon sx={{ fontSize: 24 }} />,
+      color: '#ec4899',
+    },
+  ];
+
+  // Legacy features array for backward compatibility
+  const features = mainWorkspaces.map(w => ({
+    title: w.title,
+    description: w.description,
+    href: w.href,
+    icon: w.icon,
+    gradient: w.gradient,
+    badge: 'Workspace',
+    featured: w.title === 'EA Studio',
+  }));
 
   const managementFeatures = [
     {
@@ -98,34 +152,47 @@ export default function HomePage() {
 
   return (
     <Box className="page-container" sx={{ maxWidth: 1200, mx: 'auto' }}>
-      {/* Hero Section */}
-      <Box sx={{ textAlign: 'center', mb: 5 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
-          <BrandPoster width={280} />
+      {/* Welcome Section */}
+      <Box sx={{ mb: 5 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, mb: 3 }}>
+          <BrandPoster width={80} />
+          <Box>
+            <Typography variant="h4" sx={{ fontWeight: 800, color: 'var(--text)' }}>
+              Welcome back{user ? `, ${user}` : ''}
+            </Typography>
+            <Typography variant="body1" sx={{ color: 'var(--text-muted)' }}>
+              {activeDomainObj ? `Working in ${activeDomainObj.name}` : 'Select a domain to get started'}
+              {activeProject ? ` / ${activeProject.name}` : ''}
+            </Typography>
+          </Box>
         </Box>
-        <Box sx={{ width: '100%', maxWidth: 400, mx: 'auto', borderBottom: '1px solid var(--border)', mb: 3 }} />
-        <Typography variant="h4" sx={{ fontWeight: 800, mb: 1.5, color: 'var(--text)' }}>
-          Knowledge Graph Studio
-        </Typography>
-        <Typography variant="body1" sx={{ color: 'var(--text-muted)', maxWidth: 600, mx: 'auto', lineHeight: 1.7 }}>
-          Explore the semantic model, navigate relationships, and understand your domain structure.
-          Design diagrams and manage your knowledge graph with powerful visual tools.
-        </Typography>
+
+        {/* Context Warnings */}
+        {!activeDomainObj && (
+          <Paper sx={{ p: 2, mb: 3, borderRadius: 2, border: '1px solid #f59e0b', background: '#fef3c7' }}>
+            <Typography variant="body2" sx={{ color: '#92400e' }}>
+              <strong>No domain selected.</strong> Create or select a domain to start working with EA Studio or System Dynamics.
+              <Button component={Link} href="/domains" size="small" sx={{ ml: 2 }}>
+                Manage Domains
+              </Button>
+            </Typography>
+          </Paper>
+        )}
       </Box>
 
-      {/* Main Features Grid */}
-      <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: 'var(--text)' }}>
-        Explore & Design
+      {/* Main Workspaces - Large Cards with Guidance */}
+      <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: 'var(--text)', display: 'flex', alignItems: 'center', gap: 1 }}>
+        <RocketLaunchIcon fontSize="small" /> Choose Your Workspace
       </Typography>
-      <Grid container spacing={2.5} sx={{ mb: 4 }}>
-        {features.map((feature) => (
-          <Grid item xs={12} sm={6} md={3} key={feature.href}>
+      <Grid container spacing={3} sx={{ mb: 5 }}>
+        {mainWorkspaces.map((workspace) => (
+          <Grid item xs={12} md={4} key={workspace.href}>
             <Paper
               sx={{
-                p: 2.5,
                 height: '100%',
                 borderRadius: 3,
-                border: feature.featured ? '2px solid var(--accent)' : '1px solid var(--border)',
+                border: '1px solid var(--border)',
+                overflow: 'hidden',
                 transition: 'all 0.2s ease',
                 cursor: 'pointer',
                 display: 'flex',
@@ -137,34 +204,84 @@ export default function HomePage() {
                 },
               }}
               component={Link}
-              href={feature.href}
+              href={workspace.href}
             >
-              <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 2 }}>
-                <Box sx={{
-                  width: 48, height: 48, borderRadius: 2,
-                  background: feature.gradient,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: 'white', flexShrink: 0
-                }}>
-                  {feature.icon}
-                </Box>
-                <Box sx={{ flex: 1 }}>
-                  <Chip
-                    label={feature.badge}
-                    size="small"
-                    sx={{
-                      height: 20, fontSize: 10, fontWeight: 600,
-                      bgcolor: 'var(--bg)', color: 'var(--text-muted)'
-                    }}
-                  />
+              {/* Header */}
+              <Box sx={{ p: 2.5, background: workspace.gradient, color: 'white' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+                  {workspace.icon}
+                  <Box>
+                    <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1.2 }}>
+                      {workspace.title}
+                    </Typography>
+                    <Typography variant="caption" sx={{ opacity: 0.9 }}>
+                      {workspace.subtitle}
+                    </Typography>
+                  </Box>
                 </Box>
               </Box>
-              <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 0.5, color: 'var(--text)' }}>
-                {feature.title}
-              </Typography>
-              <Typography variant="body2" sx={{ color: 'var(--text-muted)', fontSize: 13, lineHeight: 1.5, flex: 1 }}>
-                {feature.description}
-              </Typography>
+              {/* Body */}
+              <Box sx={{ p: 2.5, flex: 1, display: 'flex', flexDirection: 'column' }}>
+                <Typography variant="body2" sx={{ color: 'var(--text-muted)', mb: 2, lineHeight: 1.6, flex: 1 }}>
+                  {workspace.description}
+                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Chip
+                    label={workspace.level}
+                    size="small"
+                    sx={{ fontSize: 11, height: 22, bgcolor: 'var(--accent-soft)', color: 'var(--accent)' }}
+                  />
+                  <Typography variant="caption" sx={{ color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <PlayArrowIcon fontSize="inherit" /> {workspace.quickStart}
+                  </Typography>
+                </Box>
+              </Box>
+            </Paper>
+          </Grid>
+        ))}
+      </Grid>
+
+      {/* Supporting Tools */}
+      <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: 'var(--text)' }}>
+        Explore & Analyze
+      </Typography>
+      <Grid container spacing={2} sx={{ mb: 4 }}>
+        {supportingTools.map((tool) => (
+          <Grid item xs={12} sm={4} key={tool.href}>
+            <Paper
+              sx={{
+                p: 2,
+                borderRadius: 2,
+                border: '1px solid var(--border)',
+                transition: 'all 0.2s ease',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 2,
+                '&:hover': {
+                  borderColor: tool.color,
+                  boxShadow: 'var(--shadow)',
+                },
+              }}
+              component={Link}
+              href={tool.href}
+            >
+              <Box sx={{
+                width: 40, height: 40, borderRadius: 1.5,
+                bgcolor: tool.color + '15',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: tool.color, flexShrink: 0
+              }}>
+                {tool.icon}
+              </Box>
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'var(--text)' }}>
+                  {tool.title}
+                </Typography>
+                <Typography variant="caption" sx={{ color: 'var(--text-muted)', display: 'block' }}>
+                  {tool.description}
+                </Typography>
+              </Box>
             </Paper>
           </Grid>
         ))}
@@ -230,33 +347,42 @@ export default function HomePage() {
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
           <Box>
             <Typography variant="subtitle1" sx={{ fontWeight: 700, color: 'var(--text)' }}>
-              Ready to explore?
+              Ready to get started?
             </Typography>
             <Typography variant="body2" sx={{ color: 'var(--text-muted)' }}>
-              Start by browsing the graph or creating new nodes and connections.
+              Open a workspace to start modeling your architecture or requirements.
             </Typography>
           </Box>
-          <Stack direction="row" spacing={1.5}>
+          <Stack direction="row" spacing={1.5} flexWrap="wrap">
             <Button
               variant="contained"
               component={Link}
-              href="/graphnavigator"
+              href="/knowledge-studio"
               sx={{
-                background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
-                '&:hover': { background: 'linear-gradient(135deg, #2563eb, #1e40af)' },
+                background: 'linear-gradient(135deg, #8b5cf6, #6366f1)',
+                '&:hover': { background: 'linear-gradient(135deg, #6366f1, #4f46e5)' },
               }}
             >
-              Open Graph Navigator
+              Knowledge Studio
             </Button>
-            {canEdit && (
-              <Button
-                variant="outlined"
-                component={Link}
-                href="/nodes"
-              >
-                Manage Nodes
-              </Button>
-            )}
+            <Button
+              variant="contained"
+              component={Link}
+              href="/ea-workspace"
+              sx={{
+                background: 'linear-gradient(135deg, #0ea5e9, #0284c7)',
+                '&:hover': { background: 'linear-gradient(135deg, #0284c7, #0369a1)' },
+              }}
+            >
+              EA Workspace
+            </Button>
+            <Button
+              variant="outlined"
+              component={Link}
+              href="/requirements-studio"
+            >
+              BA Workspace
+            </Button>
           </Stack>
         </Box>
       </Paper>

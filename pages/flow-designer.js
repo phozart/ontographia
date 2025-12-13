@@ -35,6 +35,9 @@ import FileUploadIcon from '@mui/icons-material/FileUpload';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import { useDomains } from '../components/DomainContext';
 
 // Custom Node Types
@@ -156,6 +159,7 @@ function FlowDesignerInner() {
   const [diagramName, setDiagramName] = useState('Untitled Diagram');
   const [savedDiagrams, setSavedDiagrams] = useState([]);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
   const { screenToFlowPosition } = useReactFlow();
   const { activeDomain, activeDomainObj } = useDomains();
   const [nodeTypes2, setNodeTypes2] = useState([]);
@@ -436,77 +440,24 @@ function FlowDesignerInner() {
       </Box>
 
       <Box className="flow-designer-body">
-        <Box className="flow-designer-sidebar">
-          <Box className="flow-sidebar-section">
-            <h3>Node Palette</h3>
-            <Box className="node-palette">
-              {nodePalette.map((item) => (
+        <Box className="flow-designer-canvas" ref={reactFlowWrapper}>
+          {/* Floating Node Palette */}
+          <Box className="flow-floating-palette">
+            {nodePalette.map((item) => (
+              <Tooltip key={item.type} title={item.label} placement="bottom">
                 <div
-                  key={item.type}
-                  className="palette-node"
+                  className="palette-node-mini"
                   draggable
                   onDragStart={(e) => onDragStart(e, item.type, item)}
                 >
-                  <div className="palette-node-icon" style={{ backgroundColor: item.color + '20' }}>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill={item.color}>
-                      {paletteIcons[item.icon]}
-                    </svg>
-                  </div>
-                  <span className="palette-node-label">{item.label}</span>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill={item.color}>
+                    {paletteIcons[item.icon]}
+                  </svg>
                 </div>
-              ))}
-            </Box>
+              </Tooltip>
+            ))}
           </Box>
 
-          {selectedNode && (
-            <Box className="flow-sidebar-section">
-              <h3>Selected Node</h3>
-              <Typography variant="body2" sx={{ mb: 1 }}><strong>{selectedNode.data.label}</strong></Typography>
-              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
-                Type: {selectedNode.type}
-              </Typography>
-              <Box sx={{ display: 'flex', gap: 1 }}>
-                <Button variant="outlined" size="small" onClick={handleEditNode}>Edit</Button>
-                <Button variant="outlined" size="small" color="error" startIcon={<DeleteIcon />} onClick={handleDeleteNode}>
-                  Delete
-                </Button>
-              </Box>
-            </Box>
-          )}
-
-          <Box className="flow-sidebar-section">
-            <h3>Saved Diagrams</h3>
-            {savedDiagrams.length === 0 ? (
-              <Typography variant="body2" color="text.secondary">No saved diagrams</Typography>
-            ) : (
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                {savedDiagrams.map((d) => (
-                  <Button
-                    key={d.id}
-                    variant="text"
-                    size="small"
-                    sx={{ justifyContent: 'flex-start', textTransform: 'none' }}
-                    onClick={() => handleLoadDiagram(d)}
-                  >
-                    {d.name}
-                  </Button>
-                ))}
-              </Box>
-            )}
-          </Box>
-
-          <Box className="flow-sidebar-section" sx={{ flex: 1 }}>
-            <h3>Tips</h3>
-            <Typography variant="body2" color="text.secondary" sx={{ fontSize: 12 }}>
-              - Drag nodes from palette to canvas<br />
-              - Connect nodes by dragging from handles<br />
-              - Click a node to select and edit<br />
-              - Use "Import to Graph" to save to Neo4j
-            </Typography>
-          </Box>
-        </Box>
-
-        <Box className="flow-designer-canvas" ref={reactFlowWrapper}>
           <ReactFlow
             nodes={nodes}
             edges={edges}
@@ -532,14 +483,70 @@ function FlowDesignerInner() {
               nodeColor={(n) => n.data?.color || '#888'}
               maskColor="rgba(0,0,0,0.1)"
             />
-            <Panel position="top-right">
-              <Box sx={{ background: 'var(--panel)', p: 1, borderRadius: 1, border: '1px solid var(--border)' }}>
-                <Typography variant="caption" color="text.secondary">
-                  Nodes: {nodes.length} | Edges: {edges.length}
+          </ReactFlow>
+        </Box>
+
+        {/* Collapsible Sidebar */}
+        <Box className={`flow-designer-sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}>
+          <IconButton
+            className="sidebar-toggle"
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+            size="small"
+            sx={{ position: 'absolute', left: -16, top: 12, background: 'var(--panel)', border: '1px solid var(--border)', zIndex: 10 }}
+          >
+            {sidebarCollapsed ? <ChevronLeftIcon /> : <ChevronRightIcon />}
+          </IconButton>
+
+          {!sidebarCollapsed && (
+            <>
+              {selectedNode && (
+                <Box className="flow-sidebar-section">
+                  <h3>Selected Node</h3>
+                  <Typography variant="body2" sx={{ mb: 1 }}><strong>{selectedNode.data.label}</strong></Typography>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
+                    Type: {selectedNode.type}
+                  </Typography>
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Button variant="outlined" size="small" onClick={handleEditNode}>Edit</Button>
+                    <Button variant="outlined" size="small" color="error" startIcon={<DeleteIcon />} onClick={handleDeleteNode}>
+                      Delete
+                    </Button>
+                  </Box>
+                </Box>
+              )}
+
+              <Box className="flow-sidebar-section">
+                <h3>Saved Diagrams</h3>
+                {savedDiagrams.length === 0 ? (
+                  <Typography variant="body2" color="text.secondary">No saved diagrams</Typography>
+                ) : (
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    {savedDiagrams.map((d) => (
+                      <Button
+                        key={d.id}
+                        variant="text"
+                        size="small"
+                        sx={{ justifyContent: 'flex-start', textTransform: 'none' }}
+                        onClick={() => handleLoadDiagram(d)}
+                      >
+                        {d.name}
+                      </Button>
+                    ))}
+                  </Box>
+                )}
+              </Box>
+
+              <Box className="flow-sidebar-section" sx={{ flex: 1 }}>
+                <h3>Tips</h3>
+                <Typography variant="body2" color="text.secondary" sx={{ fontSize: 12 }}>
+                  - Drag nodes from palette to canvas<br />
+                  - Connect nodes by dragging from handles<br />
+                  - Click a node to select and edit<br />
+                  - Use "Import to Graph" to save to Neo4j
                 </Typography>
               </Box>
-            </Panel>
-          </ReactFlow>
+            </>
+          )}
         </Box>
       </Box>
 

@@ -1,27 +1,29 @@
 import { useEffect, useRef, useState } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import TopBar from './TopBar';
 import LeftNav from './LeftNav';
-
 import AnimatedLogoBackground from './AnimatedLogoBackground';
 import { LogoSpinner } from './Logo';
-import { useDomains } from './DomainContext';
 import { useAuth } from './AuthContext';
 
 export default function Layout({ theme, onThemeChange, children }) {
 
   const [routeLoading, setRouteLoading] = useState(false);
   const [showMobileNotice, setShowMobileNotice] = useState(false);
-  const [showPrivacy, setShowPrivacy] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [isEmbedded, setIsEmbedded] = useState(false);
   const router = useRouter();
   const { user } = useAuth();
-  const isStudio = router.pathname.startsWith('/studio') || router.pathname.startsWith('/graphnavigator') || router.pathname.startsWith('/graph-editor') || router.pathname.startsWith('/diagram-workspace');
+  const isStudio = router.pathname.startsWith('/studio') || router.pathname.startsWith('/graphnavigator') || router.pathname.startsWith('/graph-editor') || router.pathname.startsWith('/diagram-workspace') || router.pathname.startsWith('/system-dynamics') || router.pathname.startsWith('/requirements-studio') || router.pathname.startsWith('/knowledge-studio') || router.pathname.startsWith('/product-design-workspace') || router.pathname.startsWith('/dynamic-work-design');
   const routeTimer = useRef(null);
+
+  // Check for embed mode (works for both SSR and client-side)
+  useEffect(() => {
+    // Check URL params on client side
+    const params = new URLSearchParams(window.location.search);
+    setIsEmbedded(params.get('embed') === 'true');
+  }, [router.query]);
   const routeStart = useRef(0);
-  const year = new Date().getFullYear();
-  const { activeDomain, activeDomainObj } = useDomains();
 
   // Check if we're on mobile
   useEffect(() => {
@@ -92,14 +94,15 @@ export default function Layout({ theme, onThemeChange, children }) {
         <link rel="manifest" href="/manifest.json" />
 <meta name="theme-color" content="#000000" />
       </Head>
-      <div className={`app app--${theme}`}>
-        <TopBar theme={theme} onThemeChange={onThemeChange} />
+      <div className={`app app--${theme}${isEmbedded ? ' app--embedded' : ''}`}>
         <div className="app-body">
-          {user && !isMobile && <LeftNav />}
-          <main className={`app-main${isStudio ? ' app-main--studio' : ''}${user && !isMobile ? ' has-left-nav' : ''}`}>
-            <div className="bg-logo-wrap" aria-hidden>
-              <AnimatedLogoBackground />
-            </div>
+          {!isMobile && !isEmbedded && <LeftNav theme={theme} onThemeChange={onThemeChange} />}
+          <main className={`app-main${isStudio ? ' app-main--studio' : ''}${!isMobile && !isEmbedded ? ' has-left-nav' : ''}${isEmbedded ? ' app-main--embedded' : ''}`}>
+            {!isEmbedded && (
+              <div className="bg-logo-wrap" aria-hidden>
+                <AnimatedLogoBackground />
+              </div>
+            )}
             <div className="app-main__content">
               <div style={{ width: '100%' }}>{children}</div>
             </div>
@@ -127,55 +130,6 @@ export default function Layout({ theme, onThemeChange, children }) {
                   }}
                 >
                   Continue
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-        <div
-          className="global-footer"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: 12,
-          }}
-        >
-          <span style={{ color: 'var(--text-muted)' }}>
-            © {year} Ontographia ·{' '}
-            <button
-              type="button"
-              className="link"
-              style={{ border: 'none', background: 'transparent', padding: 0, cursor: 'pointer' }}
-              onClick={() => setShowPrivacy(true)}
-            >
-              Privacy
-            </button>
-          </span>
-          <span style={{ color: 'var(--text-muted)' }}>
-            Domain:{' '}
-            <strong style={{ color: 'var(--text)' }}>
-              {activeDomainObj?.name || activeDomain || 'None'}
-            </strong>
-          </span>
-        </div>
-        {showPrivacy && (
-          <div className="modal-backdrop" style={{ zIndex: 2100 }} onClick={() => setShowPrivacy(false)}>
-            <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 520 }}>
-              <h3 style={{ marginTop: 0 }}>Privacy statement</h3>
-              <p style={{ lineHeight: 1.6 }}>
-                Ontographia uses a minimal privacy footprint. We store your session token and role in local storage on
-                this device only. No personal data is kept beyond what you enter to sign in. All graph edits and
-                metadata remain within your environment; nothing is sent to third-party analytics. For support or audit,
-                an administrator may review server logs that contain timestamped access events but not your content.
-              </p>
-              <p style={{ lineHeight: 1.6 }}>
-                By continuing, you confirm you are authorised to access the workspace data and will handle it according
-                to your organisationâ€™s security and privacy policies.
-              </p>
-              <div className="modal-actions" style={{ justifyContent: 'flex-end' }}>
-                <button className="btn" type="button" onClick={() => setShowPrivacy(false)}>
-                  Close
                 </button>
               </div>
             </div>

@@ -5,7 +5,16 @@
       "Bash(find:*)",
       "Bash(cat:*)",
       "Bash(npm run build:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(npx next build:*)",
+      "Bash(wc:*)",
+      "Bash(node -e:*)",
+      "Bash(ls -la \"C:\\Users\\hardyp\\dev\\POM\\Knowledge-graph\\components\\ba\"\" | grep -iE \"story)",
+      "Bash(stake)",
+      "Bash(trace)",
+      "Bash(coverage \")",
+      "Bash(grep:*)",
+      "Bash(npx acorn:*)"
     ]
   }
 }

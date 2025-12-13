@@ -1,12 +1,22 @@
 import { useState, useEffect, useMemo } from 'react';
-import '../styles.css';
+import '../styles/index.css'; // Modular CSS (new)
+import '../styles.css';       // Legacy styles (to be migrated gradually)
+import '../styles/pdw-workspace.css'; // Product Design workspace styles
+import '../styles/dwd-workspace.css'; // Dynamic Work Design workspace styles
+import '../styles/projects-overview.css'; // Projects Overview dashboard styles
 import Layout from '../components/Layout';
 import { FilterProvider } from '../components/FilterContext';
 import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
 import { AuthProvider, useRouteGuard } from '../components/AuthContext';
 import { DomainProvider } from '../components/DomainContext';
+import { ProjectProvider } from '../components/ProjectContext';
+import { RequirementProvider } from '../components/RequirementContext';
+import { ArtefactProvider } from '../components/ArtefactContext';
+import { BAProvider } from '../components/ba/BAContext';
 import { UndoRedoProvider } from '../components/UndoRedoContext';
 import { KeyboardShortcutsProvider } from '../components/KeyboardShortcuts';
+import { NotificationProvider } from '../components/NotificationContext';
+import { PresenceProvider } from '../components/PresenceContext';
 
 
 function MyApp({ Component, pageProps }) {
@@ -59,21 +69,33 @@ function MyApp({ Component, pageProps }) {
   return (
     <AuthProvider>
       <DomainProvider>
-        <FilterProvider>
-          <UndoRedoProvider>
-            <KeyboardShortcutsProvider>
-              <ThemeProvider theme={muiTheme}>
-                <CssBaseline />
-                <ServiceWorkerRegister />
-                <Guard>
-                  <Layout theme={theme} onThemeChange={handleThemeChange}>
-                    <Component {...pageProps} />
-                  </Layout>
-                </Guard>
-              </ThemeProvider>
-            </KeyboardShortcutsProvider>
-          </UndoRedoProvider>
-        </FilterProvider>
+        <ProjectProvider>
+          <RequirementProvider>
+          <ArtefactProvider>
+            <BAProvider>
+            <NotificationProvider>
+              <PresenceProvider>
+                <FilterProvider>
+                <UndoRedoProvider>
+                  <KeyboardShortcutsProvider>
+                  <ThemeProvider theme={muiTheme}>
+                    <CssBaseline />
+                    <ServiceWorkerRegister />
+                    <Guard>
+                      <Layout theme={theme} onThemeChange={handleThemeChange}>
+                        <Component {...pageProps} />
+                      </Layout>
+                    </Guard>
+                  </ThemeProvider>
+                </KeyboardShortcutsProvider>
+                </UndoRedoProvider>
+              </FilterProvider>
+              </PresenceProvider>
+            </NotificationProvider>
+            </BAProvider>
+          </ArtefactProvider>
+          </RequirementProvider>
+        </ProjectProvider>
       </DomainProvider>
     </AuthProvider>
   );

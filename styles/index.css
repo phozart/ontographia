@@ -1,0 +1,30 @@
+/* styles/index.css - Main entry point for all CSS */
+
+/* Core */
+@import './variables.css';
+@import './base.css';
+
+/* Layout */
+@import './layout.css';
+
+/* Components */
+@import './components.css';
+
+/* Page-specific styles */
+@import './login.css';
+@import './ba-guided.css';
+@import './ba-workspace.css';
+@import './knowledge-studio.css';
+
+/*
+ * Legacy styles are imported from the main styles.css for now.
+ * Over time, migrate styles from styles.css to appropriate modular files:
+ *
+ * TODO: Create and migrate to:
+ * - styles/ea-studio.css (EA Studio workspace styles)
+ * - styles/ba-workspace.css (BA Workspace / Requirements Studio styles)
+ * - styles/system-dynamics.css (System Dynamics diagram styles)
+ * - styles/graph.css (Graph Navigator and Semantic Browser styles)
+ * - styles/diagrams.css (Diagram workspace styles)
+ * - styles/admin.css (Admin and settings pages)
+ */

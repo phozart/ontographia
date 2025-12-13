@@ -1,58 +1,92 @@
-import Link from 'next/link';
-import { useEffect, useRef, useState, useCallback } from 'react';
-import {
-  Box,
-  Button,
-  Grid,
-  Paper,
-  Stack,
-  Typography,
-  Chip,
-  Divider,
-  IconButton,
-  Tooltip,
-} from '@mui/material';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import RestartAltIcon from '@mui/icons-material/RestartAlt';
-import ZoomInIcon from '@mui/icons-material/ZoomIn';
-import ZoomOutIcon from '@mui/icons-material/ZoomOut';
-import FitScreenIcon from '@mui/icons-material/FitScreen';
-import BrandPoster from '../components/BrandPoster';
+// pages/index.js
+// Landing page with hero and interactive demo
 
-// Demo data for the interactive graph
-const demoNodes = [
-  { id: 'customer', label: 'Customer', type: 'Entity', color: '#3b82f6' },
-  { id: 'order', label: 'Order', type: 'Process', color: '#10b981' },
-  { id: 'product', label: 'Product', type: 'Entity', color: '#8b5cf6' },
-  { id: 'payment', label: 'Payment', type: 'Process', color: '#f59e0b' },
-  { id: 'shipping', label: 'Shipping', type: 'Process', color: '#ec4899' },
-  { id: 'inventory', label: 'Inventory', type: 'System', color: '#06b6d4' },
+import Link from 'next/link';
+import { useEffect } from 'react';
+import { useRouter } from 'next/router';
+import { Box, Button, Grid, Paper, Typography, Chip } from '@mui/material';
+import { useAuth } from '../components/AuthContext';
+import { Hero, InteractiveDemo } from '../components/landing';
+import ArchitectureIcon from '@mui/icons-material/Architecture';
+import AssignmentIcon from '@mui/icons-material/Assignment';
+import AccountTreeIcon from '@mui/icons-material/AccountTree';
+import LoopIcon from '@mui/icons-material/Loop';
+import SchoolIcon from '@mui/icons-material/School';
+import GroupsIcon from '@mui/icons-material/Groups';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+
+// The story of what Ontographia does
+const storyPoints = [
+  {
+    title: 'The Problem',
+    subtitle: 'Organizations struggle with knowledge fragmentation',
+    text: 'Architecture decisions live in documents nobody reads. Requirements get lost between teams. Knowledge walks out the door when people leave. Sound familiar?',
+  },
+  {
+    title: 'The Solution',
+    subtitle: 'A living knowledge graph that connects everything',
+    text: 'Ontographia captures your enterprise knowledge as connected concepts - not isolated documents. Every capability, requirement, decision, and system is linked, searchable, and traceable.',
+  },
+  {
+    title: 'The Outcome',
+    subtitle: 'Clarity, continuity, and confidence',
+    text: 'New team members onboard faster. Impact analysis becomes instant. Decisions are traceable. Your organization\'s knowledge becomes a permanent, evolving asset.',
+  },
 ];
 
-const demoEdges = [
-  { source: 'customer', target: 'order', label: 'places' },
-  { source: 'order', target: 'product', label: 'contains' },
-  { source: 'order', target: 'payment', label: 'requires' },
-  { source: 'order', target: 'shipping', label: 'triggers' },
-  { source: 'product', target: 'inventory', label: 'tracked in' },
-  { source: 'shipping', target: 'customer', label: 'delivered to' },
+// Who benefits from Ontographia
+const personas = [
+  {
+    title: 'Enterprise Architects',
+    icon: <ArchitectureIcon sx={{ fontSize: 32 }} />,
+    color: '#0ea5e9',
+    benefits: ['Map business capabilities', 'Connect applications to processes', 'Analyze change impact'],
+    cta: 'Start with EA Studio',
+    href: '/ea-studio',
+  },
+  {
+    title: 'Business Analysts',
+    icon: <AssignmentIcon sx={{ fontSize: 32 }} />,
+    color: '#10b981',
+    benefits: ['Capture requirements properly', 'Trace to delivery', 'Ensure coverage'],
+    cta: 'Start with BA Workspace',
+    href: '/requirements-studio',
+  },
+  {
+    title: 'Systems Thinkers',
+    icon: <LoopIcon sx={{ fontSize: 32 }} />,
+    color: '#f59e0b',
+    benefits: ['Model feedback loops', 'Understand dynamics', 'Communicate systems'],
+    cta: 'Start with System Dynamics',
+    href: '/system-dynamics',
+  },
 ];
 
 const outcomes = [
-  { title: 'Shared language', text: 'Clear terms for concepts, rules, and processes.' },
-  { title: 'Faster onboarding', text: 'Navigable context that shortens ramp-up time.' },
-  { title: 'Lower risk', text: 'Reduce ambiguity, divergence, and rework.' },
-  { title: 'Traceable decisions', text: 'Link choices back to the conceptual map.' },
+  { title: 'Shared language', text: 'Clear terms for concepts, rules, and processes across teams.' },
+  { title: 'Faster onboarding', text: 'Navigable context that cuts ramp-up time from weeks to days.' },
+  { title: 'Lower risk', text: 'Traceable requirements reduce ambiguity, divergence, and rework.' },
+  { title: 'Living documentation', text: 'Your architecture evolves with your business, not in stale documents.' },
 ];
 
 const steps = [
-  { title: 'Capture', text: 'Define core concepts, relationships, and attributes.' },
-  { title: 'Navigate', text: 'Explore the graph visually, highlight neighbors.' },
-  { title: 'Connect', text: 'Link documentation and rules to the model.' },
-  { title: 'Govern', text: 'Adjust types and constraints as needs evolve.' },
+  { title: 'Capture', text: 'Define capabilities, requirements, and decisions as connected knowledge.', color: ['#3b82f6', '#1d4ed8'] },
+  { title: 'Navigate', text: 'Explore visually - see what depends on what, who owns what.', color: ['#10b981', '#059669'] },
+  { title: 'Trace', text: 'Follow the thread from strategy to delivery to implementation.', color: ['#8b5cf6', '#7c3aed'] },
+  { title: 'Evolve', text: 'As your business changes, your knowledge graph changes with it.', color: ['#f59e0b', '#d97706'] },
 ];
 
-export default function HomePage() {
+export default function LandingPage() {
+  const { user } = useAuth();
+  const router = useRouter();
+
+  // Redirect logged-in users to dashboard
+  useEffect(() => {
+    if (user) {
+      router.replace('/home');
+    }
+  }, [user, router]);
+
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const observer = new IntersectionObserver(
@@ -70,21 +104,133 @@ export default function HomePage() {
     return () => observer.disconnect();
   }, []);
 
+  // Show loading while redirecting
+  if (user) {
+    return (
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
+        <Typography>Redirecting to dashboard...</Typography>
+      </Box>
+    );
+  }
+
   return (
     <Box sx={{ pb: 10 }}>
       <Hero />
 
+      {/* Story Section - The Narrative */}
+      <Section className="reveal" maxWidth="900px">
+        <Box sx={{ textAlign: 'center', mb: 4 }}>
+          <Typography variant="h4" sx={{ fontWeight: 800, mb: 1 }}>
+            The Knowledge Problem
+          </Typography>
+          <Typography variant="body1" sx={{ color: 'var(--text-muted)', maxWidth: 700, mx: 'auto', lineHeight: 1.7 }}>
+            Every organization has a story. But too often, that story is scattered across documents,
+            slides, wikis, and the minds of people who might leave tomorrow.
+          </Typography>
+        </Box>
+        <Grid container spacing={3}>
+          {storyPoints.map((point, idx) => (
+            <Grid item xs={12} md={4} key={point.title}>
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 3,
+                  borderRadius: 3,
+                  border: '1px solid var(--border)',
+                  background: idx === 1 ? 'var(--accent-soft)' : 'var(--panel)',
+                  height: '100%',
+                }}
+              >
+                <Typography variant="overline" sx={{ color: idx === 1 ? 'var(--accent)' : 'var(--text-muted)', fontWeight: 600 }}>
+                  {point.title}
+                </Typography>
+                <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, color: 'var(--text)' }}>
+                  {point.subtitle}
+                </Typography>
+                <Typography variant="body2" sx={{ color: 'var(--text-muted)', lineHeight: 1.6 }}>
+                  {point.text}
+                </Typography>
+              </Paper>
+            </Grid>
+          ))}
+        </Grid>
+      </Section>
+
+      {/* Who Is It For */}
+      <Section className="reveal" maxWidth="1100px">
+        <Box sx={{ textAlign: 'center', mb: 4 }}>
+          <Chip
+            label="Built for Practitioners"
+            sx={{ mb: 2, fontWeight: 600, bgcolor: 'var(--accent-soft)', color: 'var(--accent)' }}
+          />
+          <Typography variant="h4" sx={{ fontWeight: 800, mb: 1 }}>
+            Choose Your Starting Point
+          </Typography>
+          <Typography variant="body1" sx={{ color: 'var(--text-muted)', maxWidth: 600, mx: 'auto' }}>
+            Whether you're mapping capabilities, managing requirements, or modeling systems -
+            there's a workspace designed for how you think.
+          </Typography>
+        </Box>
+        <Grid container spacing={3}>
+          {personas.map((persona) => (
+            <Grid item xs={12} md={4} key={persona.title}>
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 3,
+                  borderRadius: 3,
+                  border: '1px solid var(--border)',
+                  background: 'var(--panel)',
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  transition: 'all 0.2s ease',
+                  '&:hover': {
+                    borderColor: persona.color,
+                    transform: 'translateY(-4px)',
+                    boxShadow: 'var(--shadow)',
+                  },
+                }}
+              >
+                <Box sx={{
+                  width: 56, height: 56, borderRadius: 2,
+                  background: `${persona.color}15`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: persona.color, mb: 2
+                }}>
+                  {persona.icon}
+                </Box>
+                <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
+                  {persona.title}
+                </Typography>
+                <Box component="ul" sx={{ pl: 2, mb: 2, flex: 1 }}>
+                  {persona.benefits.map((b, i) => (
+                    <Typography component="li" key={i} variant="body2" sx={{ color: 'var(--text-muted)', mb: 0.5 }}>
+                      {b}
+                    </Typography>
+                  ))}
+                </Box>
+                <Button
+                  component={Link}
+                  href={persona.href}
+                  variant="outlined"
+                  fullWidth
+                  sx={{
+                    borderColor: persona.color,
+                    color: persona.color,
+                    '&:hover': { background: `${persona.color}10`, borderColor: persona.color },
+                  }}
+                >
+                  {persona.cta}
+                </Button>
+              </Paper>
+            </Grid>
+          ))}
+        </Grid>
+      </Section>
+
       {/* Interactive Demo Section */}
-      <Box
-        component="section"
-        className="reveal"
-        sx={{
-          maxWidth: '1200px',
-          mx: 'auto',
-          px: { xs: 2, md: 4 },
-          py: { xs: 4, md: 6 },
-        }}
-      >
+      <Section className="reveal">
         <Box sx={{ textAlign: 'center', mb: 4 }}>
           <Chip
             label="Interactive Demo"
@@ -96,30 +242,19 @@ export default function HomePage() {
             }}
           />
           <Typography variant="h4" sx={{ fontWeight: 800, mb: 1 }}>
-            See How It Works
+            See the Graph in Action
           </Typography>
           <Typography variant="body1" sx={{ color: 'var(--text-muted)', maxWidth: 600, mx: 'auto' }}>
-            Click on nodes to explore relationships. Drag to rearrange. This is what semantic modeling looks like.
+            Click on nodes to explore relationships. This is how connected knowledge works.
           </Typography>
         </Box>
-
         <InteractiveDemo />
-      </Box>
+      </Section>
 
       {/* Steps Section */}
-      <Box
-        component="section"
-        className="reveal"
-        sx={{
-          maxWidth: '1100px',
-          mx: 'auto',
-          px: { xs: 3, md: 6 },
-          py: { xs: 5, md: 7 },
-          textAlign: 'center',
-        }}
-      >
-        <Typography variant="h4" sx={{ fontWeight: 800, mb: 3 }}>
-          How Ontographia Works
+      <Section className="reveal" maxWidth="1100px">
+        <Typography variant="h4" sx={{ fontWeight: 800, mb: 3, textAlign: 'center' }}>
+          How It Works
         </Typography>
         <Grid container spacing={2}>
           {steps.map((step, idx) => (
@@ -132,11 +267,12 @@ export default function HomePage() {
                   border: '1px solid var(--border)',
                   background: 'var(--panel)',
                   height: '100%',
+                  textAlign: 'center',
                 }}
               >
                 <Box sx={{
                   width: 40, height: 40, borderRadius: '50%',
-                  background: `linear-gradient(135deg, ${['#3b82f6', '#10b981', '#8b5cf6', '#f59e0b'][idx]}, ${['#1d4ed8', '#059669', '#7c3aed', '#d97706'][idx]})`,
+                  background: `linear-gradient(135deg, ${step.color[0]}, ${step.color[1]})`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   color: 'white', fontWeight: 700, fontSize: 18, mx: 'auto', mb: 2
                 }}>
@@ -152,21 +288,12 @@ export default function HomePage() {
             </Grid>
           ))}
         </Grid>
-      </Box>
+      </Section>
 
       {/* Outcomes Section */}
-      <Box
-        component="section"
-        className="reveal"
-        sx={{
-          maxWidth: '900px',
-          mx: 'auto',
-          px: { xs: 3, md: 6 },
-          py: { xs: 5, md: 7 },
-        }}
-      >
+      <Section className="reveal" maxWidth="900px">
         <Typography variant="h4" sx={{ fontWeight: 800, mb: 3, textAlign: 'center' }}>
-          What You Get
+          The Results
         </Typography>
         <Grid container spacing={2}>
           {outcomes.map(item => (
@@ -199,33 +326,24 @@ export default function HomePage() {
             </Grid>
           ))}
         </Grid>
-      </Box>
+      </Section>
 
       {/* CTA Section */}
-      <Box
-        component="section"
-        className="reveal"
-        sx={{
-          maxWidth: '800px',
-          mx: 'auto',
-          px: { xs: 3, md: 6 },
-          py: { xs: 5, md: 7 },
-          textAlign: 'center',
-        }}
-      >
+      <Section className="reveal" maxWidth="800px">
         <Paper
           sx={{
             p: 4,
             borderRadius: 4,
             background: 'linear-gradient(135deg, var(--panel), var(--bg))',
             border: '1px solid var(--border)',
+            textAlign: 'center',
           }}
         >
           <Typography variant="h5" sx={{ fontWeight: 800, mb: 2 }}>
-            Ready to map your knowledge?
+            Ready to connect your knowledge?
           </Typography>
           <Typography variant="body1" sx={{ color: 'var(--text-muted)', mb: 3 }}>
-            Log in to explore the full studio with your own data.
+            Start building your organization's living knowledge graph today.
           </Typography>
           <Button
             component={Link}
@@ -241,30 +359,21 @@ export default function HomePage() {
               '&:hover': { background: 'linear-gradient(135deg, #2563eb, #1e40af)' },
             }}
           >
-            Log in to explore
+            Get Started
           </Button>
         </Paper>
-      </Box>
+      </Section>
 
       <style jsx global>{`
-        @keyframes fadeUp {
-          from { opacity: 0; transform: translateY(30px) scale(0.95); }
-          to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        @keyframes popIn {
-          0% { opacity: 0; transform: translateY(40px) scale(0.9); }
-          60% { transform: translateY(-8px) scale(1.02); }
-          100% { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        @keyframes logoPulse {
-          0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.05); }
-        }
         @keyframes logoBreath {
           0%, 100% { transform: scale(1) rotate(0deg); opacity: 1; }
           25% { transform: scale(1.03) rotate(-0.5deg); }
           50% { transform: scale(1.06) rotate(0deg); opacity: 0.95; }
           75% { transform: scale(1.03) rotate(0.5deg); }
+        }
+        @keyframes logoPulse {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.05); }
         }
         .reveal {
           opacity: 0;
@@ -291,500 +400,20 @@ export default function HomePage() {
   );
 }
 
-function Hero() {
+// Reusable section wrapper
+function Section({ children, className, maxWidth = '1200px' }) {
   return (
     <Box
       component="section"
+      className={className}
       sx={{
-        position: 'relative',
-        overflow: 'hidden',
-        background: theme =>
-          theme.palette.mode === 'dark'
-            ? 'linear-gradient(140deg,#1f2430,#2a3241)'
-            : 'linear-gradient(140deg,#ffffff,#eef2f7)',
-        borderRadius: '0 0 28px 28px',
-        mb: 5,
-        boxShadow: 'var(--shadow)',
+        maxWidth,
+        mx: 'auto',
+        px: { xs: 2, md: 4 },
+        py: { xs: 4, md: 6 },
       }}
     >
-      <Box
-        sx={{
-          position: 'relative',
-          zIndex: 1,
-          maxWidth: '1100px',
-          mx: 'auto',
-          px: { xs: 3, md: 6 },
-          py: { xs: 5, md: 8 },
-          textAlign: 'center',
-        }}
-      >
-        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }} className="hero-logo">
-          <BrandPoster width={240} color="var(--text)" />
-        </Box>
-        <Chip
-          label="Knowledge Graph Studio"
-          sx={{
-            mb: 2,
-            fontWeight: 700,
-            letterSpacing: '0.1em',
-            textTransform: 'uppercase',
-            background: 'var(--panel)',
-            border: '1px solid var(--border)',
-          }}
-        />
-        <Typography variant="h2" component="h1" sx={{ fontWeight: 800, lineHeight: 1.1, mb: 2 }}>
-          A living map of your knowledge
-        </Typography>
-        <Typography
-          variant="body1"
-          sx={{
-            fontSize: { xs: 16, md: 18 },
-            lineHeight: 1.7,
-            color: 'var(--text-muted)',
-            maxWidth: 700,
-            mx: 'auto',
-            mb: 4,
-          }}
-        >
-          Ontographia is a semantic modeling and graph navigation studio. Align concepts,
-          surface relationships, and keep meaning intact as your organization evolves.
-        </Typography>
-        <Stack direction="row" spacing={2} justifyContent="center" flexWrap="wrap">
-          <Button
-            component={Link}
-            href="/login"
-            variant="contained"
-            size="large"
-            sx={{
-              borderRadius: 999,
-              px: 4,
-              fontWeight: 700,
-              background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
-              '&:hover': { background: 'linear-gradient(135deg, #2563eb, #1e40af)' },
-            }}
-          >
-            Log in to explore
-          </Button>
-          <Button
-            component="a"
-            href="#demo"
-            variant="outlined"
-            size="large"
-            sx={{ borderRadius: 999, px: 4, fontWeight: 600 }}
-            onClick={(e) => {
-              e.preventDefault();
-              document.querySelector('#demo')?.scrollIntoView({ behavior: 'smooth' });
-            }}
-          >
-            Try the demo
-          </Button>
-        </Stack>
-      </Box>
-    </Box>
-  );
-}
-
-function InteractiveDemo() {
-  const containerRef = useRef(null);
-  const cyRef = useRef(null);
-  const [selectedNode, setSelectedNode] = useState(null);
-  const [connectedNodes, setConnectedNodes] = useState([]);
-  const [isPlaying, setIsPlaying] = useState(false);
-
-  useEffect(() => {
-    if (typeof window === 'undefined' || !containerRef.current) return;
-
-    import('cytoscape').then(({ default: cytoscape }) => {
-      const cy = cytoscape({
-        container: containerRef.current,
-        elements: [
-          ...demoNodes.map(n => ({
-            data: { id: n.id, label: n.label, type: n.type, color: n.color },
-          })),
-          ...demoEdges.map((e, i) => ({
-            data: { id: `e${i}`, source: e.source, target: e.target, label: e.label },
-          })),
-        ],
-        style: [
-          {
-            selector: 'node',
-            style: {
-              'background-color': 'data(color)',
-              label: 'data(label)',
-              color: '#333',
-              'text-valign': 'bottom',
-              'text-margin-y': 8,
-              'font-size': 12,
-              'font-weight': 600,
-              width: 50,
-              height: 50,
-              'border-width': 3,
-              'border-color': '#fff',
-              'text-outline-color': '#fff',
-              'text-outline-width': 2,
-            },
-          },
-          {
-            selector: 'node:selected',
-            style: {
-              'border-width': 4,
-              'border-color': '#1d4ed8',
-              width: 60,
-              height: 60,
-            },
-          },
-          {
-            selector: 'node.highlighted',
-            style: {
-              'border-width': 3,
-              'border-color': '#f59e0b',
-            },
-          },
-          {
-            selector: 'node.dimmed',
-            style: {
-              opacity: 0.3,
-            },
-          },
-          {
-            selector: 'edge',
-            style: {
-              width: 2,
-              'line-color': '#94a3b8',
-              'target-arrow-color': '#94a3b8',
-              'target-arrow-shape': 'triangle',
-              'curve-style': 'bezier',
-              label: 'data(label)',
-              'font-size': 10,
-              'text-rotation': 'autorotate',
-              'text-margin-y': -10,
-              color: '#64748b',
-            },
-          },
-          {
-            selector: 'edge.highlighted',
-            style: {
-              'line-color': '#f59e0b',
-              'target-arrow-color': '#f59e0b',
-              width: 3,
-            },
-          },
-          {
-            selector: 'edge.dimmed',
-            style: {
-              opacity: 0.2,
-            },
-          },
-        ],
-        layout: {
-          name: 'cose',
-          padding: 50,
-          nodeRepulsion: 8000,
-          idealEdgeLength: 100,
-          animate: true,
-        },
-        userZoomingEnabled: true,
-        userPanningEnabled: true,
-        boxSelectionEnabled: false,
-      });
-
-      cy.on('tap', 'node', (evt) => {
-        const node = evt.target;
-        const nodeData = node.data();
-
-        // Reset all
-        cy.elements().removeClass('highlighted dimmed');
-
-        // Get connected nodes
-        const neighborhood = node.neighborhood();
-        const connectedEdges = neighborhood.edges();
-        const connectedNodesList = neighborhood.nodes().map(n => ({
-          id: n.id(),
-          label: n.data('label'),
-          type: n.data('type'),
-          color: n.data('color'),
-          relationship: connectedEdges.filter(e =>
-            e.source().id() === n.id() || e.target().id() === n.id()
-          ).map(e => e.data('label'))[0] || '',
-        }));
-
-        // Highlight connected
-        node.select();
-        neighborhood.addClass('highlighted');
-        cy.elements().not(neighborhood).not(node).addClass('dimmed');
-
-        setSelectedNode({
-          id: nodeData.id,
-          label: nodeData.label,
-          type: nodeData.type,
-          color: nodeData.color,
-        });
-        setConnectedNodes(connectedNodesList);
-      });
-
-      cy.on('tap', (evt) => {
-        if (evt.target === cy) {
-          cy.elements().removeClass('highlighted dimmed selected');
-          setSelectedNode(null);
-          setConnectedNodes([]);
-        }
-      });
-
-      cyRef.current = cy;
-    });
-
-    return () => {
-      if (cyRef.current) {
-        cyRef.current.destroy();
-      }
-    };
-  }, []);
-
-  const handleReset = useCallback(() => {
-    if (cyRef.current) {
-      cyRef.current.elements().removeClass('highlighted dimmed selected');
-      cyRef.current.layout({ name: 'cose', padding: 50, nodeRepulsion: 8000, animate: true }).run();
-      setSelectedNode(null);
-      setConnectedNodes([]);
-    }
-  }, []);
-
-  const handleZoomIn = useCallback(() => {
-    if (cyRef.current) {
-      cyRef.current.zoom(cyRef.current.zoom() * 1.2);
-    }
-  }, []);
-
-  const handleZoomOut = useCallback(() => {
-    if (cyRef.current) {
-      cyRef.current.zoom(cyRef.current.zoom() * 0.8);
-    }
-  }, []);
-
-  const handleFit = useCallback(() => {
-    if (cyRef.current) {
-      cyRef.current.fit(50);
-    }
-  }, []);
-
-  const handleAutoPlay = useCallback(() => {
-    if (!cyRef.current || isPlaying) return;
-    setIsPlaying(true);
-
-    const nodes = cyRef.current.nodes();
-    let index = 0;
-
-    const interval = setInterval(() => {
-      if (index >= nodes.length) {
-        clearInterval(interval);
-        setIsPlaying(false);
-        cyRef.current.elements().removeClass('highlighted dimmed selected');
-        setSelectedNode(null);
-        setConnectedNodes([]);
-        return;
-      }
-
-      nodes[index].emit('tap');
-      index++;
-    }, 1500);
-  }, [isPlaying]);
-
-  return (
-    <Box id="demo" sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '2fr 1fr' }, gap: 3 }}>
-      {/* Graph Canvas */}
-      <Paper
-        sx={{
-          position: 'relative',
-          borderRadius: 3,
-          overflow: 'hidden',
-          border: '1px solid var(--border)',
-          background: 'var(--panel)',
-        }}
-      >
-        {/* Toolbar */}
-        <Box sx={{
-          position: 'absolute',
-          top: 12,
-          left: 12,
-          zIndex: 10,
-          display: 'flex',
-          gap: 0.5,
-          background: 'var(--bg)',
-          borderRadius: 2,
-          p: 0.5,
-          border: '1px solid var(--border)',
-        }}>
-          <Tooltip title="Auto-play tour">
-            <IconButton size="small" onClick={handleAutoPlay} disabled={isPlaying}>
-              <PlayArrowIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Reset layout">
-            <IconButton size="small" onClick={handleReset}>
-              <RestartAltIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-          <Divider orientation="vertical" flexItem sx={{ mx: 0.5 }} />
-          <Tooltip title="Zoom in">
-            <IconButton size="small" onClick={handleZoomIn}>
-              <ZoomInIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Zoom out">
-            <IconButton size="small" onClick={handleZoomOut}>
-              <ZoomOutIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Fit to view">
-            <IconButton size="small" onClick={handleFit}>
-              <FitScreenIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-        </Box>
-
-        <Box
-          ref={containerRef}
-          sx={{
-            width: '100%',
-            height: { xs: 350, md: 450 },
-          }}
-        />
-
-        {/* Hint */}
-        <Box sx={{
-          position: 'absolute',
-          bottom: 12,
-          left: 12,
-          right: 12,
-          textAlign: 'center',
-        }}>
-          <Typography variant="caption" sx={{ color: 'var(--text-muted)', bgcolor: 'var(--bg)', px: 2, py: 0.5, borderRadius: 1 }}>
-            Click a node to explore its relationships. Drag nodes to rearrange.
-          </Typography>
-        </Box>
-      </Paper>
-
-      {/* Node Explorer Panel */}
-      <Paper
-        sx={{
-          p: 2.5,
-          borderRadius: 3,
-          border: '1px solid var(--border)',
-          background: 'var(--panel)',
-          height: { xs: 'auto', md: 450 },
-          overflow: 'auto',
-        }}
-      >
-        <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2 }}>
-          Node Explorer
-        </Typography>
-
-        {selectedNode ? (
-          <>
-            {/* Selected Node */}
-            <Box sx={{
-              p: 2,
-              borderRadius: 2,
-              background: 'var(--bg)',
-              border: '1px solid var(--border)',
-              mb: 2,
-            }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
-                <Box sx={{
-                  width: 32, height: 32, borderRadius: '50%',
-                  bgcolor: selectedNode.color,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: 'white', fontWeight: 700, fontSize: 14,
-                }}>
-                  {selectedNode.label[0]}
-                </Box>
-                <Box>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-                    {selectedNode.label}
-                  </Typography>
-                  <Chip
-                    label={selectedNode.type}
-                    size="small"
-                    sx={{ height: 18, fontSize: 10, bgcolor: selectedNode.color, color: 'white' }}
-                  />
-                </Box>
-              </Box>
-            </Box>
-
-            {/* Connected Nodes */}
-            <Typography variant="caption" sx={{ fontWeight: 600, color: 'var(--text-muted)', display: 'block', mb: 1 }}>
-              CONNECTED TO ({connectedNodes.length})
-            </Typography>
-            <Stack spacing={1}>
-              {connectedNodes.map(node => (
-                <Box
-                  key={node.id}
-                  sx={{
-                    p: 1.5,
-                    borderRadius: 1.5,
-                    background: 'var(--bg)',
-                    border: '1px solid var(--border)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1.5,
-                  }}
-                >
-                  <Box sx={{
-                    width: 24, height: 24, borderRadius: '50%',
-                    bgcolor: node.color,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    color: 'white', fontWeight: 600, fontSize: 11,
-                  }}>
-                    {node.label[0]}
-                  </Box>
-                  <Box sx={{ flex: 1 }}>
-                    <Typography variant="body2" sx={{ fontWeight: 600, fontSize: 13 }}>
-                      {node.label}
-                    </Typography>
-                    <Typography variant="caption" sx={{ color: 'var(--text-muted)' }}>
-                      {node.relationship}
-                    </Typography>
-                  </Box>
-                </Box>
-              ))}
-            </Stack>
-          </>
-        ) : (
-          <Box sx={{ textAlign: 'center', py: 4, color: 'var(--text-muted)' }}>
-            <Box sx={{
-              width: 64, height: 64, borderRadius: '50%',
-              border: '2px dashed var(--border)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              mx: 'auto', mb: 2,
-            }}>
-              <Typography variant="h5">?</Typography>
-            </Box>
-            <Typography variant="body2">
-              Click a node in the graph to see its details and connections
-            </Typography>
-          </Box>
-        )}
-
-        {/* Legend */}
-        <Box sx={{ mt: 3, pt: 2, borderTop: '1px solid var(--border)' }}>
-          <Typography variant="caption" sx={{ fontWeight: 600, color: 'var(--text-muted)', display: 'block', mb: 1 }}>
-            NODE TYPES
-          </Typography>
-          <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-            {[...new Set(demoNodes.map(n => n.type))].map(type => {
-              const node = demoNodes.find(n => n.type === type);
-              return (
-                <Chip
-                  key={type}
-                  label={type}
-                  size="small"
-                  sx={{ height: 22, fontSize: 11, bgcolor: node?.color, color: 'white' }}
-                />
-              );
-            })}
-          </Stack>
-        </Box>
-      </Paper>
+      {children}
     </Box>
   );
 }

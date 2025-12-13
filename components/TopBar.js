@@ -11,6 +11,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import HomeIcon from '@mui/icons-material/Home';
 import LockIcon from '@mui/icons-material/Lock';
 import QuizIcon from '@mui/icons-material/Quiz';
+import NotificationsIcon from '@mui/icons-material/Notifications';
 import AppsIcon from '@mui/icons-material/Apps';
 import SchoolIcon from '@mui/icons-material/School';
 import HubIcon from '@mui/icons-material/Hub';
@@ -19,12 +20,14 @@ import SourceIcon from '@mui/icons-material/Source';
 import CableIcon from '@mui/icons-material/Cable';
 import CategoryIcon from '@mui/icons-material/Category';
 import DeviceHubIcon from '@mui/icons-material/DeviceHub';
+import LightbulbIcon from '@mui/icons-material/Lightbulb';
 import DomainIcon from '@mui/icons-material/Domain';
 import TimelineIcon from '@mui/icons-material/Timeline';
 import ThemeToggle from './ThemeToggle';
 import { useAuth } from './AuthContext';
 import { LogoWordmark } from './Logo';
 import { useDomains } from './DomainContext';
+import { useNotifications } from './NotificationContext';
 
 export default function TopBar({ theme, onThemeChange }) {
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -39,15 +42,20 @@ export default function TopBar({ theme, onThemeChange }) {
   const { activeDomain, accessibleDomains, setActiveDomain, activeDomainObj } = useDomains();
   const [domainMenuOpen, setDomainMenuOpen] = useState(false);
   const domainMenuRef = useRef(null);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const notificationsRef = useRef(null);
+  const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification, clearAll } = useNotifications();
 
   useEffect(() => {
     function handleClickOutside(e) {
       const inSettings = menuRef.current && menuRef.current.contains(e.target);
       const inUserMenu = userMenuRef.current && userMenuRef.current.contains(e.target);
       const inDomainMenu = domainMenuRef.current && domainMenuRef.current.contains(e.target);
+      const inNotifications = notificationsRef.current && notificationsRef.current.contains(e.target);
       if (!inSettings) setSettingsOpen(false);
       if (!inUserMenu) setUserMenuOpen(false);
       if (!inDomainMenu) setDomainMenuOpen(false);
+      if (!inNotifications) setNotificationsOpen(false);
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -71,6 +79,26 @@ export default function TopBar({ theme, onThemeChange }) {
   useEffect(() => {
     setNavOpen(false);
   }, [router.pathname]);
+
+  // Format notification timestamp
+  const formatNotificationTime = (timestamp) => {
+    const now = Date.now();
+    const diff = now - timestamp;
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+    if (minutes < 1) return 'Just now';
+    if (minutes < 60) return `${minutes}m ago`;
+    if (hours < 24) return `${hours}h ago`;
+    if (days < 7) return `${days}d ago`;
+    return new Date(timestamp).toLocaleDateString();
+  };
+
+  // Filter notifications for current user
+  const userNotifications = notifications.filter(n =>
+    n.targetUser?.toLowerCase() === user?.toLowerCase()
+  );
+  const userUnreadCount = userNotifications.filter(n => !n.read).length;
 
   return (
     <>
@@ -118,6 +146,14 @@ export default function TopBar({ theme, onThemeChange }) {
               </span>
               <span className="icon-label">
                 <p className="pmi">Product</p>
+              </span>
+            </Link>
+            <Link href="/product-design-workspace" className={`icon-nav-item ${isActive('/product-design-workspace') ? 'active' : ''}`}>
+              <span className="icon-wrap">
+                <LightbulbIcon fontSize="inherit" />
+              </span>
+              <span className="icon-label">
+                <p className="pmi">Design</p>
               </span>
             </Link>
           </nav>
@@ -261,6 +297,131 @@ export default function TopBar({ theme, onThemeChange }) {
                   </IconButton>
                 </Tooltip>
               )}
+              {!isMobile && (
+                <div className="settings-menu" ref={notificationsRef} style={{ position: 'relative' }}>
+                  <Tooltip title="Notifications">
+                    <IconButton
+                      size="small"
+                      onClick={() => setNotificationsOpen(o => !o)}
+                      aria-expanded={notificationsOpen}
+                      aria-label="Notifications"
+                      className="topbar-icon-btn"
+                      sx={{ color: 'var(--text-muted)', transition: 'all 0.2s ease', '&:hover': { color: 'var(--text)', transform: 'scale(1.1)' }, position: 'relative' }}
+                    >
+                      <NotificationsIcon fontSize="large" />
+                      {userUnreadCount > 0 && (
+                        <span style={{
+                          position: 'absolute',
+                          top: 2,
+                          right: 2,
+                          background: '#ef4444',
+                          color: 'white',
+                          fontSize: 10,
+                          fontWeight: 600,
+                          minWidth: 16,
+                          height: 16,
+                          borderRadius: 8,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          padding: '0 4px',
+                        }}>
+                          {userUnreadCount > 9 ? '9+' : userUnreadCount}
+                        </span>
+                      )}
+                    </IconButton>
+                  </Tooltip>
+                  {notificationsOpen && (
+                    <div className="settings-dropdown notifications-dropdown" style={{ right: 0, left: 'auto', minWidth: 320, maxHeight: 400 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', borderBottom: '1px solid var(--border)' }}>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>Notifications</span>
+                        {userNotifications.length > 0 && (
+                          <div style={{ display: 'flex', gap: 8 }}>
+                            {userUnreadCount > 0 && (
+                              <button
+                                onClick={markAllAsRead}
+                                style={{ fontSize: 11, color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                              >
+                                Mark all read
+                              </button>
+                            )}
+                            <button
+                              onClick={clearAll}
+                              style={{ fontSize: 11, color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                            >
+                              Clear all
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                      <div style={{ overflowY: 'auto', maxHeight: 340 }}>
+                        {userNotifications.length === 0 ? (
+                          <div style={{ padding: '24px 12px', textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>
+                            No notifications
+                          </div>
+                        ) : (
+                          userNotifications.slice(0, 20).map(notification => (
+                            <div
+                              key={notification.id}
+                              onClick={() => {
+                                markAsRead(notification.id);
+                                if (notification.sourceUrl) {
+                                  router.push(notification.sourceUrl);
+                                  setNotificationsOpen(false);
+                                }
+                              }}
+                              style={{
+                                padding: '10px 12px',
+                                borderBottom: '1px solid var(--border)',
+                                cursor: notification.sourceUrl ? 'pointer' : 'default',
+                                background: notification.read ? 'transparent' : 'var(--accent-soft)',
+                                transition: 'background 0.15s ease',
+                              }}
+                            >
+                              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
+                                <div style={{ flex: 1 }}>
+                                  <div style={{ fontSize: 12, color: 'var(--text)', marginBottom: 4 }}>
+                                    <strong style={{ color: 'var(--accent)' }}>@{notification.author}</strong>
+                                    {notification.type === 'mention' && ' mentioned you'}
+                                    {notification.source && (
+                                      <span style={{ color: 'var(--text-muted)' }}> in {notification.source}</span>
+                                    )}
+                                  </div>
+                                  {notification.preview && (
+                                    <div style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.4 }}>
+                                      {notification.preview}
+                                    </div>
+                                  )}
+                                  <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>
+                                    {formatNotificationTime(notification.createdAt)}
+                                  </div>
+                                </div>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    deleteNotification(notification.id);
+                                  }}
+                                  style={{
+                                    fontSize: 14,
+                                    color: 'var(--text-muted)',
+                                    background: 'none',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    padding: 2,
+                                    lineHeight: 1,
+                                  }}
+                                >
+                                  ×
+                                </button>
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
               <div className="settings-menu" ref={userMenuRef} style={{ position: 'relative' }}>
                 <Tooltip title={`${user} (${role})`}>
                   <IconButton
@@ -334,6 +495,10 @@ export default function TopBar({ theme, onThemeChange }) {
               <Link href="/home" className={`mobile-nav-item ${isActive('/home') ? 'active' : ''}`}>
                 <AppsIcon fontSize="small" />
                 <span>Product</span>
+              </Link>
+              <Link href="/product-design-workspace" className={`mobile-nav-item ${isActive('/product-design-workspace') ? 'active' : ''}`}>
+                <LightbulbIcon fontSize="small" />
+                <span>Design Workspace</span>
               </Link>
               <Link href="/semanticmodelbrowser" className={`mobile-nav-item ${isActive('/semanticmodelbrowser') ? 'active' : ''}`}>
                 <SchoolIcon fontSize="small" />

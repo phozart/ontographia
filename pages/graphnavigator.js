@@ -1,19 +1,26 @@
 // pages/graphnavigator.js
-import { useEffect, useMemo, useState, useCallback } from 'react';
+import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import nextDynamic from 'next/dynamic';
 import NodeDetailPanel from '../components/NodeDetailPanel';
 import { useFilter } from '../components/FilterContext';
 import { useAuth } from '../components/AuthContext';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
+const TooltipWrapper = ({ title, children }) => (
+  <Tooltip title={title}>
+    <span className="toolbar-tooltip-span">{children}</span>
+  </Tooltip>
+);
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import AddIcon from '@mui/icons-material/Add';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import SettingsIcon from '@mui/icons-material/Settings';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
+import RouteIcon from '@mui/icons-material/Route';
 import { LogoSpinner } from '../components/Logo';
 import { useDomains } from '../components/DomainContext';
 import BulkImportExport from '../components/BulkImportExport';
+import PathFinder from '../components/PathFinder';
 
 const GraphView = nextDynamic(() => import('../components/GraphView'), {
   ssr: false,
@@ -69,6 +76,8 @@ export default function GraphNavigatorPage() {
   const [editingNodeType, setEditingNodeType] = useState(null);
   const [editingRelType, setEditingRelType] = useState(null);
   const [showImportExport, setShowImportExport] = useState(false);
+  const [showPathFinder, setShowPathFinder] = useState(false);
+  const cyRef = useRef(null);
 
   const domainMatch = useMemo(() => {
     const activeName = activeDomainObj?.name;
@@ -420,47 +429,65 @@ export default function GraphNavigatorPage() {
             <div className="toolbar-buttons">
               {!readOnly && (
                 <>
-                  <Tooltip title="Create Node (N)">
-                    <button
-                      className="toolbar-btn primary"
-                      onClick={() => {
-                        setQuickCreateOpen(true);
-                        setQuickCreateForm(prev => ({ ...prev, typeId: nodeTypes[0]?.id || '' }));
-                      }}
-                    >
-                      <AddIcon fontSize="small" /> Node
-                    </button>
-                  </Tooltip>
+                  <TooltipWrapper title="Create Node (N)">
+                    <span className="toolbar-tooltip-span">
+                      <button
+                        className="toolbar-btn primary"
+                        onClick={() => {
+                          setQuickCreateOpen(true);
+                          setQuickCreateForm(prev => ({ ...prev, typeId: nodeTypes[0]?.id || '' }));
+                        }}
+                      >
+                        <AddIcon fontSize="small" /> Node
+                      </button>
+                    </span>
+                  </TooltipWrapper>
                   <Tooltip title="Add Relationship">
-                    <button
-                      className="toolbar-btn"
-                      onClick={() => {
-                        setDetailsOpen(true);
-                        setRelationshipSignal(s => s + 1);
-                      }}
-                      disabled={!selectedNode}
-                    >
-                      <AccountTreeIcon fontSize="small" /> Link
-                    </button>
+                    <span className="toolbar-tooltip-span">
+                      <button
+                        className="toolbar-btn"
+                        onClick={() => {
+                          setDetailsOpen(true);
+                          setRelationshipSignal(s => s + 1);
+                        }}
+                        disabled={!selectedNode}
+                      >
+                        <AccountTreeIcon fontSize="small" /> Link
+                      </button>
+                    </span>
                   </Tooltip>
                   <Tooltip title="Manage Types">
-                    <button
-                      className="toolbar-btn"
-                      onClick={() => setShowTypeManager(true)}
-                    >
-                      <SettingsIcon fontSize="small" /> Types
-                    </button>
+                    <span className="toolbar-tooltip-span">
+                      <button
+                        className="toolbar-btn"
+                        onClick={() => setShowTypeManager(true)}
+                      >
+                        <SettingsIcon fontSize="small" /> Types
+                      </button>
+                    </span>
                   </Tooltip>
                   <Tooltip title="Import / Export">
-                    <button
-                      className="toolbar-btn"
-                      onClick={() => setShowImportExport(true)}
-                    >
-                      <FileUploadIcon fontSize="small" /> Data
-                    </button>
+                    <span className="toolbar-tooltip-span">
+                      <button
+                        className="toolbar-btn"
+                        onClick={() => setShowImportExport(true)}
+                      >
+                        <FileUploadIcon fontSize="small" /> Data
+                      </button>
+                    </span>
                   </Tooltip>
                 </>
               )}
+              <Tooltip title="Find Path">
+                <span className="toolbar-tooltip-span">
+                  <button
+                    className={`toolbar-btn ${showPathFinder ? 'active' : ''}`}
+                    onClick={() => setShowPathFinder(!showPathFinder)}
+                  >
+                    <RouteIcon fontSize="small" /> Path
+                  </button>
+                </span>
+              </Tooltip>
             </div>
           </div>
 
@@ -539,32 +566,38 @@ export default function GraphNavigatorPage() {
             </div>
             <div className="toolbar-buttons">
               <Tooltip title="Refresh">
-                <button className="toolbar-btn" onClick={() => setReloadKey(k => k + 1)} disabled={loading}>
-                  {loading ? '...' : '↻'}
-                </button>
+                <span className="toolbar-tooltip-span">
+                  <button className="toolbar-btn" onClick={() => setReloadKey(k => k + 1)} disabled={loading}>
+                    {loading ? '...' : '↻'}
+                  </button>
+                </span>
               </Tooltip>
               <Tooltip title="Clear filters">
-                <button
-                  className="toolbar-btn"
-                  onClick={() => {
-                    setSelectedType('');
-                    setTypeFilters([]);
-                    setNodeQuery('');
-                    setHighlightedIds([]);
-                    setFocusNodeId(null);
-                  }}
-                >
-                  ✕
-                </button>
+                <span className="toolbar-tooltip-span">
+                  <button
+                    className="toolbar-btn"
+                    onClick={() => {
+                      setSelectedType('');
+                      setTypeFilters([]);
+                      setNodeQuery('');
+                      setHighlightedIds([]);
+                      setFocusNodeId(null);
+                    }}
+                  >
+                    ƒo
+                  </button>
+                </span>
               </Tooltip>
               <Tooltip title="Help">
-                <IconButton
-                  size="small"
-                  onClick={() => setInfoOpen(true)}
-                  sx={{ color: 'var(--text)' }}
-                >
-                  <InfoOutlinedIcon fontSize="small" />
-                </IconButton>
+                <span className="toolbar-tooltip-span">
+                  <IconButton
+                    size="small"
+                    onClick={() => setInfoOpen(true)}
+                    sx={{ color: 'var(--text)' }}
+                  >
+                    <InfoOutlinedIcon fontSize="small" />
+                  </IconButton>
+                </span>
               </Tooltip>
             </div>
           </div>
@@ -626,6 +659,7 @@ export default function GraphNavigatorPage() {
               setDetailsOpen(true);
               setRelationshipSignal(s => s + 1);
             }}
+            onCyReady={(cy) => { cyRef.current = cy; }}
           />
         </div>
 
@@ -979,6 +1013,20 @@ export default function GraphNavigatorPage() {
         relationshipTypes={relationshipTypes}
         activeDomain={activeDomain}
         onDataChanged={handleDataChanged}
+      />
+
+      {/* Path Finder */}
+      <PathFinder
+        cy={cyRef.current}
+        nodes={nodes}
+        visible={showPathFinder}
+        onClose={() => setShowPathFinder(false)}
+        onPathFound={(path) => {
+          // Optionally highlight the path nodes
+          if (path && path.length > 0 && path[0].nodes) {
+            setHighlightedIds(path[0].nodes.map(n => n.id));
+          }
+        }}
       />
 
       {/* Help Modal */}

@@ -94,10 +94,20 @@ export function useRouteGuard() {
   const router = useRouter();
   const allowedRoutes = useMemo(() => {
     if (!role) return ['/', '/login', '/help'];
-    const studioRoutes = ['/studio', '/graphnavigator', '/graph-editor'];
-    const diagramRoutes = ['/diagram-workspace', '/flow-designer'];
+    const studioRoutes = ['/studio', '/graphnavigator', '/graph-editor', '/knowledge-studio'];
+    const diagramRoutes = [
+      '/diagram-workspace',
+      '/flow-designer',
+      '/system-dynamics',
+      '/enterprise-architecture',
+      '/requirements-studio',
+      '/ea-workspace',
+      '/ea-studio',
+      '/product-design-workspace',
+      '/dynamic-work-design',
+    ];
     const modelRoutes = ['/semanticmodelbrowser', '/user-view'];
-    const homeRoute = ['/home', '/help'];
+    const homeRoute = ['/home', '/help', '/projects-overview'];
     const adminRoutes = ['/', ...homeRoute, ...studioRoutes, ...diagramRoutes, ...modelRoutes, '/nodes', '/relationships', '/settings', '/domains', '/node-types', '/relationship-types', '/login'];
     if (role === 'admin') return [...adminRoutes, '/admin/users'];
     if (role === 'editor') return ['/', ...homeRoute, ...studioRoutes, ...diagramRoutes, ...modelRoutes, '/settings', '/domains', '/login'];
