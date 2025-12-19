@@ -1449,6 +1449,43 @@ export const ATTACHMENT_TYPES = {
   'link': { id: 'link', name: 'External Link', icon: '🔗', category: 'link' },
 };
 
+// ============ ALLOWED RELATIONSHIPS MAP ============
+// Maps each artefact type to allowed relationship types and their valid targets
+// Used by AddRelationship component to show valid relationship options
+export const ALLOWED_RELATIONSHIPS = (() => {
+  const result = {};
+  Object.entries(ARTEFACT_TYPES).forEach(([artefactType, typeDef]) => {
+    if (typeDef.allowedRelationships && typeDef.allowedRelationships.length > 0) {
+      const rels = {};
+      typeDef.allowedRelationships.forEach(relType => {
+        const relDef = RELATIONSHIP_TYPES[relType];
+        if (relDef && relDef.validTarget) {
+          rels[relType] = relDef.validTarget;
+        }
+      });
+      if (Object.keys(rels).length > 0) {
+        result[artefactType] = rels;
+      }
+    }
+  });
+  // Also add reverse relationships by checking validSource
+  Object.entries(RELATIONSHIP_TYPES).forEach(([relType, relDef]) => {
+    if (relDef.validSource) {
+      // Handle both array and non-array validSource
+      const sources = Array.isArray(relDef.validSource) ? relDef.validSource : [relDef.validSource];
+      sources.forEach(sourceType => {
+        if (!result[sourceType]) result[sourceType] = {};
+        if (!result[sourceType][relType] && relDef.validTarget) {
+          // Handle both array and non-array validTarget
+          const targets = Array.isArray(relDef.validTarget) ? relDef.validTarget : [relDef.validTarget];
+          result[sourceType][relType] = targets;
+        }
+      });
+    }
+  });
+  return result;
+})();
+
 // Export types for use in other components
 export { ARTEFACT_TYPES as ArtefactTypes };
 export { RELATIONSHIP_TYPES as RelationshipTypes };

@@ -1,2730 +1,1239 @@
-EPIC 1 – System Dynamics Canvas (Core Interaction Layer)
-Description
+Mental Models & Sensemaking Studio
+A General-Purpose Reasoning & Thinking Environment (with Integrated Experience Lens)
 
-Provide a high-performance visual canvas where users create, move, connect, and edit System Dynamics elements (causal variables, stocks, flows, auxiliaries). This is the foundation for both CLD and stock-flow diagrams.
+You are building a Mental Models & Sensemaking Studio.
 
-Feature 1.1 – Canvas Rendering & Navigation
+This studio is a general-purpose thinking environment that helps users:
 
-Requirements
+reason about complex situations
 
-Infinite or very large 2D drawing surface.
+surface assumptions and narratives
 
-Smooth pan via click-drag, touchpad drag, or spacebar+drag.
+compare perspectives
 
-Zoom with mouse wheel + UI buttons.
+explore uncertainty
 
-Zoom-to-fit and zoom-to-selection.
+understand consequences and trade-offs
 
-Real-time rendering with no flicker.
+reflect on experience and perception when relevant
 
-Acceptance Criteria
+It is not:
 
-User can pan fluidly at 60fps or similar.
+a management tool
 
-Zoom keeps cursor position centered.
+a training platform
 
-No jitter when dragging many elements.
+a methodology enforcer
 
-Canvas state persists on page refresh.
+a CX, PM, BA, or ITSM system
 
-Feature 1.2 – Element Creation Mechanisms
+a measurement or KPI tool
 
-Requirements
+Its purpose is to externalise thinking, not to standardise it.
 
-Toolbar for adding:
+1. Core Design Principles (Non-Negotiable)
 
-Causal Variable
+Thinking before structure
+Users start with vague situations and partial thoughts.
+The system must tolerate incompleteness, contradiction, and evolution.
 
-Link
+Lenses, not workflows
+The studio offers ways of thinking, not steps to follow.
 
-Stock
+Experience is a perspective, not a discipline
+CX is integrated as an Experience Lens, never as a separate module.
 
-Flow
+Guidance is subtle and optional
+Prompts suggest reflection; they never enforce correctness.
 
-Auxiliary Variable
+Broad applicability
+The studio must work for:
 
-Parameter / Constant
+business analysis
 
-Text / Note
+strategy
 
-Right-click menu: quick-add element at pointer location.
+product/service reasoning
 
-Keyboard shortcuts:
+organisational diagnosis
 
-"C" = Causal Variable
+decision preparation
 
-"S" = Stock
+personal reflection
 
-"F" = Flow
+2. Shared Sensemaking Model (Required)
 
-"A" = Auxiliary
+All lenses, diagrams, and exercises use the same underlying model.
 
-"P" = Parameter
+2.1 Core Entities
+Situation
 
-"T" = Text
+A concrete context or question being explored.
 
-Acceptance Criteria
+title
 
-Creating an element takes max. two actions.
+description
 
-Newly created element appears directly under cursor.
+scope (optional)
 
-Keyboard shortcuts work regardless of zoom level.
+tags
 
-Feature 1.3 – Element Manipulation
+All thinking attaches to a Situation.
 
-Requirements
+Thought
 
-Drag elements with snap-to-grid and alignment guides.
+A basic unit of thinking.
 
-Multi-select via lasso or shift-click.
+text
 
-Duplicate, delete, copy/paste.
+type: idea | observation | assumption | belief | concern | option | question | experience-step
 
-Undo/redo stack with minimum 50 steps.
+confidence (optional)
 
-Acceptance Criteria
+source (self | other | implicit)
 
-Dragging multiple nodes maintains relative spacing.
+Thoughts are intentionally generic and flexible.
 
-Undo restores exact previous canvas state.
+Frame
 
-Copy/paste preserves metadata (ID, type, properties).
+A way of interpreting or explaining the situation.
 
-Feature 1.4 – Element Editing Panel
+label (plain language)
 
-Requirements
+description
 
-Side panel displaying properties of selected element(s).
+frameType: mental_model | narrative | heuristic | bias_hypothesis | perspective
 
-Fields vary by type:
+confidence (optional)
 
-Causal variable: label, description, polarity notes
+Examples:
 
-Stock: name, unit, initial value
+“Efficiency reduces risk”
 
-Flow: name, formula
+“Customers value predictability over speed”
 
-Aux/Parameter: formula/value
+Alternative
 
-Support Markdown in descriptions.
+A competing frame or interpretation.
 
-Autocomplete when linking to domain entities.
+description
 
-Acceptance Criteria
+what it changes
 
-Editing updates reflect immediately on canvas.
+what it worsens (explicit trade-off)
 
-Invalid formulas produce inline error messages.
+Implication
 
-Closing and reopening panel preserves unsaved input until explicitly dismissed.
+A consequence if a frame or thought holds.
 
-Feature 1.5 – Links & Connectors
+description
 
-Requirements
+impact: low | medium | high
 
-Create link via dragging from node output handle to target.
+reversibility: easy | medium | hard (optional)
 
-Arrow automatically orients to direction.
+Boundary
 
-Link editing panel:
+Where a frame, assumption, or analogy stops applying.
 
-Polarity (for CLD mode)
+description
 
-Delay toggle
+importance
 
-Strength (optional)
+Evidence (optional)
 
-Auto-routing to minimize overlap.
+Anchors thinking to reality.
 
-Acceptance Criteria
+note or link
 
-Link creation requires a single drag.
+supports or challenges a Thought or Frame
 
-Dragging nodes reroutes link paths dynamically.
+strength: low | medium | high
 
-Delay indicator renders correctly when enabled.
+2.2 Relationships
 
-Feature 1.6 – Canvas Layers
+Situation HAS Thought
 
-Requirements
+Frame APPLIES_TO Situation
 
-Predefined layers:
+Frame EXPLAINS Thought
 
-Structural (nodes + links)
+Alternative CHALLENGES Frame or Thought
 
-Data/metrics overlay
+Frame or Alternative IMPLIES Implication
 
-Annotation layer
+Frame HAS Boundary
 
-Toggle layer visibility individually.
+Evidence SUPPORTS / REFUTES Thought or Frame
 
-Elements know which layer they belong to.
+Thought RELATES_TO Thought (free-form)
 
-Acceptance Criteria
+3. Interaction Model
+3.1 Thinking Canvas (Primary UI)
 
-Hiding a layer visually removes its elements without affecting layout.
+The primary interface is a canvas where users can:
 
-Switching layers does not modify model logic.
+add thoughts freely
 
-Feature 1.7 – Dark/Light Mode
+connect, cluster, and annotate ideas
 
-Requirements
+switch lenses and views without losing content
 
-Canvas adapts to global app theme.
+No rigid forms. No mandatory completion.
 
-Node shapes, text, arrows adjust for contrast.
+3.2 Multiple Views on the Same Thinking
 
-Loop labels and colors remain readable in both modes.
+The same underlying data must be viewable as:
 
-Acceptance Criteria
+free-form thought map (mind-map style)
 
-All diagrams remain legible in both modes.
+clustered views
 
-No color clashes or unreadable elements.
+matrices (user-defined axes)
 
-Feature 1.8 – Mini-map
+comparison tables
 
-Requirements
+scenario sketches
 
-Small map showing entire model.
+narrative / linear views
 
-Movable viewport box indicating focus area.
+Views never create new data; they only project it.
 
-Click/drag inside mini-map to reposition main view.
+4. Built-In Lenses (Presets)
 
-Acceptance Criteria
+Lenses are thinking modes defined by:
 
-Mini-map updates in real time.
+prompts
 
-Dragging viewport moves main canvas smoothly.
+highlighted entity types
 
-Mini-map autoscaling works for very large diagrams.
+default views
 
+Users can switch lenses at any time.
 
+4.1 Mental Models & Assumptions Lens
 
-EPIC 2 – Causal Loop Diagram (CLD) Modeling
-Description
+Focus:
 
-Deliver a complete set of features to create, edit, visualize, and analyze Causal Loop Diagrams. Users must be able to map relationships, polarities, delays, and feedback loops with clarity and precision. The CLD functionality should be intuitive for fast conceptual sketching but structured enough for analytical use.
+implicit assumptions
 
-Feature 2.1 – CLD Variable Nodes
-Requirements
+dominant narratives
 
-Node type: Causal Variable
+mental shortcuts
 
-Properties:
+Prompts:
 
-Label (short text)
+“What are we assuming is fixed?”
 
-Description (markdown supported)
+“What feels obvious but isn’t proven?”
 
-Optional category (Resource, Process, Demand, KPI, Policy, External Driver, etc.)
+“What belief is shaping these decisions?”
 
-Optional domain entity link (ID reference to knowledge graph)
+4.2 Counterfactual / Opposite Lens
 
-Display:
+Focus:
 
-Rounded rectangle or bubble shape
+challenging dominant frames
 
-Auto-resize based on text
+Prompts:
 
-Optional icon for category
+“If the opposite were true, what changes?”
 
-Interactions:
+“What are we optimising for without noticing?”
 
-Double-click to edit
+“What would a critic say?”
 
-Drag to reposition
+4.3 Trade-offs & Tensions Lens
 
-Duplicate, group, delete
+Focus:
 
-Acceptance Criteria
+unavoidable dilemmas
 
-Node is created with default label (“Variable”).
+Prompts:
 
-Text remains readable at all zoom levels.
+“What improves if this holds?”
 
-Linking to a domain object updates metadata panel immediately.
+“What necessarily worsens?”
 
-Node style adapts to dark/light mode.
+“What tension cannot be resolved?”
 
-Feature 2.2 – Causal Links (Arrows)
-Requirements
+4.4 Scenario & Futures Lens (Lightweight)
 
-Relationship type: directed arrow from Source → Target.
+Focus:
 
-Properties:
+holding multiple plausible futures
 
-Polarity: Positive (+) or Negative (–)
+Tools:
 
-Delay: Boolean flag (renders delay symbol)
+2×2 uncertainty matrix
 
-Optional strength: weak / medium / strong
+scenario cards
 
-Optional justification note
+implication mapping
 
-Visual:
+Prompts:
 
-Arrowhead direction clearly visible
+“What if this assumption fails?”
 
-Label near arrow midpoint (“+”, “–”)
+“What changes under a different future?”
 
-Delay drawn as double-line or clock symbol
+Scenarios are sketches, not forecasts.
 
-User Actions:
+4.5 Pattern & Analogy Lens
 
-Drag from node handle to create link
+Focus:
 
-Click link to open property panel
+learning transfer
 
-Reposition text label manually (optional)
+“this resembles…”
 
-Acceptance Criteria
+Prompts:
 
-Polarity icon always aligns with arrow orientation.
+“Where have we seen this before?”
 
-Delay indicator appears exactly on that link.
+“What pattern does this resemble?”
 
-Link reroutes cleanly when nodes move.
+“Where does the analogy break?”
 
-Invalid link attempts (node → same node) are blocked.
+5. Integrated Experience (CX) Lens
+5.1 Positioning
 
-Feature 2.3 – Loop Detection & Loop Creation
-Requirements
+The Experience Lens is a temporary perspective that shifts thinking from:
 
-Automatic loop detection:
+internal logic → external lived experience
 
-Identify cycles in the CLD graph.
+It does not introduce new artefacts or data structures.
 
-Determine loop polarity (Reinforcing vs Balancing).
+5.2 When the System Suggests the Experience Lens
 
-Manual loop creation tool:
+The system should suggest (never force) activating the Experience Lens when:
 
-User selects nodes/links → “Create Loop.”
+Situation text contains experiential language
+(e.g. confusing, frustrating, trust, effort, unclear, complaints)
 
-User assigns name (e.g., “R1 Growth Loop”).
+Implications reference perception or emotion
+(e.g. confidence, reputation, stress, satisfaction)
 
-Loop visualization:
+Multiple internal frames exist with no external perspective
 
-Loop label displayed on canvas.
+Repeated adjustments exist without perceived improvement
 
-Color conventions:
+Suggestion text example:
 
-Reinforcing: e.g., blue
+“This situation appears to involve lived experience or perception.
+You might want to explore it using an Experience Lens.”
 
-Balancing: e.g., red
+5.3 Experience Lens Prompts
 
-Clicking label highlights the loop path.
+When active, show prompts such as:
 
-Acceptance Criteria
+“How does this feel from the outside?”
 
-Loop detection correctly identifies all closed cycles.
+“What effort does this create?”
 
-Loop type computed via sign product of link polarities.
+“Where might trust be gained or lost?”
 
-Hovering loop name highlights all links belonging to that loop.
+“What would a first-time user experience here?”
 
-Loop remains bound to diagram even when nodes are moved.
+“Which moment shapes the lasting impression?”
 
-Feature 2.4 – Loop Inspector Panel
-Requirements
+These prompts generate:
 
-Side panel listing:
+Thoughts (type = experience-step)
 
-All loops (R1, R2, B1, etc.)
+Frames (experience-based narratives)
 
-Loop type (Reinforcing/Balancing)
+Implications (high-impact moments)
 
-Member variables and arrows
+5.4 Experience-Oriented Views (Derived)
 
-Optional narrative description
+When the Experience Lens is active, default views may include:
 
-Sorting:
+Experience Timeline
 
-By loop type
+A linear view of experience-related Thoughts over time.
 
-By size (# of elements)
+Moment-of-Truth Highlight
 
-Clicking loop focuses canvas on loop.
+Highlights Implications with high experiential impact.
 
-Acceptance Criteria
+Intent vs Experience Contrast
 
-Selecting loop scrolls and zooms the canvas to that loop region.
+Side-by-side comparison:
 
-Loop list updates live when loops are added or removed.
+Internal Frame (“We designed it to be efficient”)
 
-Narrative field persists across sessions.
+Experience Frame (“It feels rushed and opaque”)
 
-Feature 2.5 – Delay Modeling Enhancements
-Requirements
+No journeys, personas, or metrics are stored as permanent objects.
 
-Add optional “Delay time category” to links:
+6. Guidance System (Across All Lenses)
 
-Immediate
+Guidance must be:
 
-Short delay
+prompt-based
 
-Long delay
+dismissible
 
-Visual styling:
+non-judgmental
 
-Different icons for each category (optional)
+Examples:
 
-Tooltip:
+“Only one frame detected. Consider adding an alternative.”
 
-Shows delay classification and optionally explanation text.
+“No boundaries captured yet — where might this break?”
 
-Acceptance Criteria
+“This frame has strong implications but low evidence.”
 
-Delay classification stored in model JSON.
+No scoring. No correctness checks.
 
-Delay symbol updates instantly when changed.
+7. Extensibility
 
-Delay remains visible even at low zoom levels.
+The system must allow:
 
-Feature 2.6 – Polarity Toggles & Visual Filters
-Requirements
+adding new lenses without schema changes
 
-Canvas-level filter controls:
+custom prompts
 
-Show/hide polarity labels.
+custom diagram presets
 
-Show/hide delay icons.
+saving and reusing exercises
 
-Highlight positive/negative links in different colors.
+8. Non-Functional Requirements
 
-Highlight only:
+Time-to-first-insight < 5 minutes
 
-Reinforcing loops
+Partial input allowed
 
-Balancing loops
+Undo / redo always available
 
-Links connected to selected node
+Fast canvas interaction
 
-Acceptance Criteria
+No mandatory fields
 
-Filters update instantly without reloading model.
+9. Success Criteria
 
-Node selection correctly highlights all connected causal links.
+The studio is successful if users say:
 
-Model export/import retains user filter preferences.
+“This helped me see it differently.”
 
-Feature 2.7 – CLD Cognitive Markers
-Requirements
+“This made assumptions visible.”
 
-Allow users to annotate variables with cognitive or strategic roles:
+“This clarified why we’re stuck.”
 
-Indicator variable
+It fails if:
 
-Decision lever
+it feels like training
 
-External driver
+it feels like documentation
 
-KPI
+users ask “what do I need to fill in?”
 
-Constraint
+10. Internal Positioning Statement
 
-Risk or bottleneck
+“This studio helps people think better about complex situations by making assumptions, perspectives, experience, and consequences visible — without telling them what to think.”
 
-Visual:
 
-Small icon in top-right of node.
 
-Different color or border for “Key leverage variable.”
+SYSTEM PROMPT
+Academic Learning Studio
+A Meta-Learning & Study Sensemaking Environment
 
-Acceptance Criteria
+You are building an Academic Learning Studio.
 
-Marker icons scale with zoom.
+This studio supports how people learn, not what they store.
+It helps users think intentionally about how to study, how to understand, and how to adapt their learning approach over time.
 
-Icons toggleable by user preference.
+It is not:
 
-Nodes can have multiple markers.
+a learning management system (LMS)
 
-Feature 2.8 – Quick Subsystem Highlighting
-Requirements
+a note-taking or knowledge base tool
 
-When a user selects a node:
+a flashcard or memorisation app
 
-Highlight all upstream variables (causal predecessors).
+a grading or assessment system
 
-Highlight all downstream variables (causal successors).
+a productivity or gamification tool
 
-Show optional mini-tree of influence paths.
+Its purpose is to support academic thinking, learning strategy, and reflection.
 
-Acceptance Criteria
+1. Core Design Intent (Non-Negotiable)
 
-Highlight fades in smoothly.
+Learning is a cognitive process, not a content repository
+The system focuses on learning modes, understanding, and reflection, not storing material.
 
-Upstream and downstream paths use different colors.
+Concrete learning sessions matter
+Learning should be grounded in real, time-boxed study sessions, not abstract intentions.
 
-User can toggle this feature on/off.
+Guidance without prescription
+The system guides learning choices through prompts and reflections, never through enforced workflows.
 
-Feature 2.9 – CLD Consistency Validation
-Requirements
+Academic, not performative
+No scores, streaks, grades, KPIs, or productivity pressure.
 
-Provide a real-time validator to detect:
+Reflection is first-class
+Learning improves through reflection on how one studied, not just what was studied.
 
-Orphan variables (not connected)
+2. Conceptual Scope
 
-Incomplete feedback loops
+The Academic Learning Studio exists to answer questions such as:
 
-Conflicting polarities in parallel paths
+“How should I approach learning this subject?”
 
-Suspicious structures (e.g., self-loop attempts)
+“Am I memorising when I should be understanding?”
 
-Unlabeled nodes (missing descriptions)
+“Why does this topic not click yet?”
 
-Acceptance Criteria
+“How should I adapt my learning strategy?”
 
-Validation messages appear in a “Model Health” panel.
+It supports:
 
-Clicking a warning zooms to problem element.
+university study
 
-Errors/warnings update dynamically as user edits.
+self-directed academic learning
 
-Feature 2.10 – Export & Presentation Mode
-Requirements
+preparation for exams, essays, and discussions
 
-Export CLD as PNG/SVG.
+conceptual, analytical, and critical learning
 
-Presentation mode:
+3. Core Learning Model (Required)
 
-Removes editing tools.
+The studio must be built on a small, explicit set of learning primitives.
 
-Shows clean diagram.
+3.1 Learning Situation
 
-Allows stepping through loops and paths.
+A bounded learning context.
 
-Optional animation of reinforcing/balancing structures.
+Examples:
 
-Acceptance Criteria
+“Studying political philosophy for exam”
 
-SVG export matches on-screen quality.
+“Understanding system dynamics chapter 4”
 
-Presentation mode hides all toolbars and side panels.
+“Preparing academic essay on freedom of speech”
 
-Loop highlight animations perform smoothly.
+Fields:
 
+title
 
+description
 
-EPIC 3 – Stock & Flow Modeling
-Description
+subject / course (optional)
 
-Enable users to create full stock-and-flow diagrams, including stocks, inflows, outflows, auxiliaries, parameters, and connectors. This module must support qualitative modeling first but be architected so it can evolve into fully quantitative simulation later.
+learning objective (free text)
 
-Feature 3.1 – Stock Nodes
-Requirements
+constraints (time, deadline, difficulty; optional)
 
-Type: Stock
+Learning Situations frame why learning is happening.
 
-Properties:
+3.2 Learning Mode (Critical Concept)
 
-Name
+Represents how the learner intends to think.
 
-Description (markdown)
+Learning modes are cognitive intentions, not activities.
 
-Unit (text)
+Supported modes (extendable):
 
-Initial value (number or formula)
+Exploration (first exposure)
 
-Optional domain entity link
+Conceptual understanding
 
-Visual design:
+Analytical comparison
 
-Rectangle symbol with thick border (standard SD notation)
+Critical evaluation
 
-Auto-resizing based on label
+Memorisation
 
-Distinct color/style from CLD variables
+Synthesis (writing, explaining, integrating)
 
-Interaction:
+Application / transfer
 
-Drag and snap alignment
+Each Learning Session must reference a Learning Mode.
 
-Double-click to edit
+3.3 Learning Session
 
-Connect inflow/outflow pipes
+A concrete, time-boxed act of learning.
 
-Acceptance Criteria
+Fields:
 
-Stock is created with default name (“Stock”).
+start time
 
-Stock can anchor one or more flows.
+end time (or duration)
 
-Initial value stored correctly in JSON model.
+learning mode
 
-Style adapts properly to dark/light mode.
+focus question (“What am I trying to understand?”)
 
-Feature 3.2 – Flow Elements (Inflow / Outflow)
-Requirements
+material used (optional reference)
 
-Types:
+interruptions or friction notes (optional)
 
-Inflow
+The system should support:
 
-Outflow
+manual start/stop
 
-Properties:
+optional timer (non-gamified, neutral)
 
-Name
+Timers exist to ground learning in reality, not to optimise output.
 
-Description
+3.4 Understanding Signal
 
-Formula (string expression)
+A qualitative reflection on level of understanding.
 
-Unit
+Examples:
 
-Visual:
+“I can explain this in my own words”
 
-Pipe-like arrow entering or leaving a stock
+“I recognise the structure but not the details”
 
-Flow valve icon for clarity
+“I’m memorising without understanding”
 
-Arrow direction indicates inflow/outflow
+“I can apply this to a new example”
 
-Interaction:
+“I feel confused about the core idea”
 
-Click/drag from stock boundary to create flow
+These are signals, not scores.
 
-Connect flow to stock or to a source/sink
+3.5 Reflection & Adjustment
 
-Edit formula in side panel
+A short reflection captured after a learning session.
 
-Acceptance Criteria
+Core prompts:
 
-Flow direction always matches the diagram semantics.
+What clicked?
 
-Flows can connect stock → stock or source/sink → stock.
+What confused me?
 
-Invalid connections (flow to flow) are blocked.
+Was the chosen learning mode appropriate?
 
-Formula validation triggers inline error messages.
+What should I change next time?
 
-Feature 3.3 – Auxiliary Variables
-Requirements
+Reflections should be:
 
-Properties:
+short
 
-Name
+optional but encouraged
 
-Description
+easy to capture
 
-Formula (optional)
+4. User Flow (High-Level, Non-Linear)
+Typical learning loop (not enforced):
 
-Unit
+Define or select a Learning Situation
 
-Visual:
+Start a Learning Session
 
-Circular or rounded bubble (typical SD notation)
+Choose a Learning Mode and focus question
 
-Interaction:
+Study (with optional timer)
 
-Add via toolbar or shortcut
+Capture Understanding Signal
 
-Drag anywhere on canvas
+Reflect briefly
 
-Connect with connector arrows to flows, stocks, or other auxiliaries
+Adjust next session approach
 
-Acceptance Criteria
+The user may enter at any step.
 
-Aux node displays formula when hovered.
+5. Guidance System (Key Value)
 
-If formula references unknown variables, show error icon.
+Guidance must be:
 
-Aux nodes remain visually distinct at all zoom levels.
+prompt-based
 
-Feature 3.4 – Parameters / Constants
-Requirements
+contextual
 
-Type: Parameter
+dismissible
 
-Properties:
+non-judgmental
 
-Name
+5.1 Before a Session
 
-Value (number)
+Prompts such as:
 
-Description
+“What kind of understanding are you aiming for in this session?”
 
-Unit
+“Is this exploration, understanding, or memorisation?”
 
-Visual:
+“What question do you want to answer?”
 
-Small square node (constant icon)
+5.2 During a Session (Optional, Minimal)
 
-Interaction:
+Very light prompts:
 
-Connect to flows or auxiliaries using connectors
+“Still aligned with your learning intention?”
 
-Acceptance Criteria
+“Is this mode still serving your goal?”
 
-Parameter values persist across model reload.
+No interruptions by default.
 
-Changing a parameter instantly updates dependent formulas (future simulation-ready).
+5.3 After a Session
 
-Parameter nodes can be used in scenarios later.
+Reflection prompts:
 
-Feature 3.5 – Connectors (Information Arrows)
-Requirements
+“What actually happened?”
 
-Non-flow influence arrows linking:
+“Did this mode help?”
 
-Aux → Flow
+“What would you do differently next time?”
 
-Aux → Stock (if unit-consistent)
+5.4 Pattern-Based Suggestions (Optional)
 
-Parameter → Flow or Aux
+The system may suggest reflections such as:
 
-Stock → Aux/Flow (feedback)
+“Several sessions focus on reading; synthesis might help now.”
 
-Visual:
+“Confusion persists across sessions — try a different learning mode.”
 
-Thin dotted or solid line with arrowhead
+“You often memorise before understanding; is that intentional?”
 
-Interaction:
+Suggestions are never mandatory.
 
-Drag from small handle on node to target
+6. Views & Representations
 
-Prevent connection of connector → connector
+The studio must offer multiple views on the same learning data:
 
-Acceptance Criteria
+6.1 Learning Timeline
 
-Connectors never look like flows (distinct visual style).
+Sessions over time
 
-Connectors route cleanly when nodes move.
+Learning modes used
 
-Connector formulas apply correctly in JSON export.
+Understanding signals
 
-Feature 3.6 – Stock & Flow Layout Engine
-Requirements
+6.2 Learning Mode Distribution
 
-Automatic snapping of stocks and flows for clean diagrams.
+Qualitative overview of how learning time is spent
 
-Auto-detection of:
+No percentages or targets enforced
 
-Flow direction alignment
+6.3 Reflection View
 
-Vertical/horizontal balancing
+Aggregated reflections
 
-Path routing for connectors to avoid overlaps.
+Patterns in confusion, insight, or strategy shifts
 
-Acceptance Criteria
+7. Integration with Mental Models & Sensemaking Studio
 
-Auto-routing avoids more than 50% of potential collisions.
+The Academic Learning Studio must integrate conceptually with the Mental Models & Sensemaking Studio.
 
-Flows stay centered between connected nodes when moved.
+Examples:
 
-Manual override remains possible.
+A Learning Situation can spawn a Sensemaking Situation
 
-Feature 3.7 – Unit & Dimensional Consistency Framework
-Requirements
+Users can reflect on:
 
-Even before simulation, define a minimal structure for unit consistency:
+“What mental model does this theory use?”
 
-Each variable, stock, flow, param can have a unit string.
+“What assumptions does this discipline make?”
 
-Basic checks:
+Critical or philosophical questions can be handed off smoothly
 
-Flow units must match stock units per time.
+No duplication of content; integration is conceptual.
 
-Aux formulas must combine compatible units.
+8. What the System Must Explicitly Avoid
 
-Non-blocking warnings.
+Do NOT include:
 
-Acceptance Criteria
+grades or marks
 
-Warnings appear in “Model Health” panel.
+progress percentages
 
-Hover on warning shows expected unit vs provided.
+learning streaks
 
-No hard blocks, only guidance.
+productivity scores
 
-Feature 3.8 – Formula Editor (Structured Expressions)
-Requirements
+task lists or to-dos
 
-Formula input for:
+content repositories
 
-Flows
+If users attempt to add these, the system should gently remind:
 
-Aux variables
+“This studio focuses on learning process, not performance measurement.”
 
-Stocks (initial value)
+9. Non-Functional Requirements
 
-Editor capabilities:
+Time to start a session: < 30 seconds
 
-Syntax highlighting
+Time to reflect: < 2 minutes
 
-Autocomplete variable names in model
+Partial input allowed everywhere
 
-Validation rules against unknown identifiers
+Undo / edit always possible
 
-Support for: +, −, *, /, min(), max(), abs(), if(), parentheses
+Calm, academic UX (no pressure cues)
 
-Store formulas in JSON for later simulation.
+10. Success Criteria
 
-Acceptance Criteria
+The Academic Learning Studio is successful if users say:
 
-Editor detects and highlights syntax errors.
+“I’m more aware of how I’m studying.”
 
-Hovering over formula shows computed dependencies.
+“I know when to change my learning approach.”
 
-Autocomplete shows variables grouped by type.
+“I understand subjects more deeply, not just faster.”
 
-Feature 3.9 – Stock & Flow Mode Switching
-Requirements
+It fails if:
 
-Canvas can toggle between:
+it feels like a productivity tracker
 
-“CLD view only”
+it feels like an LMS
 
-“Stock & Flow view only”
+users ask “how do I complete this?”
 
-“Hybrid mode” (both types allowed)
+11. Internal Positioning Statement
 
-In hybrid mode:
+“This studio supports academic learning by making learning intentions, cognitive modes, and understanding visible — without measuring or judging performance.”
 
-CLD variables can be converted to Aux or Stock with one action.
+SYSTEM PROMPT
+Philosophical & Critical Thinking Studio
+A Disciplined Reasoning & Reflection Environment
 
-Existing causal links can be turned into connectors.
+You are building a Philosophical & Critical Thinking Studio.
 
-Acceptance Criteria
+This studio supports careful reasoning, conceptual clarity, and critical examination of ideas.
+It helps users think more precisely, question assumptions, analyse arguments, and explore meaning.
 
-Switching modes does not lose any elements.
+It is not:
 
-Conversions are reversible until saved.
+a philosophy encyclopedia
 
-Node type conversions automatically adjust visuals.
+a history-of-philosophy reference
 
-Feature 3.10 – Structural Validation for Stock-Flow Models
-Requirements
+a debate or persuasion tool
 
-Checks:
+a note-taking or citation system
 
-Stock without inflows/outflows → warning.
+an assessment or grading environment
 
-Flow without connected stock → error.
+Its purpose is to support thinking well, not being right.
 
-Flow missing formula → warning.
+1. Core Design Intent (Non-Negotiable)
 
-Aux with invalid formula → error.
+Philosophy as disciplined thinking, not doctrine
+The studio focuses on how to think, not what to believe.
 
-Unused variables → informational warning.
+Clarity before conclusion
+The system prioritises:
 
-Acceptance Criteria
+clear concepts
 
-Model Health panel lists all issues grouped by severity.
+explicit assumptions
 
-Clicking an item scrolls to the corresponding node.
+well-formed arguments
+over opinions or answers.
 
-Validation updates in real time.
+Grounded abstraction
+Even abstract questions must be anchored in:
 
-Feature 3.11 – Presentation Mode for Stock-Flow Diagrams
-Requirements
+concrete claims
 
-Clean, read-only view with:
+implications
 
-Hidden toolbars
+limits
 
-Highlight-by-click
+Non-adversarial reasoning
+This is not about winning arguments, but about understanding them.
 
-Step-through animations of flow logic
+Slow thinking encouraged
+The studio must feel calm, reflective, and non-urgent.
 
-Legend:
+2. Scope & Use Cases
 
-Stock symbol
+The Philosophical & Critical Thinking Studio supports:
 
-Flow symbol
+examining philosophical questions
 
-Auxiliary
+clarifying ambiguous concepts
 
-Parameter
+analysing arguments and counterarguments
 
-Connector arrows
+exploring ethical and normative dilemmas
 
-Acceptance Criteria
+improving critical reasoning skills
 
-Export to SVG matches presentation mode look.
+reflecting on meaning, values, and assumptions
 
-Animation runs smoothly regardless of diagram size.
+It is suitable for:
 
-No editing possible in presentation mode.
+academic philosophy
 
-Feature 3.12 – JSON Model Schema for Stock-Flow Diagrams
-Requirements
+social and political reasoning
 
-Define a structured JSON format including:
+ethical reflection in professional contexts
 
-Metadata (name, description, version)
+deep conceptual thinking across disciplines
 
-Node list:
+3. Shared Reasoning Model (Reuse Required)
 
-type
+The studio must reuse the shared Sensemaking Model used across the platform.
 
-id
+3.1 Core Entities (Philosophy-specific interpretation)
+Philosophical Question
 
-label
+A question that requires reasoning, not factual lookup.
 
-formula
+Examples:
 
-unit
+“What is freedom?”
 
-position (x,y)
+“Is efficiency a moral value?”
 
-domainLinks
+“When is authority legitimate?”
 
-Edge list:
+Fields:
 
-type: flow | connector
+question text
 
-sourceId
+why this matters (optional)
 
-targetId
+scope or context (optional)
 
-formula (for flows)
+Concept
 
-delay (optional)
+A term that requires clarification.
 
-Layout metadata
+Fields:
 
-Acceptance Criteria
+concept name
 
-Exported JSON fully reconstructs the model visually.
+working definition
 
-Import resolves missing IDs by generating new ones.
+alternative definitions
 
-JSON is stable across versions of the app.
+ambiguity notes
 
+confidence in definition (optional)
 
-EPIC 4 – Lightweight Domain Linking (Simplified Integration Layer)
-Description
+Concepts must be treated as open to revision.
 
-Provide a minimal but powerful mechanism for System Dynamics elements (variables, stocks, flows, auxiliaries) to reference domain concepts in the tool.
-This is not a deep semantic integration — it is purely a tagging and contextual linking layer so models remain connected to the broader conceptual landscape, without enforcing structure or running knowledge-graph logic.
+Claim
 
-Feature 4.1 – Optional Domain Tagging for SD Elements
-Requirements
+A statement asserted as true or defended.
 
-Every SD element must support one optional field:
-domainTag or domainReferenceId
+Fields:
 
-Domain tags can represent:
+statement
 
-Processes
+claim type: descriptive | normative | evaluative
 
-KPIs
+confidence (optional)
 
-Events
+source (self, author, tradition, implicit)
 
-Systems
+Argument
 
-Entities
+A structured relationship between claims.
 
-Any high-level category defined in the tool
+Fields:
 
-Tagging interface:
+premises (one or more Claims)
 
-Simple text search with suggestions
+conclusion (Claim)
 
-Manual free-text allowed if no match is found
+reasoning type (deductive, inductive, abductive; optional)
 
-Acceptance Criteria
+Arguments are examined, not accepted or rejected by default.
 
-Tagging is optional and non-blocking.
+Counterargument
 
-Removing a tag never affects other data.
+A challenge to an argument.
 
-Tag name visible as a small label or icon on the node.
+Fields:
 
-Feature 4.2 – Simple Tag-Based Visual Overlays
-Requirements
+target argument or claim
 
-Allow users to enable a visual coloring overlay based on domain tags.
+challenge type: validity | soundness | assumption | scope
 
-Each unique tag receives a color.
+explanation
 
-If an element has no tag, it retains the default style.
+Implication
 
-Option to toggle tag display:
+What follows if a claim or argument is accepted.
 
-Show tag as small text under the element
+Fields:
 
-Hide for clean presentation
+implication description
 
-Acceptance Criteria
+type: ethical | social | practical | conceptual
 
-Coloring responds instantly to toggles.
+impact (low / medium / high)
 
-Tag labels do not clutter the diagram at normal zoom levels.
+Boundary / Limit
 
-Export respects tag visibility settings.
+Where a concept, claim, or argument stops applying.
 
-Feature 4.3 – Domain Filter Panel
-Requirements
+Fields:
 
-A simple panel listing all domain tags used in the current SD model.
+boundary description
 
-Users can click a tag to:
+why this matters
 
-Highlight all elements with that tag
+Perspective (Optional but important)
 
-Dim all others
+A philosophical stance or viewpoint.
 
-Multi-tag selection allowed.
+Examples:
 
-Acceptance Criteria
+utilitarian
 
-Highlighting is smooth and non-disruptive.
+deontological
 
-Selecting two tags shows union of tagged nodes.
+liberal
 
-Dimming preserves diagram readability.
+communitarian
 
-Feature 4.4 – Tag Management (Local to the Model)
-Requirements
+existential
 
-Users can:
+Fields:
 
-Add new tags
+perspective label
 
-Rename tags (affects all SD elements using it)
+core commitments
 
-Delete unused tags
+what it prioritises
 
-No global tag governance — tag scope is model-local.
+what it downplays
 
-Acceptance Criteria
+4. Thinking Tools & Exercises (Lens-Based)
 
-Renaming a tag updates all associated elements immediately.
+The studio must provide thinking exercises, not mandatory workflows.
 
-Deleting a tag removes it from all elements silently.
+Each exercise is:
 
-No dependency on external databases.
+optional
 
-Feature 4.5 – Tag-Based Grouping
-Requirements
+prompt-driven
 
-Enable users to optionally group SD elements by domain tag:
+grounded in the shared model
 
-Draw a soft rectangular boundary around same-tag elements.
+4.1 Concept Clarification Lens
 
-Boundary color matches tag color.
+Purpose:
 
-Groups appear only if explicitly enabled.
+reduce ambiguity
 
-Acceptance Criteria
+distinguish similar ideas
 
-Boundary updates when elements move.
+Prompts:
 
-Group toggle on/off without losing group assignments.
+“What do we mean by this term?”
 
-Works for CLD and Stock-Flow nodes.
+“What does this definition include or exclude?”
 
-Feature 4.6 – Tag Search on Canvas
-Requirements
+“How might others define this differently?”
 
-A quick-search bar:
+Views:
 
-Typing a domain tag instantly highlights matching elements.
+definition comparison
 
-Press Enter to jump to next match.
+ambiguity map
 
-Works independently from the global search of the tool.
+4.2 Argument Examination Lens
 
-Acceptance Criteria
+Purpose:
 
-Search is real-time.
+analyse structure and strength of reasoning
 
-Partial matches highlight correctly.
+Prompts:
 
-No performance lag even on larger models.
+“What is being claimed?”
 
-Feature 4.7 – Presentation Mode Respecting Tags
-Requirements
+“What must be true for this to hold?”
 
-When switching to Presentation Mode:
+“Does the conclusion follow?”
 
-User can choose:
+Views:
 
-Show tags
+argument map (premises → conclusion)
 
-Hide tags
+assumption highlighting
 
-Show only group boundaries
+4.3 Assumption & Presupposition Lens
 
-No editing allowed.
+Purpose:
 
-Acceptance Criteria
+surface hidden foundations
 
-Presentation mode is clean and uncluttered.
+Prompts:
 
-Tag visibility settings persist for exports.
+“What is taken for granted here?”
 
-Exported PNG/SVG reflects selected visibility options.
+“What would someone disagreeing reject first?”
 
-Feature 4.8 – JSON Model Extensions (Lightweight)
-Requirements
+“Is this assumption empirical or normative?”
 
-Add to JSON export/import:
+4.4 Counter-Perspective Lens
 
-domainTag string on each element (optional)
+Purpose:
 
-tagColorMap for consistent coloring across sessions
+test robustness through opposition
 
-Acceptance Criteria
+Prompts:
 
-Model import restores tag colors and names.
+“What would a critic say?”
 
-Missing tags or mismatches do not break import.
+“What is the strongest opposing view?”
 
-File format remains minimal and backward-compatible.
+“What survives this challenge?”
 
-End of EPIC 4 (Simplified)
+This lens must encourage charitable interpretation, not straw-manning.
 
-This version avoids:
+4.5 Ethical Reasoning Lens
 
-Backlinking
+Purpose:
 
-Semantic validation
+explore value conflicts and moral implications
 
-Cross-model reasoning
+Prompts:
 
-Neo4j embedding
+“Who is affected?”
 
-Anything heavy or graph-driven
+“What values are in tension?”
 
-It keeps the System Dynamics module light, flexible, creative, and domain-aware, without coupling it deeply to the rest of the system.
+“What trade-off is unavoidable?”
 
-If you want, we can proceed with:
+Views:
 
-EPIC 5 – Story Mode, Insight Markers & Annotation Layer
+value tension map
 
-EPIC 6 – Simulation Architecture
+implication comparison
 
-EPIC 7 – Scenarios, Versioning & Experimentation
+4.6 Reductio & Limit Testing Lens (Gentle)
 
-Just tell me which one you want next.
+Purpose:
 
-let's do 5
+test coherence
 
-Below is EPIC 5 – Story Mode, Insight Markers & Annotation Layer, broken down into copy-ready features for Codex. This is intentionally practical: it makes the SD canvas usable as a “thinking and communication tool,” not just a diagram.
+Prompts:
 
-EPIC 5 – Story Mode, Insight Markers & Annotation Layer
-Description
+“What happens if this principle is applied universally?”
 
-Provide a dedicated annotation and storytelling layer on top of CLD and stock–flow diagrams. Users must be able to capture assumptions, hypotheses, evidence, open questions, decisions, and “what this means” narratives, and then present the model in a guided walkthrough.
+“At what point does this break down?”
 
-Feature 5.1 – Annotation Elements (Notes, Callouts, Highlights)
-Requirements
+Use carefully; no forced logic puzzles.
 
-Add annotation element types:
+5. Interaction Model
+5.1 Reasoning Canvas
 
-Sticky Note (free text)
+Primary interface:
 
-Callout (text attached to a node/link)
+nodes: concepts, claims, arguments
 
-Highlighter (transparent rectangle / marker stroke)
+edges: supports, challenges, implies
 
-Divider / Section Header (for “subsystem” labeling)
+clustering and annotation supported
 
-Annotation text supports:
+Free-form, calm, deliberate.
 
-Markdown
+5.2 Multiple Representations
 
-Links (internal or external)
+The same reasoning can be viewed as:
 
-Annotation styling:
+argument trees
 
-Color, size, opacity
+concept maps
 
-Pin/unpin to canvas coordinates
+implication lists
 
-Acceptance Criteria
+narrative explanations
 
-Notes can be created from toolbar and right-click menu.
+No single “correct” view.
 
-Callouts can attach to a node or link and follow it when it moves.
+6. Guidance System (Critical)
 
-Annotation layer can be toggled on/off without affecting the base model.
+Guidance must be:
 
-Feature 5.2 – Insight Markers (Assumption / Risk / Question / Evidence)
-Requirements
+reflective
 
-Users can add markers to nodes, links, groups, or the model itself:
+non-authoritative
 
-Assumption
+optional
 
-Question
+Examples:
 
-Risk
+“This concept is used in multiple senses — consider clarifying.”
 
-Evidence
+“This argument relies on an unstated assumption.”
 
-Decision
+“You have strong implications but unclear premises.”
 
-Hypothesis
+Never:
 
-Marker data fields:
+“This is wrong”
 
-Title (short)
+“This is a fallacy” (unless user explicitly labels it so)
 
-Details (long, markdown)
+7. Integration with Other Studios
+With Academic Learning Studio
 
-Optional severity (Low/Med/High)
+Philosophical questions can emerge from learning situations
 
-Optional status (Open, In Review, Resolved)
+Learning sessions can transition into philosophical examination
 
-Optional reference link (URL or internal reference)
+Reflection on how one reasons while studying philosophy
 
-Visual:
+With Mental Models Studio
 
-Small icon badge on the element
+Philosophical frames enrich mental model exploration
 
-Hover tooltip summary
+Bias awareness connects naturally to epistemology
 
-Acceptance Criteria
+With Negotiation & Persuasion Studio
 
-Marker icon appears immediately when added.
+Clarifies normative disagreements vs interest conflicts
 
-Clicking the icon opens the marker editor panel.
+Helps distinguish persuasion from ethical disagreement
 
-Resolved markers can be hidden via filter toggle.
+8. What the System Must Explicitly Avoid
 
-Feature 5.3 – Insight List Panel (Searchable Registry)
-Requirements
+Do NOT include:
 
-Side panel lists all insights in the current model:
+correctness scoring
 
-Filter by type, status, severity
+argument ranking
 
-Full-text search (title + details)
+automated fallacy detection
 
-Sort by created date / updated date / severity
+debate timers
 
-Actions:
+forced formal logic notation
 
-Click → zoom to element
+The system supports thinking, not adjudication.
 
-Edit marker
+9. Non-Functional Requirements
 
-Change status
+Calm, uncluttered UI
 
-Bulk hide/show categories
+Encourages slower interaction
 
-Acceptance Criteria
+Partial reasoning allowed
 
-Selecting an insight centers and highlights its linked element.
+Easy revision of definitions and claims
 
-Panel updates live when markers are created/edited/deleted.
+No pressure cues or gamification
 
-Search returns results in <200ms for typical model sizes.
+10. Success Criteria
 
-Feature 5.4 – Story Steps (Narrative Walkthrough Builder)
-Requirements
+The Philosophical & Critical Thinking Studio is successful if users say:
 
-Provide a “Story Builder” where a model can have an ordered list of steps.
+“I think more clearly now.”
 
-Each step contains:
+“I understand why this is difficult.”
 
-Step title
+“I can articulate my position better.”
 
-Narrative text (markdown)
+“I see where disagreement really lies.”
 
-Focus target(s): one or more nodes/links/groups
+It fails if:
 
-Optional highlight style (spotlight / outline / dim others)
+it feels like a test
 
-Optional “key takeaway” field
+it feels like debate prep
 
-Step actions:
+users search for “the right answer”
 
-Add, remove, reorder (drag-and-drop)
+11. Internal Positioning Statement
 
-Duplicate step
-
-Assign focus targets from canvas selection
-
-Acceptance Criteria
-
-User can build a story without leaving the SD page.
-
-Reordering steps is smooth and persists.
-
-A step can focus multiple elements at once.
-
-Feature 5.5 – Story Mode (Presentation / Playback)
-Requirements
-
-A read-only “Story Mode” playback view:
-
-Next / Previous
-
-Step list (collapsible)
-
-Auto-zoom to focused elements
-
-Dim non-focused elements
-
-Optional autoplay:
-
-Configurable delay per step (off by default)
-
-Mode switch:
-
-Editing tools hidden
-
-Only navigation controls visible
-
-Acceptance Criteria
-
-Entering Story Mode does not modify the model.
-
-Auto-zoom is smooth and does not overshoot.
-
-Focus highlight is clearly visible in light and dark themes.
-
-Feature 5.6 – Subsystem Chapters (Story + Diagram Structure)
-Requirements
-
-Allow users to define “Chapters” that map to subsystems:
-
-Chapter name
-
-Description
-
-Set of tags and/or selected elements
-
-Chapters can be used in:
-
-Filtering (show only chapter elements)
-
-Story steps (quick add: “Create story from chapters”)
-
-Acceptance Criteria
-
-Chapter filter hides everything outside the chapter.
-
-Chapters don’t require tags; manual selection is sufficient.
-
-Chapters can be exported as part of model JSON.
-
-Feature 5.7 – Export Story as Report (Markdown)
-Requirements
-
-Export a model’s story to Markdown including:
-
-Title and model metadata
-
-List of steps with narrative text
-
-Optional embedded images:
-
-Screenshot of each step’s focused view (optional; can be phase 2)
-
-Insights summary section (open items)
-
-Export options:
-
-Include/exclude resolved insights
-
-Include/exclude tags and overlays
-
-Acceptance Criteria
-
-Export produces a single markdown file that can be pasted into docs.
-
-Formatting remains readable and structured.
-
-Story step ordering matches playback order.
-
-Feature 5.8 – Annotation & Story Layer Persistence (JSON)
-Requirements
-
-Extend model JSON schema with:
-
-annotations[]:
-
-id, type, text, style, position, attachedToId (optional)
-
-insights[]:
-
-id, type, title, details, status, severity, targetId(s)
-
-story[]:
-
-id, title, narrative, targetId(s), highlightMode, order
-
-Ensure backward compatibility if these arrays are missing.
-
-Acceptance Criteria
-
-Import/export roundtrip fully preserves story and annotations.
-
-Missing fields do not break model loading.
-
-Deleting a node referenced by story/insight is handled gracefully (see Feature 5.9).
-
-Feature 5.9 – Reference Integrity Handling (Graceful Degradation)
-Requirements
-
-When a base element is deleted:
-
-Any annotations/callouts attached to it:
-
-Either auto-detach (becomes free-floating) or mark as “orphaned”
-
-Any insight marker targeting it:
-
-Mark as orphaned and show warning badge in insights list
-
-Any story step focusing it:
-
-Show “missing target” indicator and allow user to reassign
-
-Acceptance Criteria
-
-No runtime errors due to missing IDs.
-
-Orphaned items are visible and recoverable.
-
-User can repair broken references via UI.
-
-Feature 5.10 – UX Controls for Clarity (Declutter Tools)
-Requirements
-
-Provide “Declutter” toggles:
-
-Hide/show:
-
-All annotations
-
-All insight markers
-
-Only open insights
-
-Callouts
-
-Chapter boundaries (if any)
-
-“Focus Mode”:
-
-Temporarily hide everything except selected subsystem (manual selection)
-
-Acceptance Criteria
-
-Toggling is instant and non-destructive.
-
-Focus Mode is reversible with one click.
-
-Export respects current visibility choices (optional setting).
-
-EPIC 6 – Simulation-Ready Architecture
-Description
-
-Introduce a robust internal representation for stock–flow models (and optionally quantified CLDs) so that models can be validated, parameterized, and executed by a simulation engine in a later phase. This epic defines the data schema, formula language, dependency graph, evaluation rules, and run configuration—all without requiring advanced numerical features up front.
-
-Feature 6.1 – Canonical Model Representation (Simulation Graph)
-Requirements
-
-Maintain an internal canonical “simulation graph” derived from the canvas diagram:
-
-Stocks
-
-Flows
-
-Auxiliaries
-
-Parameters
-
-Connectors (dependencies)
-
-Sources/Sinks (optional)
-
-The simulation graph must be buildable from the diagram JSON deterministically.
-
-Store:
-
-Node IDs and types
-
-Units
-
-Formulas and constants
-
-Dependency edges (who depends on who)
-
-Acceptance Criteria
-
-Loading a model produces the same simulation graph every time.
-
-Each flow lists dependencies (aux/param/stock inputs).
-
-Cycles in auxiliary dependencies are detectable.
-
-Feature 6.2 – Run Configuration (Time Horizon & Step)
-Requirements
-
-Add a “Run Config” object at the model level:
-
-startTime (number)
-
-endTime (number)
-
-dt (time step)
-
-timeUnit (string, e.g. day/week)
-
-integrationMethod (default: Euler; future: RK4)
-
-UI:
-
-Simple panel for editing run config.
-
-Reset to defaults.
-
-Acceptance Criteria
-
-Default config exists for every model.
-
-Invalid dt (<=0) is rejected with clear message.
-
-Config persists in JSON export/import.
-
-Feature 6.3 – Formula Language (Safe Expressions)
-Requirements
-
-Standardize formulas as expressions stored as strings, parsed into an AST (abstract syntax tree).
-
-Supported operations:
-
-Arithmetic: +, -, *, /, ^
-
-Parentheses
-
-Comparators: <, <=, >, >=, ==, !=
-
-Conditional: if(condition, a, b)
-
-Functions: min(), max(), abs(), clamp(x, lo, hi), exp(), log(), sqrt()
-
-Identifiers refer to model elements by stable symbol name resolved to element IDs.
-
-Security:
-
-No arbitrary JS execution.
-
-No eval.
-
-Acceptance Criteria
-
-Parsing detects syntax errors and shows location.
-
-Unknown identifiers are flagged.
-
-AST evaluation works for simple expressions using test variables.
-
-Feature 6.4 – Symbol Table & Naming Rules
-Requirements
-
-Each simulation-relevant element has:
-
-symbol (unique within model, e.g. inventory, demand_rate)
-
-displayName (human-readable label on canvas)
-
-Provide auto-symbol generation:
-
-Based on display name
-
-Sanitized to lowercase snake_case
-
-Uniqueness enforced by suffix _2, _3, etc.
-
-UI shows symbol in advanced mode (optional toggle).
-
-Acceptance Criteria
-
-Two nodes with same display name still get unique symbols.
-
-Renaming display name does not break formulas unless user chooses to sync symbol.
-
-Export/import preserves symbols.
-
-Feature 6.5 – Dependency Graph & Topological Ordering
-Requirements
-
-Build dependency graph from formulas and connectors:
-
-Aux depends on stocks/params/other aux
-
-Flow depends on stocks/params/aux
-
-Stock update depends on its flows
-
-Compute evaluation order:
-
-Parameters first
-
-Auxiliaries next (topologically sorted)
-
-Flows next
-
-Stocks last (state update)
-
-Detect cycles among auxiliaries:
-
-Provide error message listing the cycle path
-
-Suggest breaking cycle or converting to stock/delay (future)
-
-Acceptance Criteria
-
-Order is stable and reproducible.
-
-Cycles are detected reliably.
-
-Cycle error prevents “Run” (when simulation is enabled later).
-
-Feature 6.6 – Stock Update Semantics (Euler-Ready)
-Requirements
-
-Define the stock update equation for later execution:
-
-For each stock:
-
-Stock(t+dt) = Stock(t) + dt * (sum(inflows) - sum(outflows))
-
-Flow values are computed at time t (explicit Euler).
-
-Support multiple inflows/outflows per stock.
-
-Acceptance Criteria
-
-System can compute next-step values for a trivial model (1 stock, 1 inflow, 1 outflow) using internal tests.
-
-Units are not enforced strictly yet, but warnings can appear (from Epic 3).
-
-Feature 6.7 – Initial Values & Reset Behavior
-Requirements
-
-Stocks must have an initial value:
-
-Numeric constant OR formula evaluated at t=startTime
-
-Provide “Reset model state” semantics:
-
-Clears runtime state to initial values
-
-Does not modify the design-time model
-
-Acceptance Criteria
-
-Model can restore initial stock values reliably.
-
-Initial value formula errors are reported clearly.
-
-Feature 6.8 – Scenario Parameterization (Simulation-Oriented, Minimal)
-Requirements
-
-Define “Scenario” as a named override set:
-
-Overrides parameter values
-
-Optionally overrides initial stock values
-
-UI:
-
-Create scenario
-
-Set overrides in a simple table
-
-Select active scenario (no simulation run required yet)
-
-Acceptance Criteria
-
-Selecting scenario updates displayed parameter values in inspector.
-
-Export/import preserves scenario definitions.
-
-If an overridden parameter is deleted, override is marked as orphaned.
-
-Feature 6.9 – Validation Rules for Simulation Readiness
-Requirements
-
-Add a “Simulation Readiness” section to Model Health:
-
-Errors:
-
-Flow without formula
-
-Stock without initial value
-
-Formula parse error
-
-Unknown identifier
-
-Dependency cycle among auxiliaries
-
-Warnings:
-
-Unused parameter
-
-Unit mismatch (soft)
-
-Missing run config fields
-
-Acceptance Criteria
-
-Errors prevent enabling “Run” in future.
-
-Warnings are visible but non-blocking.
-
-Clicking a validation issue focuses the element.
-
-Feature 6.10 – Simulation API Contract (Internal Interface)
-Requirements
-
-Define an internal engine interface (even if not fully implemented):
-
-Input:
-
-Canonical simulation graph
-
-Run config
-
-Scenario overrides
-
-Output:
-
-Time series per stock and optionally per flow/aux
-
-Metadata (run duration, warnings, errors)
-
-Must allow plugging in:
-
-Local engine
-
-Worker thread
-
-External service (future)
-
-Acceptance Criteria
-
-A stub engine can be called and returns mock time series for UI testing.
-
-Contract is stable and documented in code.
-
-Feature 6.11 – Results Data Model (Time Series Storage)
-Requirements
-
-Introduce a standard structure for results:
-
-runId
-
-timestamp
-
-series:
-
-per elementId: array of values aligned to timestamps
-
-Support storing:
-
-Last run only (MVP)
-
-Optional persistence later (future epic)
-
-Acceptance Criteria
-
-Results structure supports charting without transformation hacks.
-
-Clearing results does not alter the model definition.
-
-Feature 6.12 – Future Hooks (Non-Blocking)
-Requirements
-
-Add non-breaking placeholders for later:
-
-Delay functions (material delay, exponential smoothing)
-
-Lookup tables / piecewise functions
-
-Stochastic noise inputs
-
-Calibration hooks (fit to observed data)
-
-Acceptance Criteria
-
-Schema can be extended without breaking old models.
-
-Unknown function tokens fail gracefully with actionable messages.
-
-
-
-EPIC 7 – Scenarios, Versioning & Experimentation
-Description
-
-Enable controlled iteration on System Dynamics models by introducing versioning, branching, scenario management, comparison views, and experiment tracking. Users must be able to explore alternatives (“what-if” variants) without losing the main narrative or model integrity.
-
-Feature 7.1 – Model Versions (Immutable Snapshots)
-Requirements
-
-Every model supports version snapshots:
-
-Version ID
-
-Created timestamp
-
-Author
-
-Change note (required)
-
-Optional tags (e.g., “baseline”, “reviewed”)
-
-Snapshot captures:
-
-Diagram JSON (nodes, links, layout)
-
-Annotations/insights/story (Epic 5)
-
-Run config + scenarios (Epic 6)
-
-Versions are read-only; editing happens only in the current working copy.
-
-Acceptance Criteria
-
-User can create a version snapshot with a single action (“Save version”).
-
-Opening an older version loads a read-only view.
-
-Restoring a version creates a new working copy (does not overwrite history).
-
-Feature 7.2 – Branching / Forking Models (Scenario Branches)
-Requirements
-
-Allow creating a branch from any version:
-
-Branch name
-
-Description
-
-Parent version reference
-
-Branch is a full model clone with independent evolution.
-
-UI shows:
-
-Branch list
-
-Parent relationship (lightweight tree view)
-
-Acceptance Criteria
-
-Branch creation duplicates the complete model state.
-
-Changes in one branch do not affect another.
-
-User can switch branches without losing unsaved changes (prompt to save/discard).
-
-Feature 7.3 – Scenario Management (Within a Branch)
-Requirements
-
-A model branch can define multiple scenarios:
-
-Scenario name, description
-
-Parameter overrides
-
-Initial stock overrides (optional)
-
-Optional “notes” for rationale
-
-One scenario is marked as “active” at a time for preview and future runs.
-
-Acceptance Criteria
-
-Scenario list is editable: add/rename/delete.
-
-Activating a scenario changes displayed parameter values immediately.
-
-Deleting a parameter does not break the model; overrides become “orphaned” and flagged.
-
-Feature 7.4 – Experiment Records (Structured What-If Log)
-Requirements
-
-Introduce “Experiment” entity tied to a branch:
-
-Name
-
-Hypothesis (markdown)
-
-Changes made (auto-captured summary)
-
-Expected outcome (text)
-
-Observed outcome (text; optional)
-
-Status: Planned / Running / Completed / Abandoned
-
-Link to scenario(s) and/or version(s)
-
-Support attachments:
-
-Optional link(s) to exported PNG/SVG/Markdown
-
-Optional reference URLs
-
-Acceptance Criteria
-
-User can create an experiment from current model state in <30 seconds.
-
-Experiment can be linked to a specific version snapshot.
-
-Experiments are searchable and sortable.
-
-Feature 7.5 – Change Tracking (What Changed Since Last Version)
-Requirements
-
-Track a structured change log between:
-
-Working copy and last saved version
-
-Any two versions
-
-Change categories:
-
-Added/removed/edited nodes
-
-Added/removed/edited links
-
-Formula changes
-
-Run config changes
-
-Scenario changes
-
-Story/annotation changes
-
-UI:
-
-“Changes” panel with categorized list
-
-Click item → focus affected element(s)
-
-Acceptance Criteria
-
-Changes are detected reliably for all element types.
-
-Formula diffs show before/after strings.
-
-Clicking a change focuses the canvas and highlights impacted elements.
-
-Feature 7.6 – Visual Diff View (Diagram Comparison)
-Requirements
-
-Provide a comparison mode for two versions/branches:
-
-Side-by-side canvas view OR overlay mode (user selectable)
-
-Visual highlighting:
-
-Added elements (green outline)
-
-Removed elements (red ghost outline)
-
-Changed elements (yellow outline)
-
-Optional filter: show only changed area
-
-Acceptance Criteria
-
-Overlay mode dims unchanged elements.
-
-Side-by-side view maintains independent pan/zoom, with optional “sync pan/zoom.”
-
-Diff view works for both CLD and stock-flow models.
-
-Feature 7.7 – Merge Assistance (Manual, Safe Merge)
-Requirements
-
-Support a non-destructive merge workflow (MVP):
-
-User selects:
-
-Source branch/version
-
-Target branch (current working copy)
-
-System computes changes and offers merge options:
-
-Accept selected changes
-
-Reject selected changes
-
-Conflicts detected when:
-
-Same element modified differently in both branches
-
-Element deleted in one branch and edited in another
-
-Conflict resolution UI:
-
-Show both versions of the element properties
-
-User chooses which to keep (or duplicates element)
-
-Acceptance Criteria
-
-No automatic silent merges—user must confirm selections.
-
-Conflicts are explicitly listed and resolvable.
-
-Merge creates a new version snapshot on success.
-
-Feature 7.8 – Baseline Lock & Review Workflow
-Requirements
-
-Allow marking one version as “Baseline” (read-only, protected).
-
-Support “Review status”:
-
-Draft / Under Review / Approved / Archived
-
-Optional reviewers list (names only; no deep permissions needed at MVP)
-
-UI indicates baseline clearly.
-
-Acceptance Criteria
-
-Baseline cannot be edited directly.
-
-Baseline can be cloned to start new work.
-
-Review status changes are tracked in version metadata.
-
-Feature 7.9 – Run Comparison (Future-Proof, Even Without Full Simulation)
-Requirements
-
-Even before simulation, provide a unified comparison concept:
-
-Compare scenarios by:
-
-Parameter differences (table)
-
-Structural differences (diff view)
-
-If simulation exists later:
-
-Compare time series outputs between scenarios (charts)
-
-Store “comparison presets”:
-
-Which scenarios
-
-Which metrics/stocks to compare
-
-Acceptance Criteria
-
-Parameter comparison table always works.
-
-Structural diff works between two scenarios if they are branch-based; otherwise fall back to parameter diff.
-
-Comparison presets persist in model state.
-
-Feature 7.10 – Export Package for Experiments
-Requirements
-
-Export an “Experiment Package” (zip later; MVP can be multiple downloads):
-
-Model JSON (current)
-
-Version metadata
-
-Scenario definitions
-
-Story markdown export (Epic 5)
-
-Diagram image(s) (optional)
-
-Experiment record markdown summary
-
-Acceptance Criteria
-
-Export includes enough information to reproduce the experiment.
-
-Exports are stable across app updates (backward compatible).
-
-User can export from experiment detail view in one action.
-
-Feature 7.11 – Permissions (Simple, Non-Enterprise)
-Requirements
-
-Minimal permission model at MVP:
-
-Owner can edit.
-
-Viewers can view.
-
-Editors can edit (optional).
-
-Branching allowed for editors and owners.
-
-Version snapshots allowed for editors and owners.
-
-Acceptance Criteria
-
-Viewers cannot modify working copy, scenarios, or experiments.
-
-Permission failures show clear message.
-
-Sharing links respect permission.
-
-Feature 7.12 – UX: Safe Editing & Autosave Rules
-Requirements
-
-Autosave working copy frequently.
-
-“Save version” is explicit and requires a change note.
-
-Warn user on switching branches if unsaved edits exist.
-
-Provide “Restore previous autosave” if crash or tab closes.
-
-Acceptance Criteria
-
-Working copy recovers after refresh without losing changes.
-
-Version snapshots are never overwritten.
-
-Users can reliably identify “what is baseline vs what is working.”
-
-
-
-EPIC 9 – UX Excellence Pack (Speed, Clarity, Onboarding, Productivity)
-Description
-
-Make the SD module feel “premium”: fast, discoverable, efficient, and resilient. Provide power-user tooling (command palette, shortcuts), onboarding (templates, guided hints), declutter controls, performance optimizations, and accessibility.
-
-Feature 9.1 – Command Palette (Quick Actions)
-Requirements
-
-A universal command palette (Ctrl/Cmd+K):
-
-Create elements (stock, flow, variable)
-
-Toggle overlays (tags, markers, annotations)
-
-Jump to element by name
-
-Run validations
-
-Export actions
-
-Search results are grouped by action type.
-
-Acceptance Criteria
-
-Palette opens instantly (<100ms).
-
-Typing filters results in real time.
-
-Selecting “Go to X” centers and highlights element.
-
-Feature 9.2 – Keyboard Shortcuts & Cheat Sheet
-Requirements
-
-Define core shortcuts:
-
-Create node types (C/S/F/A/P/T)
-
-Undo/redo
-
-Copy/paste
-
-Group/ungroup
-
-Align left/center/right/top/middle/bottom
-
-Zoom to fit / selection
-
-Provide a help overlay (“?”) listing shortcuts.
-
-Acceptance Criteria
-
-Shortcuts work reliably across browsers.
-
-Conflicts with browser defaults are avoided or handled.
-
-Cheat sheet always matches actual bindings.
-
-Feature 9.3 – Smart Auto-Layout (Assistive, Not Destructive)
-Requirements
-
-Provide optional layout helpers:
-
-“Tidy selection”
-
-“Tidy entire diagram”
-
-“Align flows horizontally”
-
-“Distribute nodes evenly”
-
-Auto-layout should preserve overall structure and avoid wild rearrangement.
-
-Acceptance Criteria
-
-Tidy selection affects only selected items.
-
-Undo restores prior positions exactly.
-
-Auto-layout improves readability in most cases.
-
-Feature 9.4 – Contextual Right-Click Menus
-Requirements
-
-Right-click on:
-
-Empty canvas: add elements, paste, toggle grid
-
-Node: duplicate, delete, group, convert type, add marker
-
-Link: set polarity/delay, convert link type (if hybrid), add note
-
-Menus show only relevant actions.
-
-Acceptance Criteria
-
-Context menus are responsive and consistent.
-
-No “dead” actions; everything shown must work.
-
-Keyboard navigation supported (optional).
-
-Feature 9.5 – Declutter Controls (Cognitive Load Reduction)
-Requirements
-
-One-click toggles:
-
-Hide all markers
-
-Hide annotations
-
-Hide tags
-
-Hide link labels
-
-Show only selected subsystem (focus mode)
-
-A “Clean Export Mode” preset that hides noisy overlays.
-
-Acceptance Criteria
-
-Declutter state persists per user or per model (your choice).
-
-Export can respect declutter mode.
-
-Focus mode exits with one click.
-
-Feature 9.6 – Onboarding: Templates & Starter Models
-Requirements
-
-Provide starter templates:
-
-Basic CLD (reinforcing + balancing example)
-
-Basic stock-flow (inventory with inflow/outflow)
-
-Common archetype skeletons (optional)
-
-“New Model Wizard”:
-
-Choose CLD / Stock-Flow / Hybrid
-
-Select template or blank
-
-Acceptance Criteria
-
-Wizard creates a usable model in <10 seconds.
-
-Templates are editable and do not enforce constraints.
-
-Users can disable wizard in settings.
-
-Feature 9.7 – Inline Guidance & Micro-Hints
-Requirements
-
-Subtle hints (dismissible):
-
-“Drag from handle to create link”
-
-“Use Ctrl/Cmd+K for quick actions”
-
-Tooltips on icons and notation (polarity, delay, valves).
-
-Acceptance Criteria
-
-Hints appear only when relevant (first-use logic optional).
-
-Users can disable all hints permanently.
-
-Tooltips do not block interaction.
-
-Feature 9.8 – Performance Optimization & Large Model Mode
-Requirements
-
-Optimize for large diagrams:
-
-Virtualize rendering where possible
-
-Reduce shadows/animations in “Large Model Mode”
-
-Debounce layout recalculations
-
-Provide a performance indicator in dev mode (optional).
-
-Acceptance Criteria
-
-Diagram with 200+ elements remains usable.
-
-Dragging does not freeze the UI.
-
-Large Model Mode can be toggled automatically or manually.
-
-Feature 9.9 – Accessibility & Usability Standards
-Requirements
-
-Keyboard navigation basics:
-
-Tab through elements in list panel
-
-Enter selects and focuses on canvas
-
-Contrast compliance for light/dark themes.
-
-Screen-reader friendly labels in panels.
-
-Acceptance Criteria
-
-All primary actions are reachable without a mouse (minimum).
-
-Text contrast remains readable.
-
-Focus indicators visible.
-
-Feature 9.10 – Error Resilience & Recovery
-Requirements
-
-Autosave with recoverable drafts:
-
-“Restore last autosave” after crash
-
-Non-blocking error toasts for recoverable issues.
-
-Structured error boundary for canvas rendering failures.
-
-Acceptance Criteria
-
-Users do not lose work after refresh.
-
-Errors are logged with context (model id, action, timestamp).
-
-Recovery path is clear and reliable.
-
-EPIC 10 – Quantum-Inspired Modelling Layer (Conceptual Extension)
-Description
-
-Extend the System Dynamics environment with a quantum-inspired thinking layer that helps users reason about uncertainty, observer effects, multiple potential futures, non-local influence, and probabilistic outcomes in business systems.
-This epic does not simulate physics; it introduces formal conceptual constructs that coexist with classical system dynamics models and enrich problem framing, experimentation, and decision thinking.
-
-Design Principles (Non-Functional)
-
-Quantum concepts are:
-
-Explicit
-
-Optional
-
-Conceptual, not mystical
-
-Classical SD remains the default.
-
-Quantum-inspired elements:
-
-Never break existing models
-
-Always degrade gracefully into classical representations
-
-Every quantum construct must have:
-
-A visible representation
-
-A clear business interpretation
-
-A defined interaction with scenarios and stories
-
-Feature 10.1 – System State Superposition (Multiple Coexisting States)
-Requirements
-
-Allow a model to define multiple potential system states existing simultaneously:
-
-Each state has:
-
-Name
-
-Description
-
-Probability weight (0–1, sum ≤ 1)
-
-States can differ in:
-
-Parameter values
-
-Initial stock values
-
-Structural assumptions (optional, later)
-
-One model can have:
-
-Classical mode (single state)
-
-Superposition mode (multiple states)
-
-Acceptance Criteria
-
-User can define at least 2 parallel states.
-
-Probabilities are editable and validated.
-
-Switching between states updates visible values without modifying base model.
-
-Feature 10.2 – Observation / Measurement Events (Collapse Triggers)
-Requirements
-
-Introduce Observation Events:
-
-Represent decisions, measurements, audits, reviews, or market signals.
-
-Observation event properties:
-
-Name
-
-Description
-
-Trigger condition (manual for MVP)
-
-Collapse rule:
-
-Select most probable state
-
-Select random weighted state
-
-User chooses state
-
-Visual:
-
-Special icon placed on canvas or timeline bar.
-
-Acceptance Criteria
-
-Observation events are optional.
-
-Triggering an observation collapses superposition into one active state.
-
-Collapse is logged (what collapsed, why, when).
-
-Feature 10.3 – Observer Effect (Decision Feedback Annotation)
-Requirements
-
-Allow marking certain variables or flows as Observer-Sensitive.
-
-Observer-sensitive elements:
-
-Change behavior when “observed” or measured
-
-Example business meanings:
-
-KPIs gamed when monitored
-
-Staff behavior changes when audited
-
-Implementation:
-
-Add an “Observer Effect” flag with explanatory text.
-
-Optional modifier applied when observation occurs (qualitative or numeric).
-
-Acceptance Criteria
-
-Observer-sensitive elements are visually marked.
-
-Observation event highlights impacted elements.
-
-No automatic numeric enforcement required at MVP.
-
-Feature 10.4 – Probability-Weighted Scenarios (Beyond Deterministic What-If)
-Requirements
-
-Extend scenarios (Epic 7) with probability weights:
-
-Scenario weight represents likelihood, not preference.
-
-Allow grouping scenarios into:
-
-Scenario Sets (mutually exclusive futures)
-
-UI:
-
-Probability sliders
-
-Visual distribution indicator
-
-Acceptance Criteria
-
-Total probability validation with warnings.
-
-Scenario comparison supports weighted reasoning.
-
-Export includes probability metadata.
-
-Feature 10.5 – Entanglement Links (Non-Local Influence)
-Requirements
-
-Introduce Entanglement Link:
-
-A special relationship between two elements.
-
-Meaning:
-
-Change in one element immediately influences another
-
-Without explicit causal chain
-
-Use cases:
-
-Organizational trust & morale
-
-Market sentiment across regions
-
-Regulatory signaling effects
-
-Visual:
-
-Dashed double-line with entanglement icon
-
-Properties:
-
-Strength (qualitative)
-
-Explanation text
-
-Acceptance Criteria
-
-Entanglement links are visually distinct from causal links.
-
-They do not participate in classical loop calculations.
-
-They appear in story and insight layers clearly labeled.
-
-Feature 10.6 – Uncertainty Fields (Probability Clouds)
-Requirements
-
-Allow attaching Uncertainty Fields to:
-
-Variables
-
-Stocks
-
-Flows
-
-Uncertainty field properties:
-
-Type: Low / Medium / High
-
-Shape (distribution type – informational only at MVP)
-
-Rationale text
-
-Visual:
-
-Soft halo or blur around element
-
-Opacity reflects uncertainty level
-
-Acceptance Criteria
-
-Uncertainty visualization does not obscure labels.
-
-Fields can be toggled on/off globally.
-
-Export respects visibility settings.
-
-Feature 10.7 – Time as Non-Linear (Temporal Perspective Lens)
-Requirements
-
-Allow marking elements with temporal behavior:
-
-Immediate
-
-Delayed
-
-Anticipatory (future expectations influencing now)
-
-Anticipatory behavior:
-
-Example: expected regulation affects investment today
-
-Visual:
-
-Small time-arrow icons
-
-Used mainly for explanation and story mode.
-
-Acceptance Criteria
-
-Temporal markers are visible but subtle.
-
-Used in story steps and presentation mode.
-
-No simulation enforcement required initially.
-
-Feature 10.8 – Quantum Perspective Overlay (View Mode)
-Requirements
-
-Add a toggle:
-
-“Quantum Perspective View”
-
-When enabled:
-
-Show uncertainty fields
-
-Show entanglement links
-
-Show superposition states indicator
-
-Dim classical-only elements
-
-Read-only by default to avoid accidental edits.
-
-Acceptance Criteria
-
-Toggle is reversible without state loss.
-
-Overlay is clearly labeled as “Conceptual View”.
-
-Export optionally includes this view.
-
-Feature 10.9 – Quantum Narrative Blocks (Interpretive Layer)
-Requirements
-
-Add a new annotation type:
-
-Quantum Insight
-
-Used to capture:
-
-Ambiguity
-
-Paradox
-
-Irreducible uncertainty
-
-“We cannot know X before decision Y”
-
-Linked to:
-
-Elements
-
-States
-
-Observations
-
-Appears prominently in story mode.
-
-Acceptance Criteria
-
-Quantum insights are visually distinct from normal notes.
-
-They appear in story export under a separate section.
-
-Can be filtered independently.
-
-Feature 10.10 – Experimentation with Quantum Frames
-Requirements
-
-Experiments (Epic 7) can specify:
-
-Classical assumption
-
-Quantum-inspired assumption
-
-Example:
-
-Classical: “Demand responds linearly to price”
-
-Quantum-inspired: “Demand state depends on perception at decision time”
-
-Experiments can compare:
-
-Deterministic vs probabilistic framing
-
-Observed vs unobserved behavior
-
-Acceptance Criteria
-
-Experiment records capture framing explicitly.
-
-Comparison view highlights framing differences.
-
-Export includes framing rationale.
-
-Feature 10.11 – Guardrails & Clarity Controls
-Requirements
-
-Explicit disclaimers in UI:
-
-“Quantum-inspired ≠ physical quantum simulation”
-
-Ability to:
-
-Hide all quantum constructs
-
-Lock model into “Classical SD Only”
-
-Admin/model setting:
-
-Enable/disable quantum features per model.
-
-Acceptance Criteria
-
-Classical users are never forced into quantum concepts.
-
-Quantum elements never affect classical simulation unless explicitly enabled later.
-
-Model remains understandable without quantum layer.
-
-Feature 10.12 – JSON Extensions (Non-Breaking)
-Requirements
-
-Extend model schema with optional sections:
-
-quantumStates[]
-
-observationEvents[]
-
-entanglementLinks[]
-
-uncertaintyFields[]
-
-quantumInsights[]
-
-All fields optional and ignorable by older versions.
-
-Acceptance Criteria
-
-Import/export roundtrip preserves quantum data.
-
-Models without quantum data load unchanged.
-
-Schema versioning handles absence gracefully.
-
-End of EPIC 10 – Quantum-Inspired Modelling Layer
+“This studio supports philosophical and critical thinking by making concepts, assumptions, arguments, and implications visible — without judging or resolving them.”

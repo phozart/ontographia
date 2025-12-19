@@ -581,7 +581,7 @@ function ReviewStep({ formData, typeDef, concept, type, artefacts }) {
               <label>Acceptance Criteria</label>
               <ul className="review-criteria">
                 {formData.acceptanceCriteria.map((c, i) => (
-                  <li key={i}><CheckCircleIcon fontSize="small" /> {c}</li>
+                  <li key={i}><CheckCircleIcon fontSize="small" /> {typeof c === 'object' ? (c.text || JSON.stringify(c)) : c}</li>
                 ))}
               </ul>
             </div>

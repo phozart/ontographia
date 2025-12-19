@@ -5,9 +5,11 @@ import { useState, useEffect, useMemo } from 'react';
 import ImageIcon from '@mui/icons-material/Image';
 import SearchIcon from '@mui/icons-material/Search';
 import { useArtefacts } from '../../ArtefactContext';
+import { useAuth } from '../../AuthContext';
 
 export default function DiagramBlock({ content, onChange, onDelete, isEditing, artefactId }) {
   const { diagrams: artefactDiagrams = [] } = useArtefacts();
+  const { user, role } = useAuth();
   const { diagramId, diagramName } = content || {};
   const [globalDiagrams, setGlobalDiagrams] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -48,15 +50,18 @@ export default function DiagramBlock({ content, onChange, onDelete, isEditing, a
 
   // Load global diagrams from API
   useEffect(() => {
-    if (isEditing) {
+    if (isEditing && user && role) {
       loadGlobalDiagrams();
     }
-  }, [isEditing]);
+  }, [isEditing, user, role]);
 
   const loadGlobalDiagrams = async () => {
+    if (!user || !role) return;
     setLoading(true);
     try {
-      const res = await fetch('/api/diagrams');
+      const res = await fetch('/api/diagrams', {
+        headers: { 'x-user': user, 'x-role': role },
+      });
       if (res.ok) {
         const data = await res.json();
         setGlobalDiagrams(data);

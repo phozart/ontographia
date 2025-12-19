@@ -1,408 +1,28 @@
 // components/dwd/views/WorkLandscape.js
 // DWD Work Landscape View - Work items clustered by volatility and state
-// Includes comprehensive guidance on assessing work volatility and managing work items
 
 import { useState, useMemo } from 'react';
 import { useDWD } from '../DWDContext';
 import DWDArtefactCard from '../artefacts/DWDArtefactCard';
+import GuidancePanel from '../shared/GuidancePanel';
+import QuickStartCard from '../shared/QuickStartCard';
+import { WORK_LANDSCAPE_GUIDANCE } from '../../../lib/dwd-guidance';
 
 // MUI Icons
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import WarningIcon from '@mui/icons-material/Warning';
 import AddIcon from '@mui/icons-material/Add';
-import FilterListIcon from '@mui/icons-material/FilterList';
 import ViewModuleIcon from '@mui/icons-material/ViewModule';
 import ViewListIcon from '@mui/icons-material/ViewList';
 import SearchIcon from '@mui/icons-material/Search';
-import LightbulbIcon from '@mui/icons-material/Lightbulb';
 import HelpIcon from '@mui/icons-material/Help';
-import CloseIcon from '@mui/icons-material/Close';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import TipsAndUpdatesIcon from '@mui/icons-material/TipsAndUpdates';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import CancelIcon from '@mui/icons-material/Cancel';
 import InfoIcon from '@mui/icons-material/Info';
-import SpeedIcon from '@mui/icons-material/Speed';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import TrendingDownIcon from '@mui/icons-material/TrendingDown';
-
-// Work Landscape guidance content
-const WORK_LANDSCAPE_GUIDANCE = {
-  purpose: "The Work Landscape maps all work activities in your system by their volatility - how unpredictable and variable the work is. Understanding volatility helps you design appropriate coordination mechanisms and actor assignments.",
-  whatIsVolatility: {
-    description: "Volatility measures how much work varies in timing, scope, requirements, and outcomes. High volatility work needs flexible responses; low volatility work benefits from standardization.",
-    factors: [
-      { name: "Timing Variability", description: "Does the work arrive predictably or randomly?" },
-      { name: "Scope Changes", description: "Do requirements change during execution?" },
-      { name: "Exception Frequency", description: "How often do unusual situations occur?" },
-      { name: "Outcome Uncertainty", description: "Is the result predictable or variable?" },
-      { name: "External Dependencies", description: "Does it depend on unpredictable external factors?" }
-    ]
-  },
-  volatilityLevels: [
-    {
-      level: "High Volatility",
-      color: "#ef4444",
-      description: "Unpredictable, rapidly changing work requiring adaptive responses",
-      characteristics: [
-        "Arrives unexpectedly or with variable timing",
-        "Requirements often change mid-execution",
-        "Many exceptions and edge cases",
-        "Outcomes difficult to predict",
-        "Heavily dependent on external factors"
-      ],
-      implications: [
-        "Needs actors with broad skills and authority",
-        "Requires flexible coordination (not rigid processes)",
-        "Benefits from direct communication channels",
-        "May need slack capacity to handle spikes"
-      ],
-      examples: ["Customer complaints", "Emergency repairs", "Novel problems", "Crisis response"]
-    },
-    {
-      level: "Medium Volatility",
-      color: "#f59e0b",
-      description: "Some variability expected but patterns exist",
-      characteristics: [
-        "Generally predictable with occasional spikes",
-        "Core requirements stable, details may vary",
-        "Known exception patterns",
-        "Outcomes within expected range"
-      ],
-      implications: [
-        "Can use structured processes with exception paths",
-        "Actors need some discretion within guidelines",
-        "Standard coordination with escalation routes"
-      ],
-      examples: ["Project work", "Sales support", "Maintenance tasks", "Onboarding"]
-    },
-    {
-      level: "Low Volatility",
-      color: "#10b981",
-      description: "Predictable, stable work that follows patterns",
-      characteristics: [
-        "Arrives on schedule or follows patterns",
-        "Requirements well-defined and stable",
-        "Few exceptions, mostly routine",
-        "Outcomes highly predictable"
-      ],
-      implications: [
-        "Can standardize and automate",
-        "Actors can specialize deeply",
-        "Formal coordination mechanisms work well",
-        "Efficient resource planning possible"
-      ],
-      examples: ["Payroll processing", "Regular reporting", "Standard orders", "Routine maintenance"]
-    }
-  ],
-  workItems: {
-    definition: "A work item represents a type of work activity that needs to be performed. It's not a specific task but a category of work that recurs.",
-    goodWorkItem: [
-      "Represents a meaningful unit of work (not too granular)",
-      "Has clear triggers and outcomes",
-      "Can be characterized by its volatility",
-      "Has identifiable actors who perform it",
-      "Occurs with enough frequency to matter"
-    ],
-    badWorkItem: [
-      "Too granular (e.g., 'Send email' vs 'Handle customer inquiry')",
-      "Too abstract (e.g., 'Do work' vs specific activity)",
-      "One-time events rather than recurring patterns",
-      "Unclear who performs it or when"
-    ]
-  },
-  signals: {
-    definition: "Signals are observations that indicate problems, opportunities, or changes in work patterns. They trigger adjustments to how work is designed.",
-    types: [
-      { name: "Bottleneck", description: "Work piling up, delays increasing" },
-      { name: "Quality Issue", description: "Errors, rework, complaints increasing" },
-      { name: "Mismatch", description: "Wrong people handling wrong work" },
-      { name: "Overload", description: "Actors stretched beyond capacity" },
-      { name: "Underload", description: "Actors have idle capacity" },
-      { name: "Coordination Failure", description: "Handoffs failing, miscommunication" }
-    ]
-  },
-  tips: [
-    "Start by listing all recurring work types, not specific tasks",
-    "Assess volatility based on actual patterns, not assumptions",
-    "Work that feels 'chaotic' is often just high volatility (not bad)",
-    "Low volatility work isn't better - it just needs different design",
-    "Signals help you spot when design doesn't match reality"
-  ],
-  pitfalls: [
-    "Treating all work as if it's low volatility (over-standardizing)",
-    "Making work items too granular (losing the big picture)",
-    "Ignoring signals because the process 'should' work",
-    "Assigning volatility based on preference rather than reality",
-    "Forgetting that volatility can change over time"
-  ]
-};
-
-// Guidance panel component
-function GuidancePanel({ onClose, initialSection = 'purpose' }) {
-  const [expandedSection, setExpandedSection] = useState(initialSection);
-
-  return (
-    <div className="dwd-guidance-panel">
-      <div className="dwd-guidance-panel__header">
-        <div className="dwd-guidance-panel__title">
-          <LightbulbIcon />
-          <span>Work Landscape Guide</span>
-        </div>
-        <button className="dwd-guidance-panel__close" onClick={onClose}>
-          <CloseIcon fontSize="small" />
-        </button>
-      </div>
-
-      <div className="dwd-guidance-panel__content">
-        {/* Purpose */}
-        <div className="dwd-guidance-section">
-          <button
-            className={`dwd-guidance-section__header ${expandedSection === 'purpose' ? 'expanded' : ''}`}
-            onClick={() => setExpandedSection(expandedSection === 'purpose' ? null : 'purpose')}
-          >
-            <span>What is the Work Landscape?</span>
-            <ChevronRightIcon className={expandedSection === 'purpose' ? 'rotated' : ''} />
-          </button>
-          {expandedSection === 'purpose' && (
-            <div className="dwd-guidance-section__body">
-              <p>{WORK_LANDSCAPE_GUIDANCE.purpose}</p>
-            </div>
-          )}
-        </div>
-
-        {/* What is Volatility */}
-        <div className="dwd-guidance-section">
-          <button
-            className={`dwd-guidance-section__header ${expandedSection === 'volatility' ? 'expanded' : ''}`}
-            onClick={() => setExpandedSection(expandedSection === 'volatility' ? null : 'volatility')}
-          >
-            <span>What is Volatility?</span>
-            <ChevronRightIcon className={expandedSection === 'volatility' ? 'rotated' : ''} />
-          </button>
-          {expandedSection === 'volatility' && (
-            <div className="dwd-guidance-section__body">
-              <p>{WORK_LANDSCAPE_GUIDANCE.whatIsVolatility.description}</p>
-              <h5>Factors that create volatility:</h5>
-              <div className="dwd-factors-list">
-                {WORK_LANDSCAPE_GUIDANCE.whatIsVolatility.factors.map((factor, i) => (
-                  <div key={i} className="dwd-factor-item">
-                    <strong>{factor.name}</strong>
-                    <span>{factor.description}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Volatility Levels */}
-        <div className="dwd-guidance-section">
-          <button
-            className={`dwd-guidance-section__header ${expandedSection === 'levels' ? 'expanded' : ''}`}
-            onClick={() => setExpandedSection(expandedSection === 'levels' ? null : 'levels')}
-          >
-            <span>Volatility Levels Explained</span>
-            <ChevronRightIcon className={expandedSection === 'levels' ? 'rotated' : ''} />
-          </button>
-          {expandedSection === 'levels' && (
-            <div className="dwd-guidance-section__body">
-              {WORK_LANDSCAPE_GUIDANCE.volatilityLevels.map((level, i) => (
-                <div key={i} className="dwd-volatility-level" style={{ borderLeftColor: level.color }}>
-                  <h5 style={{ color: level.color }}>{level.level}</h5>
-                  <p className="dwd-volatility-desc">{level.description}</p>
-                  <div className="dwd-volatility-details">
-                    <div className="dwd-volatility-chars">
-                      <strong>Characteristics:</strong>
-                      <ul>
-                        {level.characteristics.map((c, j) => <li key={j}>{c}</li>)}
-                      </ul>
-                    </div>
-                    <div className="dwd-volatility-implications">
-                      <strong>Design Implications:</strong>
-                      <ul>
-                        {level.implications.map((imp, j) => <li key={j}>{imp}</li>)}
-                      </ul>
-                    </div>
-                    <div className="dwd-volatility-examples">
-                      <strong>Examples:</strong>
-                      <span>{level.examples.join(', ')}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Work Items */}
-        <div className="dwd-guidance-section">
-          <button
-            className={`dwd-guidance-section__header ${expandedSection === 'workitems' ? 'expanded' : ''}`}
-            onClick={() => setExpandedSection(expandedSection === 'workitems' ? null : 'workitems')}
-          >
-            <span>What Makes a Good Work Item?</span>
-            <ChevronRightIcon className={expandedSection === 'workitems' ? 'rotated' : ''} />
-          </button>
-          {expandedSection === 'workitems' && (
-            <div className="dwd-guidance-section__body">
-              <p>{WORK_LANDSCAPE_GUIDANCE.workItems.definition}</p>
-              <div className="dwd-tips-donts">
-                <div className="dwd-tips">
-                  <h5><CheckCircleIcon style={{ color: '#22c55e' }} /> Good Work Items</h5>
-                  <ul>
-                    {WORK_LANDSCAPE_GUIDANCE.workItems.goodWorkItem.map((item, i) => (
-                      <li key={i}>{item}</li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="dwd-donts">
-                  <h5><CancelIcon style={{ color: '#ef4444' }} /> Avoid</h5>
-                  <ul>
-                    {WORK_LANDSCAPE_GUIDANCE.workItems.badWorkItem.map((item, i) => (
-                      <li key={i}>{item}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Signals */}
-        <div className="dwd-guidance-section">
-          <button
-            className={`dwd-guidance-section__header ${expandedSection === 'signals' ? 'expanded' : ''}`}
-            onClick={() => setExpandedSection(expandedSection === 'signals' ? null : 'signals')}
-          >
-            <span>Understanding Signals</span>
-            <ChevronRightIcon className={expandedSection === 'signals' ? 'rotated' : ''} />
-          </button>
-          {expandedSection === 'signals' && (
-            <div className="dwd-guidance-section__body">
-              <p>{WORK_LANDSCAPE_GUIDANCE.signals.definition}</p>
-              <div className="dwd-signal-types">
-                {WORK_LANDSCAPE_GUIDANCE.signals.types.map((type, i) => (
-                  <div key={i} className="dwd-signal-type">
-                    <strong>{type.name}</strong>
-                    <span>{type.description}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Tips & Pitfalls */}
-        <div className="dwd-guidance-section">
-          <button
-            className={`dwd-guidance-section__header ${expandedSection === 'tips' ? 'expanded' : ''}`}
-            onClick={() => setExpandedSection(expandedSection === 'tips' ? null : 'tips')}
-          >
-            <span>Tips & Pitfalls</span>
-            <ChevronRightIcon className={expandedSection === 'tips' ? 'rotated' : ''} />
-          </button>
-          {expandedSection === 'tips' && (
-            <div className="dwd-guidance-section__body">
-              <div className="dwd-tips-donts">
-                <div className="dwd-tips">
-                  <h5><CheckCircleIcon style={{ color: '#22c55e' }} /> Best Practices</h5>
-                  <ul>
-                    {WORK_LANDSCAPE_GUIDANCE.tips.map((tip, i) => (
-                      <li key={i}>{tip}</li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="dwd-donts">
-                  <h5><CancelIcon style={{ color: '#ef4444' }} /> Common Mistakes</h5>
-                  <ul>
-                    {WORK_LANDSCAPE_GUIDANCE.pitfalls.map((pitfall, i) => (
-                      <li key={i}>{pitfall}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Quick start card for empty states
-function QuickStartCard({ onCreate }) {
-  return (
-    <div className="dwd-quickstart">
-      <div className="dwd-quickstart__header">
-        <TipsAndUpdatesIcon />
-        <h3>Mapping Your Work Landscape</h3>
-      </div>
-      <p className="dwd-quickstart__description">
-        The work landscape shows all recurring work activities in your system, organized by how volatile
-        (unpredictable) each type of work is. This helps you design appropriate coordination mechanisms.
-      </p>
-      <div className="dwd-quickstart__flow">
-        <div className="dwd-quickstart__step">
-          <span className="dwd-quickstart__step-num">1</span>
-          <span>List all recurring work types</span>
-        </div>
-        <ArrowForwardIcon className="dwd-quickstart__arrow" />
-        <div className="dwd-quickstart__step">
-          <span className="dwd-quickstart__step-num">2</span>
-          <span>Assess volatility of each</span>
-        </div>
-        <ArrowForwardIcon className="dwd-quickstart__arrow" />
-        <div className="dwd-quickstart__step">
-          <span className="dwd-quickstart__step-num">3</span>
-          <span>Identify who handles each</span>
-        </div>
-        <ArrowForwardIcon className="dwd-quickstart__arrow" />
-        <div className="dwd-quickstart__step">
-          <span className="dwd-quickstart__step-num">4</span>
-          <span>Note mismatches & signals</span>
-        </div>
-      </div>
-      <div className="dwd-quickstart__volatility-hint">
-        <h4>Quick Volatility Assessment:</h4>
-        <div className="dwd-quickstart__volatility-guide">
-          <div className="dwd-quickstart__vol-level" style={{ borderColor: '#ef4444' }}>
-            <SpeedIcon style={{ color: '#ef4444' }} />
-            <div>
-              <strong style={{ color: '#ef4444' }}>High Volatility</strong>
-              <span>Arrives unpredictably, requirements change often, many exceptions</span>
-            </div>
-          </div>
-          <div className="dwd-quickstart__vol-level" style={{ borderColor: '#f59e0b' }}>
-            <TrendingUpIcon style={{ color: '#f59e0b' }} />
-            <div>
-              <strong style={{ color: '#f59e0b' }}>Medium Volatility</strong>
-              <span>Some patterns but variability, known exception types</span>
-            </div>
-          </div>
-          <div className="dwd-quickstart__vol-level" style={{ borderColor: '#10b981' }}>
-            <TrendingDownIcon style={{ color: '#10b981' }} />
-            <div>
-              <strong style={{ color: '#10b981' }}>Low Volatility</strong>
-              <span>Predictable timing, stable requirements, routine handling</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className="dwd-quickstart__actions">
-        <button className="btn btn--primary" onClick={() => onCreate?.('dwd_work_item')}>
-          <AddIcon fontSize="small" />
-          Add Your First Work Item
-        </button>
-      </div>
-    </div>
-  );
-}
 
 // Volatility column header with guidance
 function VolatilityColumnHeader({ level, count, color }) {
-  const levelInfo = WORK_LANDSCAPE_GUIDANCE.volatilityLevels.find(l => l.level.toLowerCase().includes(level));
+  const levelInfo = WORK_LANDSCAPE_GUIDANCE.sections
+    .find(s => s.id === 'levels')?.levels
+    ?.find(l => l.level.toLowerCase().includes(level));
 
   return (
     <div className="dwd-matrix-header" style={{ backgroundColor: `${color}15`, borderColor: color }}>
@@ -504,7 +124,10 @@ export default function WorkLandscape({
     <div className="dwd-work-landscape">
       {/* Guidance Panel */}
       {showGuidance && (
-        <GuidancePanel onClose={() => setShowGuidance(false)} />
+        <GuidancePanel
+          guidance={WORK_LANDSCAPE_GUIDANCE}
+          onClose={() => setShowGuidance(false)}
+        />
       )}
 
       {/* Header with stats */}
@@ -611,7 +234,13 @@ export default function WorkLandscape({
       </div>
 
       {/* Empty State with Quick Start */}
-      {isEmpty && <QuickStartCard onCreate={onCreateArtefact} />}
+      {isEmpty && (
+        <QuickStartCard
+          quickStart={WORK_LANDSCAPE_GUIDANCE.quickStart}
+          onCreate={onCreateArtefact}
+          showVolatilityGuide={true}
+        />
+      )}
 
       {/* Matrix View */}
       {!isEmpty && viewMode === 'matrix' && (

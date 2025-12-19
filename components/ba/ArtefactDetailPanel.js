@@ -154,7 +154,8 @@ function AddRelationship({ artefact, onAdd }) {
 
   const handleAdd = () => {
     if (selectedType && selectedTarget) {
-      createRelationship(artefact.id, selectedTarget, selectedType);
+      // createRelationship expects (type, fromId, toId)
+      createRelationship(selectedType, artefact.id, selectedTarget);
       setIsOpen(false);
       setSelectedType('');
       setSelectedTarget('');
@@ -267,8 +268,7 @@ function UserStoryBreakdown({ artefact, onNavigate, onCreateRequirement }) {
     if (!name.trim()) return;
 
     // Create the solution requirement
-    const newReq = createArtefact({
-      artefactType: 'SolutionRequirement',
+    const newReq = createArtefact('SolutionRequirement', {
       name: name.trim(),
       description: `${createType === 'functional' ? 'Functional' : 'Non-functional'} requirement for: ${artefact.name}`,
       status: 'Draft',
@@ -281,7 +281,8 @@ function UserStoryBreakdown({ artefact, onNavigate, onCreateRequirement }) {
 
     if (newReq) {
       // Create relationship from user story to requirement
-      createRelationship(artefact.id, newReq.id, 'tracesTo');
+      // createRelationship expects (type, fromId, toId)
+      createRelationship('tracesTo', artefact.id, newReq.id);
     }
 
     setShowCreate(false);

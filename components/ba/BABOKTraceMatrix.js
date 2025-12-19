@@ -205,7 +205,7 @@ function RequirementRow({
                   <h5>Acceptance Criteria</h5>
                   <ul>
                     {requirement.acceptanceCriteria.map((ac, i) => (
-                      <li key={i}>{ac}</li>
+                      <li key={i}>{typeof ac === 'object' ? (ac.text || JSON.stringify(ac)) : ac}</li>
                     ))}
                   </ul>
                 </div>

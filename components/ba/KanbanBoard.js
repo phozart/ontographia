@@ -133,7 +133,8 @@ function TicketDetailPanel({ ticket, onClose, onUpdate, onDelete }) {
   };
 
   const handleLinkStory = (storyId) => {
-    createRelationship(ticket.id, storyId, 'tracesTo');
+    // createRelationship expects (type, fromId, toId)
+    createRelationship('tracesTo', ticket.id, storyId);
   };
 
   return (
@@ -647,8 +648,7 @@ export default function KanbanBoard() {
 
   // Create ticket handler
   const handleCreateTicket = (data) => {
-    const ticket = createArtefact({
-      artefactType: 'Ticket',
+    const ticket = createArtefact('Ticket', {
       name: data.name,
       description: data.description,
       priority: data.priority,
@@ -658,7 +658,8 @@ export default function KanbanBoard() {
 
     // Link to user story if provided
     if (ticket && data.linkedStoryId) {
-      createRelationship(ticket.id, data.linkedStoryId, 'tracesTo');
+      // createRelationship expects (type, fromId, toId)
+      createRelationship('tracesTo', ticket.id, data.linkedStoryId);
     }
   };
 

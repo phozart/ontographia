@@ -1,304 +1,22 @@
 // components/dwd/views/LearningCapture.js
 // DWD Learning Capture View - Timeline of learnings and observations
-// Includes comprehensive guidance on capturing and using learnings
 
 import { useState, useMemo } from 'react';
 import { useDWD } from '../DWDContext';
+import GuidancePanel from '../shared/GuidancePanel';
+import QuickStartCard from '../shared/QuickStartCard';
+import { LEARNING_CAPTURE_GUIDANCE } from '../../../lib/dwd-guidance';
 
 // MUI Icons
 import LightbulbIcon from '@mui/icons-material/Lightbulb';
 import AddIcon from '@mui/icons-material/Add';
 import SearchIcon from '@mui/icons-material/Search';
-import FilterListIcon from '@mui/icons-material/FilterList';
 import TimelineIcon from '@mui/icons-material/Timeline';
 import ViewListIcon from '@mui/icons-material/ViewList';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import HelpIcon from '@mui/icons-material/Help';
-import CloseIcon from '@mui/icons-material/Close';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import TipsAndUpdatesIcon from '@mui/icons-material/TipsAndUpdates';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import CancelIcon from '@mui/icons-material/Cancel';
 import InfoIcon from '@mui/icons-material/Info';
-import AutorenewIcon from '@mui/icons-material/Autorenew';
-import SchoolIcon from '@mui/icons-material/School';
-
-// Learning Capture guidance content
-const LEARNING_GUIDANCE = {
-  purpose: "Learnings capture what you discover when you try adjustments or observe work patterns. They build organizational knowledge over time and inform better design decisions.",
-  whatIsLearning: {
-    description: "A learning is an observation about how work actually operates, often revealed through an adjustment experiment or by noticing unexpected patterns.",
-    elements: [
-      { name: "Observation", description: "What did you actually see or measure?", required: true },
-      { name: "Outcome", description: "What was the result? Better, worse, or different than expected?" },
-      { name: "Surprise", description: "What was unexpected? Surprises often reveal hidden assumptions." },
-      { name: "Implication", description: "What should you do differently based on this learning?" }
-    ]
-  },
-  whenToCapture: {
-    description: "Capture learnings when something noteworthy happens in your work system.",
-    triggers: [
-      "An adjustment is adopted or reverted",
-      "You notice an unexpected pattern",
-      "Something that 'should' work isn't working",
-      "A workaround reveals a design flaw",
-      "A success reveals what works well",
-      "External change affects work patterns"
-    ]
-  },
-  confidence: {
-    description: "Confidence reflects how certain you are about the learning based on the evidence.",
-    levels: [
-      { level: "High", color: "#10b981", description: "Clear evidence, repeated observation, measurable results" },
-      { level: "Medium", color: "#f59e0b", description: "Some evidence, limited observations, plausible conclusion" },
-      { level: "Low", color: "#ef4444", description: "Initial observation, needs more evidence to confirm" }
-    ]
-  },
-  usingLearnings: {
-    description: "Learnings should inform future decisions and accumulate into organizational knowledge.",
-    howTo: [
-      "Review learnings before proposing new adjustments",
-      "Look for patterns across multiple learnings",
-      "Share learnings with others who do similar work",
-      "Update your mental models based on surprises",
-      "Use implications to guide next actions"
-    ]
-  },
-  tips: [
-    "Capture learnings while they're fresh - memory fades quickly",
-    "Be specific about what you observed, not just conclusions",
-    "Surprises are often the most valuable learnings",
-    "Failed experiments still produce useful learnings",
-    "Link learnings to the adjustments that triggered them"
-  ],
-  pitfalls: [
-    "Only capturing positive outcomes (failures teach too)",
-    "Being too vague about observations",
-    "Not acting on implications",
-    "Capturing learnings but never reviewing them",
-    "Overconfidence in limited observations"
-  ]
-};
-
-// Guidance panel component
-function GuidancePanel({ onClose, initialSection = 'purpose' }) {
-  const [expandedSection, setExpandedSection] = useState(initialSection);
-
-  return (
-    <div className="dwd-guidance-panel">
-      <div className="dwd-guidance-panel__header">
-        <div className="dwd-guidance-panel__title">
-          <LightbulbIcon />
-          <span>Learning Capture Guide</span>
-        </div>
-        <button className="dwd-guidance-panel__close" onClick={onClose}>
-          <CloseIcon fontSize="small" />
-        </button>
-      </div>
-
-      <div className="dwd-guidance-panel__content">
-        {/* Purpose */}
-        <div className="dwd-guidance-section">
-          <button
-            className={`dwd-guidance-section__header ${expandedSection === 'purpose' ? 'expanded' : ''}`}
-            onClick={() => setExpandedSection(expandedSection === 'purpose' ? null : 'purpose')}
-          >
-            <span>Why Capture Learnings?</span>
-            <ChevronRightIcon className={expandedSection === 'purpose' ? 'rotated' : ''} />
-          </button>
-          {expandedSection === 'purpose' && (
-            <div className="dwd-guidance-section__body">
-              <p>{LEARNING_GUIDANCE.purpose}</p>
-            </div>
-          )}
-        </div>
-
-        {/* What is a Learning */}
-        <div className="dwd-guidance-section">
-          <button
-            className={`dwd-guidance-section__header ${expandedSection === 'what' ? 'expanded' : ''}`}
-            onClick={() => setExpandedSection(expandedSection === 'what' ? null : 'what')}
-          >
-            <span>What Makes a Good Learning?</span>
-            <ChevronRightIcon className={expandedSection === 'what' ? 'rotated' : ''} />
-          </button>
-          {expandedSection === 'what' && (
-            <div className="dwd-guidance-section__body">
-              <p>{LEARNING_GUIDANCE.whatIsLearning.description}</p>
-              <h5>Elements of a Learning:</h5>
-              <div className="dwd-learning-elements">
-                {LEARNING_GUIDANCE.whatIsLearning.elements.map((el, i) => (
-                  <div key={i} className="dwd-learning-element">
-                    <strong>
-                      {el.name}
-                      {el.required && <span className="dwd-required">*</span>}
-                    </strong>
-                    <span>{el.description}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* When to Capture */}
-        <div className="dwd-guidance-section">
-          <button
-            className={`dwd-guidance-section__header ${expandedSection === 'when' ? 'expanded' : ''}`}
-            onClick={() => setExpandedSection(expandedSection === 'when' ? null : 'when')}
-          >
-            <span>When to Capture Learnings</span>
-            <ChevronRightIcon className={expandedSection === 'when' ? 'rotated' : ''} />
-          </button>
-          {expandedSection === 'when' && (
-            <div className="dwd-guidance-section__body">
-              <p>{LEARNING_GUIDANCE.whenToCapture.description}</p>
-              <h5>Good Triggers:</h5>
-              <ul>
-                {LEARNING_GUIDANCE.whenToCapture.triggers.map((trigger, i) => (
-                  <li key={i}>{trigger}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
-
-        {/* Confidence */}
-        <div className="dwd-guidance-section">
-          <button
-            className={`dwd-guidance-section__header ${expandedSection === 'confidence' ? 'expanded' : ''}`}
-            onClick={() => setExpandedSection(expandedSection === 'confidence' ? null : 'confidence')}
-          >
-            <span>Confidence Levels</span>
-            <ChevronRightIcon className={expandedSection === 'confidence' ? 'rotated' : ''} />
-          </button>
-          {expandedSection === 'confidence' && (
-            <div className="dwd-guidance-section__body">
-              <p>{LEARNING_GUIDANCE.confidence.description}</p>
-              {LEARNING_GUIDANCE.confidence.levels.map((level, i) => (
-                <div key={i} className="dwd-confidence-level" style={{ borderLeftColor: level.color }}>
-                  <strong style={{ color: level.color }}>{level.level} Confidence</strong>
-                  <span>{level.description}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Using Learnings */}
-        <div className="dwd-guidance-section">
-          <button
-            className={`dwd-guidance-section__header ${expandedSection === 'using' ? 'expanded' : ''}`}
-            onClick={() => setExpandedSection(expandedSection === 'using' ? null : 'using')}
-          >
-            <span>Using Your Learnings</span>
-            <ChevronRightIcon className={expandedSection === 'using' ? 'rotated' : ''} />
-          </button>
-          {expandedSection === 'using' && (
-            <div className="dwd-guidance-section__body">
-              <p>{LEARNING_GUIDANCE.usingLearnings.description}</p>
-              <ol className="dwd-guidance-steps">
-                {LEARNING_GUIDANCE.usingLearnings.howTo.map((step, i) => (
-                  <li key={i}>
-                    <span className="step-number">{i + 1}</span>
-                    <span>{step}</span>
-                  </li>
-                ))}
-              </ol>
-            </div>
-          )}
-        </div>
-
-        {/* Tips & Pitfalls */}
-        <div className="dwd-guidance-section">
-          <button
-            className={`dwd-guidance-section__header ${expandedSection === 'tips' ? 'expanded' : ''}`}
-            onClick={() => setExpandedSection(expandedSection === 'tips' ? null : 'tips')}
-          >
-            <span>Tips & Pitfalls</span>
-            <ChevronRightIcon className={expandedSection === 'tips' ? 'rotated' : ''} />
-          </button>
-          {expandedSection === 'tips' && (
-            <div className="dwd-guidance-section__body">
-              <div className="dwd-tips-donts">
-                <div className="dwd-tips">
-                  <h5><CheckCircleIcon style={{ color: '#22c55e' }} /> Best Practices</h5>
-                  <ul>
-                    {LEARNING_GUIDANCE.tips.map((tip, i) => (
-                      <li key={i}>{tip}</li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="dwd-donts">
-                  <h5><CancelIcon style={{ color: '#ef4444' }} /> Common Mistakes</h5>
-                  <ul>
-                    {LEARNING_GUIDANCE.pitfalls.map((pitfall, i) => (
-                      <li key={i}>{pitfall}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Quick start card for empty states
-function QuickStartCard({ onCreate }) {
-  return (
-    <div className="dwd-quickstart">
-      <div className="dwd-quickstart__header">
-        <TipsAndUpdatesIcon />
-        <h3>Capturing Learnings</h3>
-      </div>
-      <p className="dwd-quickstart__description">
-        Learnings capture what you discover about how work really operates. They're especially valuable
-        when you try adjustments and see what happens - whether success or failure, both teach.
-      </p>
-      <div className="dwd-quickstart__flow">
-        <div className="dwd-quickstart__step">
-          <span className="dwd-quickstart__step-num">1</span>
-          <span>Notice something noteworthy</span>
-        </div>
-        <ArrowForwardIcon className="dwd-quickstart__arrow" />
-        <div className="dwd-quickstart__step">
-          <span className="dwd-quickstart__step-num">2</span>
-          <span>Record what you observed</span>
-        </div>
-        <ArrowForwardIcon className="dwd-quickstart__arrow" />
-        <div className="dwd-quickstart__step">
-          <span className="dwd-quickstart__step-num">3</span>
-          <span>Note what surprised you</span>
-        </div>
-        <ArrowForwardIcon className="dwd-quickstart__arrow" />
-        <div className="dwd-quickstart__step">
-          <span className="dwd-quickstart__step-num">4</span>
-          <span>Identify implications</span>
-        </div>
-      </div>
-      <div className="dwd-quickstart__example-box">
-        <h4><SchoolIcon fontSize="small" /> Example Learning:</h4>
-        <p>"Giving agents refund authority reduced escalations by 40%"</p>
-        <div className="dwd-quickstart__example-meta">
-          <span><strong>Observation:</strong> 40% fewer escalations after authority increase</span>
-          <span><strong>Surprise:</strong> No increase in refund amounts - agents were conservative</span>
-          <span><strong>Implication:</strong> Consider similar authority increases for other decisions</span>
-        </div>
-      </div>
-      <div className="dwd-quickstart__actions">
-        <button className="btn btn--primary" onClick={() => onCreate?.('dwd_learning')}>
-          <AddIcon fontSize="small" />
-          Capture Your First Learning
-        </button>
-      </div>
-    </div>
-  );
-}
 
 export default function LearningCapture({
   onSelectArtefact,
@@ -387,7 +105,10 @@ export default function LearningCapture({
     <div className="dwd-learning-capture">
       {/* Guidance Panel */}
       {showGuidance && (
-        <GuidancePanel onClose={() => setShowGuidance(false)} />
+        <GuidancePanel
+          guidance={LEARNING_CAPTURE_GUIDANCE}
+          onClose={() => setShowGuidance(false)}
+        />
       )}
 
       {/* Header */}
@@ -472,7 +193,12 @@ export default function LearningCapture({
       </div>
 
       {/* Empty State */}
-      {isEmpty && <QuickStartCard onCreate={onCreateArtefact} />}
+      {isEmpty && (
+        <QuickStartCard
+          quickStart={LEARNING_CAPTURE_GUIDANCE.quickStart}
+          onCreate={onCreateArtefact}
+        />
+      )}
 
       {/* Timeline View */}
       {!isEmpty && viewMode === 'timeline' && (

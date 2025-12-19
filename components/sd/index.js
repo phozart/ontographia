@@ -226,3 +226,21 @@ export {
   default as SDRightToolbar,
   useRightToolbar
 } from './SDRightToolbar';
+
+// =============================================================================
+// SYSTEMS THINKING GUIDANCE - NEW
+// =============================================================================
+
+// Shared Components
+export {
+  default as SDGuidancePanel,
+  SDGuidanceToggle
+} from './shared/SDGuidancePanel';
+
+// Views - Learning & Examples
+export { default as SDLearningCenter } from './views/SDLearningCenter';
+export { default as SDExamplesLibrary } from './views/SDExamplesLibrary';
+export { default as SDThinkingFramework } from './views/SDThinkingFramework';
+
+// Wizards - Guided Workflows
+export { default as SDSystemsThinkingWizard } from './wizards/SDSystemsThinkingWizard';

@@ -512,7 +512,7 @@ export default function ReportGenerator({ projectId }) {
     <div class="acceptance-criteria">
       <h5>Acceptance Criteria</h5>
       <ul>
-        ${item.acceptanceCriteria.map(ac => `<li>${ac}</li>`).join('')}
+        ${item.acceptanceCriteria.map(ac => `<li>${typeof ac === 'object' ? (ac.text || JSON.stringify(ac)) : ac}</li>`).join('')}
       </ul>
     </div>` : ''}
   </div>`;

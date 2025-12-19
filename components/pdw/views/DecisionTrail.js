@@ -1,15 +1,28 @@
 // components/pdw/views/DecisionTrail.js
 // Timeline view of decisions with rationale and outcomes
-// Includes comprehensive guidance on decision-making best practices
 
 import { useState, useMemo, useCallback } from 'react';
 import { usePDW } from '../PDWContext';
 
+// Shared UI Components
+import {
+  IconButton,
+  ViewHeader,
+  ControlsBar,
+  SearchBox,
+  FilterSelect,
+  ViewToggle,
+  CheckboxFilter,
+  Card,
+  QuickStart,
+  EmptyFiltered,
+  Timeline,
+  ListView,
+  ListRow,
+} from '../../ui';
+
 // MUI Icons
 import GavelIcon from '@mui/icons-material/Gavel';
-import AddIcon from '@mui/icons-material/Add';
-import FilterListIcon from '@mui/icons-material/FilterList';
-import SearchIcon from '@mui/icons-material/Search';
 import TimelineIcon from '@mui/icons-material/Timeline';
 import ViewListIcon from '@mui/icons-material/ViewList';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
@@ -20,56 +33,8 @@ import ScheduleIcon from '@mui/icons-material/Schedule';
 import EditIcon from '@mui/icons-material/Edit';
 import LinkIcon from '@mui/icons-material/Link';
 import PersonIcon from '@mui/icons-material/Person';
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import EventIcon from '@mui/icons-material/Event';
-import LightbulbIcon from '@mui/icons-material/Lightbulb';
-import TipsAndUpdatesIcon from '@mui/icons-material/TipsAndUpdates';
 import InfoIcon from '@mui/icons-material/Info';
-import HelpIcon from '@mui/icons-material/Help';
-import CloseIcon from '@mui/icons-material/Close';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-
-// Decision guidance content
-const DECISION_GUIDANCE = {
-  purpose: "A decision trail documents key decisions with their context, rationale, and outcomes. This creates institutional memory and helps teams learn from past choices.",
-  when: [
-    "After completing validation experiments",
-    "At stage gates or milestones",
-    "When pivoting or changing direction",
-    "Before committing significant resources",
-    "When stakeholders need to understand why choices were made"
-  ],
-  types: [
-    { type: "Go", description: "Proceed with the current direction. Evidence supports moving forward.", color: "#22c55e", icon: CheckCircleIcon },
-    { type: "No-Go", description: "Stop or kill this initiative. Evidence shows it won't work.", color: "#ef4444", icon: CancelIcon },
-    { type: "Pivot", description: "Change direction based on learnings. Keep the vision, change the approach.", color: "#f59e0b", icon: SwapHorizIcon },
-    { type: "Persevere", description: "Continue despite challenges. Evidence shows potential if we persist.", color: "#3b82f6", icon: TrendingUpIcon },
-    { type: "Defer", description: "Postpone decision. More evidence or time is needed.", color: "#64748b", icon: ScheduleIcon }
-  ],
-  elements: [
-    { name: "Clear Statement", description: "What exactly are you deciding? Be specific and unambiguous." },
-    { name: "Context", description: "What situation led to this decision? What evidence do you have?" },
-    { name: "Rationale", description: "Why are you making this choice? Document the reasoning." },
-    { name: "Alternatives", description: "What other options did you consider and why were they rejected?" },
-    { name: "Conditions", description: "Under what conditions would you revisit this decision?" },
-    { name: "Next Steps", description: "What actions follow from this decision?" }
-  ],
-  tips: [
-    "Document decisions while context is fresh",
-    "Be honest about uncertainty - it's okay to decide with incomplete information",
-    "Set review dates for important decisions",
-    "Link decisions to the evidence that informed them",
-    "Include dissenting opinions and concerns"
-  ],
-  pitfalls: [
-    "Making decisions without clear ownership",
-    "Not documenting the reasoning behind choices",
-    "Ignoring contradictory evidence",
-    "Postponing decisions indefinitely",
-    "Not setting conditions for revisiting decisions"
-  ]
-};
 
 // Decision type configuration
 const DECISION_CONFIG = {
@@ -80,210 +45,20 @@ const DECISION_CONFIG = {
   Defer: { icon: ScheduleIcon, color: '#64748b', bg: '#f1f5f9', label: 'Defer', hint: 'Needs more time/evidence' },
 };
 
-// Guidance panel component
-function GuidancePanel({ onClose }) {
-  const [expandedSection, setExpandedSection] = useState('purpose');
-
-  return (
-    <div className="pdw-guidance-panel">
-      <div className="pdw-guidance-panel__header">
-        <div className="pdw-guidance-panel__title">
-          <LightbulbIcon />
-          <span>Decision Trail Guide</span>
-        </div>
-        <button className="pdw-guidance-panel__close" onClick={onClose}>
-          <CloseIcon fontSize="small" />
-        </button>
-      </div>
-
-      <div className="pdw-guidance-panel__content">
-        {/* Purpose */}
-        <div className="pdw-guidance-section">
-          <button
-            className={`pdw-guidance-section__header ${expandedSection === 'purpose' ? 'expanded' : ''}`}
-            onClick={() => setExpandedSection(expandedSection === 'purpose' ? null : 'purpose')}
-          >
-            <span>Why document decisions?</span>
-            <ChevronRightIcon className={expandedSection === 'purpose' ? 'rotated' : ''} />
-          </button>
-          {expandedSection === 'purpose' && (
-            <div className="pdw-guidance-section__body">
-              <p>{DECISION_GUIDANCE.purpose}</p>
-            </div>
-          )}
-        </div>
-
-        {/* When to Use */}
-        <div className="pdw-guidance-section">
-          <button
-            className={`pdw-guidance-section__header ${expandedSection === 'when' ? 'expanded' : ''}`}
-            onClick={() => setExpandedSection(expandedSection === 'when' ? null : 'when')}
-          >
-            <span>When to record a decision</span>
-            <ChevronRightIcon className={expandedSection === 'when' ? 'rotated' : ''} />
-          </button>
-          {expandedSection === 'when' && (
-            <div className="pdw-guidance-section__body">
-              <ul>
-                {DECISION_GUIDANCE.when.map((item, i) => (
-                  <li key={i}>{item}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
-
-        {/* Decision Types */}
-        <div className="pdw-guidance-section">
-          <button
-            className={`pdw-guidance-section__header ${expandedSection === 'types' ? 'expanded' : ''}`}
-            onClick={() => setExpandedSection(expandedSection === 'types' ? null : 'types')}
-          >
-            <span>Decision types explained</span>
-            <ChevronRightIcon className={expandedSection === 'types' ? 'rotated' : ''} />
-          </button>
-          {expandedSection === 'types' && (
-            <div className="pdw-guidance-section__body">
-              <div className="pdw-decision-types-list">
-                {DECISION_GUIDANCE.types.map((type, i) => {
-                  const Icon = type.icon;
-                  return (
-                    <div key={i} className="pdw-decision-type-item" style={{ borderLeftColor: type.color }}>
-                      <div className="pdw-decision-type-item__header">
-                        <Icon style={{ color: type.color }} fontSize="small" />
-                        <strong style={{ color: type.color }}>{type.type}</strong>
-                      </div>
-                      <p>{type.description}</p>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Good Decision Elements */}
-        <div className="pdw-guidance-section">
-          <button
-            className={`pdw-guidance-section__header ${expandedSection === 'elements' ? 'expanded' : ''}`}
-            onClick={() => setExpandedSection(expandedSection === 'elements' ? null : 'elements')}
-          >
-            <span>Elements of a good decision</span>
-            <ChevronRightIcon className={expandedSection === 'elements' ? 'rotated' : ''} />
-          </button>
-          {expandedSection === 'elements' && (
-            <div className="pdw-guidance-section__body">
-              <div className="pdw-elements-list">
-                {DECISION_GUIDANCE.elements.map((element, i) => (
-                  <div key={i} className="pdw-element-item">
-                    <span className="pdw-element-number">{i + 1}</span>
-                    <div>
-                      <strong>{element.name}</strong>
-                      <p>{element.description}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Tips & Pitfalls */}
-        <div className="pdw-guidance-section">
-          <button
-            className={`pdw-guidance-section__header ${expandedSection === 'tips' ? 'expanded' : ''}`}
-            onClick={() => setExpandedSection(expandedSection === 'tips' ? null : 'tips')}
-          >
-            <span>Tips & Pitfalls</span>
-            <ChevronRightIcon className={expandedSection === 'tips' ? 'rotated' : ''} />
-          </button>
-          {expandedSection === 'tips' && (
-            <div className="pdw-guidance-section__body">
-              <div className="pdw-tips-donts">
-                <div className="pdw-tips">
-                  <h5><CheckCircleIcon style={{ color: '#22c55e' }} /> Best Practices</h5>
-                  <ul>
-                    {DECISION_GUIDANCE.tips.map((tip, i) => (
-                      <li key={i}>{tip}</li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="pdw-donts">
-                  <h5><CancelIcon style={{ color: '#ef4444' }} /> Avoid</h5>
-                  <ul>
-                    {DECISION_GUIDANCE.pitfalls.map((pitfall, i) => (
-                      <li key={i}>{pitfall}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Quick start card for new users
-function QuickStartCard({ onCreate }) {
-  return (
-    <div className="pdw-quickstart">
-      <div className="pdw-quickstart__header">
-        <TipsAndUpdatesIcon />
-        <h3>Building Your Decision Trail</h3>
-      </div>
-      <p className="pdw-quickstart__description">
-        Documenting decisions creates institutional memory. Future you (and your team) will thank present you for capturing the "why" behind important choices.
-      </p>
-      <div className="pdw-quickstart__flow">
-        <div className="pdw-quickstart__step">
-          <span className="pdw-quickstart__step-num">1</span>
-          <span>Complete validation experiments</span>
-        </div>
-        <ArrowForwardIcon className="pdw-quickstart__arrow" />
-        <div className="pdw-quickstart__step">
-          <span className="pdw-quickstart__step-num">2</span>
-          <span>Review evidence and learnings</span>
-        </div>
-        <ArrowForwardIcon className="pdw-quickstart__arrow" />
-        <div className="pdw-quickstart__step">
-          <span className="pdw-quickstart__step-num">3</span>
-          <span>Make and document decision</span>
-        </div>
-        <ArrowForwardIcon className="pdw-quickstart__arrow" />
-        <div className="pdw-quickstart__step">
-          <span className="pdw-quickstart__step-num">4</span>
-          <span>Set review date if needed</span>
-        </div>
-      </div>
-      <div className="pdw-quickstart__actions">
-        <button className="btn btn--primary" onClick={onCreate}>
-          <GavelIcon fontSize="small" />
-          Record Your First Decision
-        </button>
-      </div>
-    </div>
-  );
-}
-
 // Decision badge component
 function DecisionBadge({ type }) {
   const config = DECISION_CONFIG[type] || DECISION_CONFIG.Defer;
   const Icon = config.icon;
 
   return (
-    <div
-      className="pdw-decision-badge"
-      style={{ backgroundColor: config.bg, color: config.color }}
-    >
+    <Card.Badge color={config.color} bg={config.bg}>
       <Icon fontSize="small" />
       <span>{config.label}</span>
-    </div>
+    </Card.Badge>
   );
 }
 
-// Decision timeline card with guidance hints
+// Decision timeline card
 function DecisionTimelineCard({ decision, onSelect, onEdit, selected, relatedItems }) {
   const config = DECISION_CONFIG[decision.custom_fields?.decision_type] || DECISION_CONFIG.Defer;
   const Icon = config.icon;
@@ -300,236 +75,164 @@ function DecisionTimelineCard({ decision, onSelect, onEdit, selected, relatedIte
   const hasRationale = decision.custom_fields?.rationale && decision.custom_fields.rationale.length > 0;
   const hasNextSteps = decision.custom_fields?.next_steps && decision.custom_fields.next_steps.length > 0;
 
-  // Calculate completeness
-  const completenessItems = [
-    hasRationale,
-    hasNextSteps,
-    !!decision.custom_fields?.conditions,
-    !!decision.custom_fields?.decided_by,
-    relatedItems.length > 0
-  ];
+  const completenessItems = [hasRationale, hasNextSteps, !!decision.custom_fields?.conditions, !!decision.custom_fields?.decided_by, relatedItems.length > 0];
   const completeness = Math.round((completenessItems.filter(Boolean).length / completenessItems.length) * 100);
 
   return (
-    <div
-      className={`pdw-decision-card ${selected ? 'pdw-decision-card--selected' : ''} ${isUpForReview ? 'pdw-decision-card--review' : ''}`}
+    <Card
+      selected={selected}
       onClick={() => onSelect(decision)}
+      variant={isUpForReview ? 'warning' : 'default'}
     >
-      <div className="pdw-decision-card__timeline-marker" style={{ backgroundColor: config.color }}>
+      <Card.TimelineMarker color={config.color}>
         <Icon style={{ color: '#fff' }} fontSize="small" />
+      </Card.TimelineMarker>
+
+      <Card.Header>
+        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+          {decidedAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+        </span>
+        <DecisionBadge type={decision.custom_fields?.decision_type} />
+      </Card.Header>
+
+      <Card.Title>{decision.name}</Card.Title>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.75rem', color: config.color, marginBottom: 8 }}>
+        <InfoIcon fontSize="small" />
+        <span>{config.hint}</span>
       </div>
 
-      <div className="pdw-decision-card__content">
-        <div className="pdw-decision-card__header">
-          <span className="pdw-decision-card__date">
-            {decidedAt.toLocaleDateString('en-US', {
-              month: 'short',
-              day: 'numeric',
-              year: 'numeric'
-            })}
-          </span>
-          <DecisionBadge type={decision.custom_fields?.decision_type} />
-        </div>
-
-        <h4 className="pdw-decision-card__title">{decision.name}</h4>
-
-        {/* Status hint */}
-        <div className="pdw-decision-card__status-hint" style={{ color: config.color }}>
+      {hasRationale ? (
+        <Card.Section label="Rationale">
+          {decision.custom_fields.rationale}
+        </Card.Section>
+      ) : (
+        <Card.Section variant="missing">
           <InfoIcon fontSize="small" />
-          <span>{config.hint}</span>
-        </div>
+          <span>Consider adding the rationale for this decision</span>
+        </Card.Section>
+      )}
 
-        {hasRationale ? (
-          <div className="pdw-decision-card__rationale">
-            <strong>Rationale:</strong>
-            <p>{decision.custom_fields.rationale}</p>
-          </div>
-        ) : (
-          <div className="pdw-decision-card__missing">
-            <InfoIcon fontSize="small" />
-            <span>Consider adding the rationale for this decision</span>
-          </div>
+      {decision.custom_fields?.conditions && (
+        <Card.Section label="Revisit if">
+          {decision.custom_fields.conditions}
+        </Card.Section>
+      )}
+
+      {hasNextSteps && (
+        <Card.Section label="Next Steps">
+          {decision.custom_fields.next_steps}
+        </Card.Section>
+      )}
+
+      <Card.Footer>
+        {decision.custom_fields?.decided_by && (
+          <Card.Meta icon={PersonIcon}>
+            {decision.custom_fields.decided_by}
+          </Card.Meta>
         )}
 
-        {decision.custom_fields?.conditions && (
-          <div className="pdw-decision-card__conditions">
-            <strong>Revisit if:</strong>
-            <p>{decision.custom_fields.conditions}</p>
-          </div>
+        {reviewDate && (
+          <Card.Meta icon={EventIcon} variant={isUpForReview ? 'warning' : 'default'}>
+            Review: {reviewDate.toLocaleDateString()}{isUpForReview && ' (Due!)'}
+          </Card.Meta>
         )}
 
-        {hasNextSteps && (
-          <div className="pdw-decision-card__next-steps">
-            <strong>Next Steps:</strong>
-            <p>{decision.custom_fields.next_steps}</p>
-          </div>
+        {relatedItems.length > 0 && (
+          <Card.Meta icon={LinkIcon}>
+            {relatedItems.length} linked
+          </Card.Meta>
         )}
 
-        <div className="pdw-decision-card__footer">
-          {decision.custom_fields?.decided_by && (
-            <div className="pdw-decision-card__meta">
-              <PersonIcon fontSize="small" />
-              <span>{decision.custom_fields.decided_by}</span>
-            </div>
-          )}
+        <Card.Progress value={completeness} />
 
-          {reviewDate && (
-            <div className={`pdw-decision-card__review ${isUpForReview ? 'pdw-decision-card__review--due' : ''}`}>
-              <EventIcon fontSize="small" />
-              <span>
-                Review: {reviewDate.toLocaleDateString()}
-                {isUpForReview && ' (Due!)'}
-              </span>
-            </div>
-          )}
-
-          {relatedItems.length > 0 && (
-            <div className="pdw-decision-card__related">
-              <LinkIcon fontSize="small" />
-              <span>{relatedItems.length} linked evidence</span>
-            </div>
-          )}
-
-          {/* Completeness indicator */}
-          <div className="pdw-decision-card__completeness">
-            <div className="pdw-decision-card__completeness-bar">
-              <div
-                className="pdw-decision-card__completeness-fill"
-                style={{
-                  width: `${completeness}%`,
-                  backgroundColor: completeness > 70 ? '#22c55e' : completeness > 40 ? '#f59e0b' : '#ef4444'
-                }}
-              />
-            </div>
-            <span>{completeness}% documented</span>
-          </div>
-
-          <button
-            className="pdw-decision-card__edit"
-            onClick={(e) => { e.stopPropagation(); onEdit(decision); }}
-          >
-            <EditIcon fontSize="small" />
-          </button>
-        </div>
-      </div>
-    </div>
+        <IconButton
+          icon={EditIcon}
+          size="sm"
+          onClick={(e) => { e.stopPropagation(); onEdit(decision); }}
+          title="Edit decision"
+        />
+      </Card.Footer>
+    </Card>
   );
 }
 
 // Decision list row
 function DecisionListRow({ decision, onSelect, onEdit, selected }) {
   const config = DECISION_CONFIG[decision.custom_fields?.decision_type] || DECISION_CONFIG.Defer;
-
-  const decidedAt = decision.custom_fields?.decided_at
-    ? new Date(decision.custom_fields.decided_at)
-    : new Date(decision.created_at);
+  const decidedAt = decision.custom_fields?.decided_at ? new Date(decision.custom_fields.decided_at) : new Date(decision.created_at);
 
   return (
-    <div
-      className={`pdw-decision-row ${selected ? 'pdw-decision-row--selected' : ''}`}
-      onClick={() => onSelect(decision)}
-    >
-      <span className="pdw-decision-row__date">
-        {decidedAt.toLocaleDateString()}
-      </span>
-      <div className="pdw-decision-row__content">
-        <span className="pdw-decision-row__title">{decision.name}</span>
+    <ListRow selected={selected} onClick={() => onSelect(decision)}>
+      <ListRow.Date>{decidedAt.toLocaleDateString()}</ListRow.Date>
+      <ListRow.Content>
+        <ListRow.Title>{decision.name}</ListRow.Title>
         {decision.custom_fields?.rationale && (
-          <span className="pdw-decision-row__rationale">
-            {decision.custom_fields.rationale.slice(0, 80)}...
-          </span>
+          <ListRow.Subtitle>{decision.custom_fields.rationale.slice(0, 60)}...</ListRow.Subtitle>
         )}
-      </div>
+      </ListRow.Content>
       <DecisionBadge type={decision.custom_fields?.decision_type} />
-      {decision.custom_fields?.decided_by && (
-        <span className="pdw-decision-row__by">{decision.custom_fields.decided_by}</span>
-      )}
-      <button
-        className="pdw-decision-row__edit"
+      <span style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
+        {decision.custom_fields?.decided_by || '-'}
+      </span>
+      <IconButton
+        icon={EditIcon}
+        size="sm"
         onClick={(e) => { e.stopPropagation(); onEdit(decision); }}
-      >
-        <EditIcon fontSize="small" />
-      </button>
-    </div>
+        title="Edit decision"
+      />
+    </ListRow>
   );
 }
 
-// Decision summary stats
-function DecisionSummary({ decisions }) {
-  const stats = useMemo(() => {
+// Build stats array for ViewHeader
+function useDecisionStats(decisions) {
+  return useMemo(() => {
     const total = decisions.length;
     const byType = {};
     Object.keys(DECISION_CONFIG).forEach(type => {
       byType[type] = decisions.filter(d => d.custom_fields?.decision_type === type).length;
     });
-
     const upForReview = decisions.filter(d => {
       const reviewDate = d.custom_fields?.review_date;
       return reviewDate && new Date(reviewDate) <= new Date();
     }).length;
+    const wellDocumented = decisions.filter(d => d.custom_fields?.rationale && d.custom_fields?.next_steps).length;
 
-    const wellDocumented = decisions.filter(d =>
-      d.custom_fields?.rationale && d.custom_fields?.next_steps
-    ).length;
+    // Build stats array for ViewHeader
+    const stats = [
+      { value: total, label: 'Total', icon: GavelIcon },
+      ...Object.entries(DECISION_CONFIG).map(([type, config]) => ({
+        value: byType[type] || 0,
+        label: config.label,
+        color: config.color,
+        icon: config.icon,
+      })),
+    ];
 
-    return { total, byType, upForReview, wellDocumented };
+    return { stats, upForReview, wellDocumented, total };
   }, [decisions]);
-
-  return (
-    <div className="pdw-decision-summary">
-      <div className="pdw-decision-summary__total">
-        <GavelIcon />
-        <span className="pdw-decision-summary__value">{stats.total}</span>
-        <span className="pdw-decision-summary__label">Total Decisions</span>
-      </div>
-
-      <div className="pdw-decision-summary__breakdown">
-        {Object.entries(DECISION_CONFIG).map(([type, config]) => (
-          <div key={type} className="pdw-decision-summary__type" style={{ color: config.color }}>
-            <span className="pdw-decision-summary__type-value">{stats.byType[type] || 0}</span>
-            <span className="pdw-decision-summary__type-label">{config.label}</span>
-          </div>
-        ))}
-      </div>
-
-      {stats.upForReview > 0 && (
-        <div className="pdw-decision-summary__review">
-          <EventIcon style={{ color: '#f59e0b' }} />
-          <span>{stats.upForReview} decision{stats.upForReview > 1 ? 's' : ''} up for review</span>
-        </div>
-      )}
-
-      <div className="pdw-decision-summary__documented">
-        <InfoIcon style={{ color: '#3b82f6' }} />
-        <span>{stats.wellDocumented}/{stats.total} well documented</span>
-      </div>
-    </div>
-  );
 }
 
-export default function DecisionTrail({
-  onSelectDecision,
-  onEditDecision,
-  onDeleteDecision,
-  onCreateDecision,
-}) {
-  const {
-    artefacts,
-    selectedId,
-    setSelectedId,
-    getRelated,
-    loading,
-  } = usePDW();
+export default function DecisionTrail({ onSelectDecision, onEditDecision, onDeleteDecision, onCreateDecision }) {
+  const { artefacts, selectedId, setSelectedId, getRelated, loading } = usePDW();
 
   const [viewMode, setViewMode] = useState('timeline');
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [showReviewOnly, setShowReviewOnly] = useState(false);
-  const [showGuidance, setShowGuidance] = useState(false);
 
-  // Get decisions
+  // Get all decisions (unfiltered) for stats
+  const allDecisions = useMemo(() => {
+    return artefacts.filter(a => a.artefact_type === 'pdw_decision');
+  }, [artefacts]);
+
+  // Get stats from all decisions (not filtered)
+  const { stats, upForReview, wellDocumented, total } = useDecisionStats(allDecisions);
+
+  // Get filtered decisions for display
   const decisions = useMemo(() => {
-    let items = artefacts.filter(a => a.artefact_type === 'pdw_decision');
+    let items = [...allDecisions];
 
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
@@ -556,7 +259,7 @@ export default function DecisionTrail({
       const dateB = b.custom_fields?.decided_at || b.created_at;
       return new Date(dateB) - new Date(dateA);
     });
-  }, [artefacts, searchQuery, typeFilter, showReviewOnly]);
+  }, [allDecisions, searchQuery, typeFilter, showReviewOnly]);
 
   // Group by quarter for timeline
   const decisionsByQuarter = useMemo(() => {
@@ -566,15 +269,12 @@ export default function DecisionTrail({
       const quarter = Math.floor(date.getMonth() / 3) + 1;
       const key = `${date.getFullYear()}-Q${quarter}`;
       const label = `Q${quarter} ${date.getFullYear()}`;
-      if (!grouped[key]) {
-        grouped[key] = { label, items: [] };
-      }
+      if (!grouped[key]) grouped[key] = { label, items: [] };
       grouped[key].items.push(decision);
     });
     return Object.entries(grouped).sort((a, b) => b[0].localeCompare(a[0]));
   }, [decisions]);
 
-  // Handlers
   const handleSelect = useCallback((decision) => {
     setSelectedId(decision.id);
     if (onSelectDecision) onSelectDecision(decision);
@@ -588,119 +288,98 @@ export default function DecisionTrail({
     if (onCreateDecision) onCreateDecision('pdw_decision');
   }, [onCreateDecision]);
 
+  const handleClearFilters = useCallback(() => {
+    setTypeFilter('all');
+    setShowReviewOnly(false);
+    setSearchQuery('');
+  }, []);
+
   if (loading) {
     return (
-      <div className="pdw-board pdw-board--loading">
-        <div className="pdw-loading-spinner" />
+      <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-muted)' }}>
         <p>Loading decisions...</p>
       </div>
     );
   }
 
   const isEmpty = decisions.length === 0 && !searchQuery && typeFilter === 'all' && !showReviewOnly;
+  const isFiltered = decisions.length === 0 && (typeFilter !== 'all' || showReviewOnly || searchQuery);
+
+  // Filter options for type select
+  const typeOptions = [
+    { value: 'all', label: 'All Types' },
+    ...Object.entries(DECISION_CONFIG).map(([type, config]) => ({
+      value: type,
+      label: config.label,
+    })),
+  ];
+
+  // View toggle options
+  const viewOptions = [
+    { value: 'timeline', icon: TimelineIcon, title: 'Timeline View' },
+    { value: 'list', icon: ViewListIcon, title: 'List View' },
+  ];
 
   return (
-    <div className="pdw-board pdw-board--decisions">
-      {/* Guidance Panel (Overlay) */}
-      {showGuidance && (
-        <GuidancePanel onClose={() => setShowGuidance(false)} />
-      )}
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      {/* Header with inline stats */}
+      <ViewHeader
+        icon={GavelIcon}
+        iconColor="#14b8a6"
+        title="Decision Trail"
+        stats={!isEmpty ? stats : undefined}
+        createLabel="Record Decision"
+        onCreate={handleCreate}
+      />
 
-      {/* Header */}
-      <div className="pdw-board__header">
-        <div className="pdw-board__title">
-          <h2>Decision Trail</h2>
-          <p>Document decisions with context, rationale, and review dates</p>
-        </div>
+      {/* Controls */}
+      <ControlsBar>
+        <SearchBox
+          placeholder="Search decisions..."
+          value={searchQuery}
+          onChange={setSearchQuery}
+        />
+        <FilterSelect
+          value={typeFilter}
+          onChange={setTypeFilter}
+          options={typeOptions}
+        />
+        <CheckboxFilter
+          label="Up for review"
+          checked={showReviewOnly}
+          onChange={setShowReviewOnly}
+        />
+        <ViewToggle
+          value={viewMode}
+          onChange={setViewMode}
+          options={viewOptions}
+        />
+      </ControlsBar>
 
-        <div className="pdw-board__controls">
-          <div className="pdw-board__search">
-            <SearchIcon fontSize="small" />
-            <input
-              type="text"
-              placeholder="Search decisions..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
+      {/* Content area */}
+      <div style={{ flex: 1, overflow: 'auto', padding: '0 16px 16px' }}>
+        {/* Empty State */}
+        {isEmpty && (
+          <QuickStart
+            icon={GavelIcon}
+            title="Building Your Decision Trail"
+            description="Documenting decisions creates institutional memory. Future you (and your team) will thank present you for capturing the 'why' behind important choices."
+            steps={['Complete validation', 'Review evidence', 'Document decision']}
+            actionLabel="Record Your First Decision"
+            onAction={handleCreate}
+          />
+        )}
 
-          <div className="pdw-board__filter">
-            <FilterListIcon fontSize="small" />
-            <select
-              value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value)}
-            >
-              <option value="all">All Types</option>
-              {Object.entries(DECISION_CONFIG).map(([type, config]) => (
-                <option key={type} value={type}>{config.label}</option>
-              ))}
-            </select>
-          </div>
+        {/* Filtered Empty State */}
+        {isFiltered && (
+          <EmptyFiltered onClear={handleClearFilters} />
+        )}
 
-          <label className="pdw-board__checkbox">
-            <input
-              type="checkbox"
-              checked={showReviewOnly}
-              onChange={(e) => setShowReviewOnly(e.target.checked)}
-            />
-            <span>Up for review</span>
-          </label>
-
-          <div className="pdw-board__view-toggle">
-            <button
-              className={viewMode === 'timeline' ? 'active' : ''}
-              onClick={() => setViewMode('timeline')}
-              title="Timeline View"
-            >
-              <TimelineIcon fontSize="small" />
-            </button>
-            <button
-              className={viewMode === 'list' ? 'active' : ''}
-              onClick={() => setViewMode('list')}
-              title="List View"
-            >
-              <ViewListIcon fontSize="small" />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Summary */}
-      {!isEmpty && <DecisionSummary decisions={decisions} />}
-
-      {/* Quick Actions with Help */}
-      <div className="pdw-board__quick-actions pdw-board__quick-actions--inline">
-        <button
-          className="btn btn--primary btn--sm"
-          onClick={handleCreate}
-        >
-          <AddIcon fontSize="small" />
-          Record Decision
-        </button>
-        <button
-          className="btn btn--ghost btn--sm"
-          onClick={() => setShowGuidance(true)}
-        >
-          <HelpIcon fontSize="small" />
-          How to document decisions
-        </button>
-      </div>
-
-      {/* Empty State with Quick Start */}
-      {isEmpty && <QuickStartCard onCreate={handleCreate} />}
-
-      {/* Content */}
-      {!isEmpty && viewMode === 'timeline' && (
-        <div className="pdw-decision-timeline">
-          {decisionsByQuarter.map(([key, group]) => (
-            <div key={key} className="pdw-decision-timeline__quarter">
-              <div className="pdw-decision-timeline__quarter-header">
-                <h3>{group.label}</h3>
-                <span className="pdw-decision-timeline__quarter-count">
-                  {group.items.length} decision{group.items.length > 1 ? 's' : ''}
-                </span>
-              </div>
-              <div className="pdw-decision-timeline__items">
+        {/* Timeline View */}
+        {!isEmpty && !isFiltered && viewMode === 'timeline' && (
+          <Timeline>
+            {decisionsByQuarter.map(([key, group]) => (
+              <Timeline.Group key={key} label={group.label} count={group.items.length}>
                 {group.items.map(decision => (
                   <DecisionTimelineCard
                     key={decision.id}
@@ -711,51 +390,37 @@ export default function DecisionTrail({
                     relatedItems={getRelated(decision.id)}
                   />
                 ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {!isEmpty && viewMode === 'list' && (
-        <div className="pdw-decision-list">
-          <div className="pdw-decision-list__header">
-            <span className="pdw-decision-list__col--date">Date</span>
-            <span className="pdw-decision-list__col--content">Decision</span>
-            <span className="pdw-decision-list__col--type">Type</span>
-            <span className="pdw-decision-list__col--by">Decided By</span>
-            <span className="pdw-decision-list__col--edit" />
-          </div>
-          <div className="pdw-decision-list__body">
-            {decisions.map(decision => (
-              <DecisionListRow
-                key={decision.id}
-                decision={decision}
-                onSelect={handleSelect}
-                onEdit={handleEdit}
-                selected={decision.id === selectedId}
-              />
+              </Timeline.Group>
             ))}
-          </div>
-        </div>
-      )}
+          </Timeline>
+        )}
 
-      {/* Filtered Empty State */}
-      {!isEmpty && decisions.length === 0 && (typeFilter !== 'all' || showReviewOnly || searchQuery) && (
-        <div className="pdw-board__empty-filtered">
-          <p>No decisions match your filters.</p>
-          <button
-            className="btn btn--secondary"
-            onClick={() => {
-              setTypeFilter('all');
-              setShowReviewOnly(false);
-              setSearchQuery('');
-            }}
-          >
-            Clear Filters
-          </button>
-        </div>
-      )}
+        {/* List View */}
+        {!isEmpty && !isFiltered && viewMode === 'list' && (
+          <ListView>
+            <ListView.Header
+              columns={[
+                { label: 'Date', width: '100px' },
+                { label: 'Decision', width: '1fr' },
+                { label: 'Type', width: '120px' },
+                { label: 'Decided By', width: '150px' },
+                { label: '', width: '40px' },
+              ]}
+            />
+            <ListView.Body>
+              {decisions.map(decision => (
+                <DecisionListRow
+                  key={decision.id}
+                  decision={decision}
+                  onSelect={handleSelect}
+                  onEdit={handleEdit}
+                  selected={decision.id === selectedId}
+                />
+              ))}
+            </ListView.Body>
+          </ListView>
+        )}
+      </div>
     </div>
   );
 }

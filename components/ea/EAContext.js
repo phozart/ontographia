@@ -1,10 +1,28 @@
 // components/ea/EAContext.js
 // EA Context with guided learning, validation, and viewpoint support
 // Learning-first, not compliance-first
+// Enhanced with full ArchiMate 3.2 support (56 element types)
 
 import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '../AuthContext';
 import { useDomains } from '../DomainContext';
+
+// Import comprehensive ArchiMate type definitions
+import {
+  EA_LAYERS,
+  EA_ELEMENT_TYPES,
+  EA_ELEMENT_TYPE_MAP,
+  EA_RELATIONSHIP_TYPES,
+  TOGAF_ADM_PHASES,
+  EA_VIEWPOINTS as ARCHIMATE_VIEWPOINTS,
+  getElementsByLayer,
+  getElementsByCategory,
+  getElementType,
+  getGuidanceForType,
+  getLayerColor,
+  getPhase,
+  validateElement as validateElementType
+} from '../../lib/ea-types';
 
 const EAContext = createContext(null);
 
@@ -446,7 +464,7 @@ export function validateElement(element, existingElements, relationships) {
 }
 
 // ============ LAYER MAPPING ============
-// Map our concepts to database layer field
+// Map our simplified concepts to database layer field (legacy support)
 const CONCEPT_TO_LAYER = {
   Capability: 'Strategy',
   BusinessProcess: 'Business',
@@ -457,6 +475,86 @@ const CONCEPT_TO_LAYER = {
   TechnologyPlatform: 'Technology',
   ArchitecturePrinciple: 'Motivation',
   ArchitectureDecision: 'Motivation',
+};
+
+// Map ArchiMate element types to database layers (comprehensive support)
+const ARCHIMATE_TYPE_TO_LAYER = {};
+EA_ELEMENT_TYPES.forEach(t => {
+  ARCHIMATE_TYPE_TO_LAYER[t.id] = t.layer.charAt(0).toUpperCase() + t.layer.slice(1);
+});
+
+// ============ COMPREHENSIVE TYPE HELPERS ============
+// These expose the full ArchiMate 3.2 type system
+
+export function getElementTypeDefinition(typeId) {
+  // Try ArchiMate types first, then legacy concepts
+  return EA_ELEMENT_TYPE_MAP[typeId] || EA_CONCEPTS[typeId];
+}
+
+export function getAllElementTypes() {
+  return EA_ELEMENT_TYPES;
+}
+
+export function getElementTypesByLayer(layer) {
+  return getElementsByLayer(layer);
+}
+
+export function getElementTypesByCategory(category) {
+  return getElementsByCategory(category);
+}
+
+export function getElementGuidance(typeId) {
+  return getGuidanceForType(typeId);
+}
+
+export function getTOGAFPhase(phaseId) {
+  return getPhase(phaseId);
+}
+
+export function getArchimateViewpoint(viewpointId) {
+  return ARCHIMATE_VIEWPOINTS[viewpointId];
+}
+
+// Comprehensive validation using ArchiMate type definitions
+export function validateElementComprehensive(element) {
+  const typeId = element.element_type;
+  const typeDef = EA_ELEMENT_TYPE_MAP[typeId];
+
+  if (!typeDef) {
+    // Fall back to legacy validation
+    return validateElement(element, [], []);
+  }
+
+  const result = validateElementType(element, typeId);
+
+  // Enhance with guidance-based suggestions
+  const guidance = typeDef.guidance;
+  const suggestions = [];
+
+  if (guidance?.antiPatterns) {
+    guidance.antiPatterns.forEach(ap => {
+      suggestions.push({
+        type: 'guidance',
+        message: `Watch out: ${ap.pattern}`,
+        suggestion: ap.fix
+      });
+    });
+  }
+
+  return {
+    ...result,
+    suggestions
+  };
+}
+
+// Re-export the comprehensive type system
+export {
+  EA_LAYERS,
+  EA_ELEMENT_TYPES,
+  EA_ELEMENT_TYPE_MAP,
+  EA_RELATIONSHIP_TYPES,
+  TOGAF_ADM_PHASES,
+  ARCHIMATE_VIEWPOINTS
 };
 
 // ============ EA PROVIDER ============
@@ -512,8 +610,11 @@ export function EAProvider({ children }) {
     }
 
     // Map element_type to the layer for the API
+    // Support both legacy concepts and comprehensive ArchiMate types
     const elementType = data.element_type;
-    const layer = CONCEPT_TO_LAYER[elementType] || 'Business';
+    const layer = CONCEPT_TO_LAYER[elementType]
+      || ARCHIMATE_TYPE_TO_LAYER[elementType]
+      || 'Business';
 
     try {
       const res = await fetch('/api/ea/elements', {
@@ -663,6 +764,59 @@ export function EAProvider({ children }) {
     return impacted;
   }, [elements, relationships]);
 
+  // Get elements by ArchiMate layer
+  const getElementsByArchiMateLayer = useCallback((layer) => {
+    const layerTypes = getElementsByLayer(layer).map(t => t.id);
+    return elements.filter(e => layerTypes.includes(e.element_type));
+  }, [elements]);
+
+  // Get element type definition (supports both legacy and ArchiMate)
+  const getTypeDefinition = useCallback((typeId) => {
+    return EA_ELEMENT_TYPE_MAP[typeId] || EA_CONCEPTS[typeId];
+  }, []);
+
+  // Get relationship types valid for a source element
+  const getValidRelationshipTypes = useCallback((sourceType) => {
+    return EA_RELATIONSHIP_TYPES.filter(r => {
+      // For now, allow all relationship types
+      // Can be enhanced with strict pair validation
+      return true;
+    });
+  }, []);
+
+  // Get suggested elements to connect based on type
+  const getSuggestedConnections = useCallback((elementId) => {
+    const element = elements.find(e => e.id === elementId);
+    if (!element) return [];
+
+    const typeDef = EA_ELEMENT_TYPE_MAP[element.element_type];
+    if (!typeDef) return [];
+
+    // Get elements that are commonly related based on layer relationships
+    const suggestions = [];
+    const layer = typeDef.layer;
+
+    // Cross-layer suggestions
+    if (layer === 'business') {
+      suggestions.push(...elements.filter(e => {
+        const eType = EA_ELEMENT_TYPE_MAP[e.element_type];
+        return eType?.layer === 'application' && e.id !== elementId;
+      }));
+    } else if (layer === 'application') {
+      suggestions.push(...elements.filter(e => {
+        const eType = EA_ELEMENT_TYPE_MAP[e.element_type];
+        return (eType?.layer === 'business' || eType?.layer === 'technology') && e.id !== elementId;
+      }));
+    } else if (layer === 'technology') {
+      suggestions.push(...elements.filter(e => {
+        const eType = EA_ELEMENT_TYPE_MAP[e.element_type];
+        return eType?.layer === 'application' && e.id !== elementId;
+      }));
+    }
+
+    return suggestions.slice(0, 5); // Limit to top 5 suggestions
+  }, [elements]);
+
   const value = useMemo(() => ({
     // Data
     elements,
@@ -681,15 +835,29 @@ export function EAProvider({ children }) {
     deleteRelationship,
     reload: loadData,
 
-    // Helpers
+    // Legacy helpers
     getElementsByType,
     getElementsByViewpoint,
     getRelatedElements,
     getImpactAnalysis,
+
+    // Comprehensive ArchiMate helpers
+    getElementsByArchiMateLayer,
+    getTypeDefinition,
+    getValidRelationshipTypes,
+    getSuggestedConnections,
+
+    // Type system access
+    layers: EA_LAYERS,
+    elementTypes: EA_ELEMENT_TYPES,
+    relationshipTypes: EA_RELATIONSHIP_TYPES,
+    togafPhases: TOGAF_ADM_PHASES,
+    viewpoints: ARCHIMATE_VIEWPOINTS,
   }), [
     elements, relationships, loading, activeViewpoint,
     createElement, updateElement, deleteElement, createRelationship, deleteRelationship, loadData,
     getElementsByType, getElementsByViewpoint, getRelatedElements, getImpactAnalysis,
+    getElementsByArchiMateLayer, getTypeDefinition, getValidRelationshipTypes, getSuggestedConnections,
   ]);
 
   return (

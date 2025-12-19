@@ -10,6 +10,8 @@ import { useProjects } from '../components/ProjectContext';
 import { usePresence } from '../components/PresenceContext';
 import { DWDProvider } from '../components/dwd/DWDContext';
 import DWDWorkspace from '../components/dwd/DWDWorkspace';
+import GuidancePanel, { GuidanceToggle } from '../components/GuidancePanel';
+import { WORK_DESIGN_GUIDANCE } from '../lib/studio-guidance';
 import {
   ProjectSelector,
   ProjectCreationModal,
@@ -30,6 +32,7 @@ export default function DynamicWorkDesignPage() {
   const [showProjectDashboard, setShowProjectDashboard] = useState(false);
   const [showProjectSettings, setShowProjectSettings] = useState(false);
   const [showProjectCreation, setShowProjectCreation] = useState(false);
+  const [showGuidance, setShowGuidance] = useState(false);
 
   // Presence tracking
   useEffect(() => {
@@ -103,16 +106,34 @@ export default function DynamicWorkDesignPage() {
           >
             <SettingsIcon fontSize="small" />
           </button>
+          <GuidanceToggle
+            active={showGuidance}
+            onClick={() => setShowGuidance(!showGuidance)}
+          />
         </div>
 
-        {/* Main workspace */}
-        <DWDWorkspace />
+        {/* Main content area with optional guidance panel */}
+        <div className="studio-content-area">
+          <div className="studio-main-content">
+            <DWDWorkspace />
+          </div>
+          {showGuidance && (
+            <div className="studio-guidance-panel">
+              <GuidancePanel
+                title="Work Design Guide"
+                guidance={WORK_DESIGN_GUIDANCE}
+                activeView="default"
+                onClose={() => setShowGuidance(false)}
+              />
+            </div>
+          )}
+        </div>
 
         {/* Project Dashboard Modal */}
-        {showProjectDashboard && (
+        {showProjectDashboard && activeProject && (
           <div className="modal-overlay" onClick={() => setShowProjectDashboard(false)}>
             <div className="modal-content modal-large" onClick={e => e.stopPropagation()}>
-              <ProjectDashboard onClose={() => setShowProjectDashboard(false)} />
+              <ProjectDashboard project={activeProject} onClose={() => setShowProjectDashboard(false)} />
             </div>
           </div>
         )}
@@ -143,6 +164,27 @@ export default function DynamicWorkDesignPage() {
             flex-direction: column;
             height: 100vh;
             background: var(--bg);
+          }
+
+          .studio-content-area {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+          }
+
+          .studio-main-content {
+            flex: 1;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+          }
+
+          .studio-guidance-panel {
+            width: 320px;
+            min-width: 320px;
+            height: 100%;
+            border-left: 1px solid var(--border);
+            overflow: hidden;
           }
 
           .studio-topbar {

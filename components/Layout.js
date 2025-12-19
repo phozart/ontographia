@@ -14,7 +14,20 @@ export default function Layout({ theme, onThemeChange, children }) {
   const [isEmbedded, setIsEmbedded] = useState(false);
   const router = useRouter();
   const { user } = useAuth();
-  const isStudio = router.pathname.startsWith('/studio') || router.pathname.startsWith('/graphnavigator') || router.pathname.startsWith('/graph-editor') || router.pathname.startsWith('/diagram-workspace') || router.pathname.startsWith('/system-dynamics') || router.pathname.startsWith('/requirements-studio') || router.pathname.startsWith('/knowledge-studio') || router.pathname.startsWith('/product-design-workspace') || router.pathname.startsWith('/dynamic-work-design');
+  // Check if current page is a full-width studio page
+  const studioPatterns = [
+    '/studio', '/graphnavigator', '/graph-editor', '/diagram-workspace',
+    '/system-dynamics', '/requirements-studio', '/knowledge-studio',
+    '/product-design-workspace', '/dynamic-work-design', '/ea-studio',
+    '/negotiation-studio', '/enterprise-architecture', '/ea-workspace',
+    '/help', '/diagram-studio-standalone', '/organisation-studio',
+    '/business-service-studio', '/performance-studio', '/governance-studio',
+    '/risk-studio', '/portfolio-studio', '/strategic-reasoning',
+    '/admin/style-guide', '/admin/menu-config',
+    // Domain-scoped routes
+    '/app/workspaces/', '/app/reasoning/', '/app/knowledge/'
+  ];
+  const isStudio = studioPatterns.some(p => router.pathname.includes(p));
   const routeTimer = useRef(null);
 
   // Check for embed mode (works for both SSR and client-side)
@@ -104,7 +117,7 @@ export default function Layout({ theme, onThemeChange, children }) {
               </div>
             )}
             <div className="app-main__content">
-              <div style={{ width: '100%' }}>{children}</div>
+              <div style={{ width: '100%', height: '100%' }}>{children}</div>
             </div>
           </main>
         </div>

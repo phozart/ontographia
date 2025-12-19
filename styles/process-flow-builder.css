@@ -1,0 +1,391 @@
+/* ============================================
+   PROCESS FLOW BUILDER
+   Reusable flow diagram component
+   ============================================ */
+
+.pfb-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--bg-alt);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* Toolbar */
+.pfb-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.pfb-toolbar-left,
+.pfb-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pfb-toolbar-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.pfb-toolbar-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--text);
+  transition: all 0.15s ease;
+}
+
+.pfb-toolbar-btn:hover {
+  background: var(--bg-alt);
+  border-color: var(--accent);
+}
+
+.pfb-toolbar-btn.active {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.pfb-toolbar-btn.danger {
+  color: #ef4444;
+}
+
+.pfb-toolbar-btn.danger:hover {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: #ef4444;
+}
+
+/* Node Add Menu */
+.pfb-node-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+  min-width: 160px;
+  overflow: hidden;
+}
+
+.pfb-node-menu button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 14px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text);
+  text-align: left;
+  transition: background 0.1s ease;
+}
+
+.pfb-node-menu button:hover {
+  background: var(--bg-alt);
+}
+
+/* Zoom Controls */
+.pfb-zoom-controls {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 2px;
+  background: var(--bg);
+}
+
+.pfb-zoom-controls button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--text-muted);
+  border-radius: 4px;
+  transition: all 0.1s ease;
+}
+
+.pfb-zoom-controls button:hover {
+  background: var(--bg-alt);
+  color: var(--text);
+}
+
+.pfb-zoom-controls span {
+  min-width: 48px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* Canvas */
+.pfb-canvas {
+  flex: 1;
+  position: relative;
+  overflow: auto;
+  background: var(--bg);
+}
+
+.pfb-canvas-inner {
+  position: relative;
+  min-width: 100%;
+  min-height: 100%;
+}
+
+/* Grid */
+.pfb-grid {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* Connections SVG */
+.pfb-connections {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.pfb-connections path {
+  pointer-events: stroke;
+}
+
+.pfb-connection {
+  transition: stroke 0.15s ease;
+}
+
+.pfb-connection.selected path {
+  stroke: var(--accent);
+}
+
+/* Nodes */
+.pfb-node {
+  position: absolute;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.15s ease, transform 0.1s ease;
+  user-select: none;
+}
+
+.pfb-node:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.pfb-node.selected {
+  box-shadow: 0 0 0 3px var(--accent-soft), 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.pfb-node-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pfb-node-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  text-align: center;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 130px;
+}
+
+.pfb-node-actor {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.pfb-node-duration {
+  font-size: 10px;
+  color: var(--accent);
+}
+
+.pfb-node-rect.double-border {
+  box-shadow: inset 0 0 0 3px var(--bg), 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.pfb-node-rect.double-border.selected {
+  box-shadow: inset 0 0 0 3px var(--bg), 0 0 0 3px var(--accent-soft), 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Ports */
+.pfb-port {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  background: var(--bg);
+  cursor: pointer;
+  z-index: 10;
+  transition: transform 0.1s ease;
+}
+
+.pfb-port:hover {
+  transform: scale(1.3);
+}
+
+.pfb-port-out {
+  background: var(--accent);
+}
+
+.pfb-port-in {
+  background: var(--bg);
+}
+
+/* Change Badge */
+.pfb-change-badge {
+  z-index: 5;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Connection Hint */
+.pfb-connect-hint {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 20px;
+  background: var(--accent);
+  color: white;
+  border-radius: 20px;
+  font-size: 13px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  z-index: 100;
+  animation: pfb-hint-pulse 2s infinite;
+}
+
+@keyframes pfb-hint-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+/* Mini Map (future feature) */
+.pfb-minimap {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  width: 150px;
+  height: 100px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  opacity: 0.9;
+}
+
+/* Context Menu */
+.pfb-context-menu {
+  position: absolute;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  min-width: 140px;
+  z-index: 200;
+  overflow: hidden;
+}
+
+.pfb-context-menu button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 14px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text);
+  text-align: left;
+}
+
+.pfb-context-menu button:hover {
+  background: var(--bg-alt);
+}
+
+.pfb-context-menu button.danger {
+  color: #ef4444;
+}
+
+.pfb-context-menu .divider {
+  height: 1px;
+  background: var(--border);
+  margin: 4px 0;
+}
+
+/* Empty State */
+.pfb-empty {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.pfb-empty p {
+  margin: 12px 0 16px;
+  font-size: 14px;
+}
+
+/* Selection Box (for multi-select, future) */
+.pfb-selection-box {
+  position: absolute;
+  border: 2px dashed var(--accent);
+  background: rgba(var(--accent-rgb), 0.1);
+  pointer-events: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .pfb-toolbar {
+    padding: 6px 8px;
+  }
+
+  .pfb-toolbar-btn span {
+    display: none;
+  }
+
+  .pfb-toolbar-btn {
+    padding: 6px 8px;
+  }
+
+  .pfb-node-name {
+    font-size: 11px;
+    max-width: 80px;
+  }
+}

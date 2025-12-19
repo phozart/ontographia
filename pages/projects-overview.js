@@ -70,14 +70,14 @@ function StatCard({ label, value, icon, highlight }) {
   );
 }
 
-// Project card component
-function ProjectCard({ project, onClick }) {
-  const { stats, status, domainName, lastActivity, memberCount } = project;
+// Project card component - now expandable with more details
+function ProjectCard({ project, onClick, isSelected, onToggleExpand, isExpanded }) {
+  const { stats, status, domainName, lastActivity, memberCount, recentItems, artefactBreakdown } = project;
   const totalWorkItems = stats.workItems.open + stats.workItems.inProgress + stats.workItems.blocked;
 
   return (
-    <div className="proj-card" onClick={onClick}>
-      <div className="proj-card__header">
+    <div className={`proj-card ${isSelected ? 'proj-card--selected' : ''} ${isExpanded ? 'proj-card--expanded' : ''}`}>
+      <div className="proj-card__header" onClick={onClick}>
         <h3 className="proj-card__title">{project.name}</h3>
         <StatusBadge status={status} />
       </div>
@@ -133,10 +133,67 @@ function ProjectCard({ project, onClick }) {
         </div>
       )}
 
+      {/* Expanded content section */}
+      {isExpanded && (
+        <div className="proj-card__expanded">
+          {/* Artefact breakdown */}
+          {artefactBreakdown && Object.keys(artefactBreakdown).length > 0 && (
+            <div className="proj-card__section">
+              <h4 className="proj-card__section-title">Artefact Breakdown</h4>
+              <div className="proj-card__breakdown">
+                {Object.entries(artefactBreakdown).map(([type, count]) => (
+                  <div key={type} className="proj-card__breakdown-item">
+                    <span className="proj-card__breakdown-type">{type}</span>
+                    <span className="proj-card__breakdown-count">{count}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Recent/Pending Items */}
+          {recentItems && recentItems.length > 0 && (
+            <div className="proj-card__section">
+              <h4 className="proj-card__section-title">Recent & Pending Items</h4>
+              <div className="proj-card__recent-items">
+                {recentItems.map((item, idx) => {
+                  // Normalize status for CSS class (lowercase, replace spaces with dashes)
+                  const statusClass = (item.status || 'default').toLowerCase().replace(/\s+/g, '-');
+                  return (
+                    <div key={idx} className={`proj-card__recent-item proj-card__recent-item--${statusClass}`}>
+                      <span className="proj-card__recent-icon">{item.icon || '📄'}</span>
+                      <div className="proj-card__recent-content">
+                        <span className="proj-card__recent-name">{item.name}</span>
+                        <span className="proj-card__recent-meta">
+                          {item.type} • {item.status || 'Pending'} • {formatRelativeTime(item.updatedAt)}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Quick actions */}
+          <div className="proj-card__actions">
+            <button className="proj-card__action-btn" onClick={onClick}>
+              Open Project →
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="proj-card__footer">
         <span className="proj-card__activity">
           Updated {formatRelativeTime(lastActivity)}
         </span>
+        <button
+          className="proj-card__expand-btn"
+          onClick={(e) => { e.stopPropagation(); onToggleExpand(); }}
+        >
+          {isExpanded ? '▲ Less' : '▼ More'}
+        </button>
       </div>
     </div>
   );
@@ -153,6 +210,14 @@ export default function ProjectsOverview() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [domainFilter, setDomainFilter] = useState('');
+
+  // Expanded project state
+  const [expandedProjectId, setExpandedProjectId] = useState(null);
+
+  // Toggle project expansion
+  const toggleExpand = (projectId) => {
+    setExpandedProjectId(prev => prev === projectId ? null : projectId);
+  };
 
   // Fetch data
   useEffect(() => {
@@ -362,6 +427,8 @@ export default function ProjectsOverview() {
               key={project.id}
               project={project}
               onClick={() => handleProjectClick(project)}
+              isExpanded={expandedProjectId === project.id}
+              onToggleExpand={() => toggleExpand(project.id)}
             />
           ))
         )}

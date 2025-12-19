@@ -18,6 +18,8 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
+const PAGE_SIZE = 12; // Show 12 cases per page
+
 export default function CaseBrowser({
   onSelectCase,
   onEditArtefact,
@@ -32,6 +34,18 @@ export default function CaseBrowser({
 
   const [statusFilter, setStatusFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+
+  // Reset visible count when filters change
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+    setVisibleCount(PAGE_SIZE);
+  };
+
+  const handleStatusChange = (e) => {
+    setStatusFilter(e.target.value);
+    setVisibleCount(PAGE_SIZE);
+  };
 
   // Filter cases
   const filteredCases = useMemo(() => {
@@ -55,6 +69,17 @@ export default function CaseBrowser({
       return true;
     });
   }, [cases, searchTerm, statusFilter]);
+
+  // Paginated cases
+  const paginatedCases = useMemo(() => {
+    return filteredCases.slice(0, visibleCount);
+  }, [filteredCases, visibleCount]);
+
+  const hasMore = visibleCount < filteredCases.length;
+
+  const loadMore = () => {
+    setVisibleCount(prev => Math.min(prev + PAGE_SIZE, filteredCases.length));
+  };
 
   // Stats
   const stats = useMemo(() => ({
@@ -105,14 +130,14 @@ export default function CaseBrowser({
               type="text"
               placeholder="Search cases..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={handleSearchChange}
             />
           </div>
 
           <select
             className="dwd-filter-select"
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+            onChange={handleStatusChange}
           >
             <option value="all">All statuses</option>
             {DWD_CASE_STATUS.map(s => (
@@ -144,7 +169,7 @@ export default function CaseBrowser({
             </button>
           </div>
         ) : (
-          filteredCases.map(c => (
+          paginatedCases.map(c => (
             <CaseCard
               key={c.id}
               workCase={c}
@@ -156,6 +181,18 @@ export default function CaseBrowser({
           ))
         )}
       </div>
+
+      {/* Pagination */}
+      {hasMore && (
+        <div className="dwd-pagination">
+          <button className="btn btn--secondary" onClick={loadMore}>
+            Load More ({filteredCases.length - visibleCount} remaining)
+          </button>
+          <span className="dwd-pagination__info">
+            Showing {paginatedCases.length} of {filteredCases.length}
+          </span>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,7 +1,7 @@
 // pages/api/documents/templates.js
 // Get document templates
 
-import { query } from '../../../lib/pg';
+import { documentRepository } from '../../../lib/repositories';
 import { getUserFromRequest } from '../../../lib/projectAccess';
 
 export default async function handler(req, res) {
@@ -14,30 +14,8 @@ export default async function handler(req, res) {
   if (req.method === 'GET') {
     try {
       const { type, artefactType } = req.query;
-
-      let sql = `
-        SELECT * FROM document_templates
-        WHERE 1=1
-      `;
-      const params = [];
-      let paramIdx = 1;
-
-      if (type) {
-        sql += ` AND document_type = $${paramIdx}`;
-        params.push(type);
-        paramIdx++;
-      }
-
-      if (artefactType) {
-        sql += ` AND artefact_types ? $${paramIdx}`;
-        params.push(artefactType);
-        paramIdx++;
-      }
-
-      sql += ` ORDER BY name ASC`;
-
-      const result = await query(sql, params);
-      return res.status(200).json(result.rows);
+      const templates = await documentRepository.findTemplates({ type, artefactType });
+      return res.status(200).json(templates);
     } catch (err) {
       console.error('Error listing templates:', err);
       return res.status(500).json({ error: 'Failed to list templates' });

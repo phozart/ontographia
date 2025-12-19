@@ -1,9 +1,10 @@
 // pages/api/pdw/artefacts.js
 // Product Design Workspace - List and create artefacts API
 // Handles PDW-specific artefact types and canvases
+// Domain-scoped (not project-scoped)
 
 import { query } from '../../../lib/pg';
-import { getUserFromRequest, checkProjectAccess } from '../../../lib/projectAccess';
+import { getUserFromRequest, checkDomainAccess } from '../../../lib/projectAccess';
 import { PDW_ALL_TYPES, PDW_STATUS_OPTIONS, isPDWType } from '../../../lib/pdw-types';
 
 // ============ DATABASE CONSTRAINT VALUES ============
@@ -33,13 +34,13 @@ export default async function handler(req, res) {
 
   if (req.method === 'GET') {
     // List PDW artefacts
-    const { projectId, type, types, status, stage, module, search, limit, offset } = req.query;
+    const { domainId, type, types, status, stage, module, search, limit, offset } = req.query;
 
-    if (!projectId) {
-      return res.status(400).json({ error: 'Project ID required' });
+    if (!domainId) {
+      return res.status(400).json({ error: 'Domain ID required' });
     }
 
-    const { hasAccess, error } = await checkProjectAccess(req, projectId, 'view');
+    const { hasAccess, error } = await checkDomainAccess(req, domainId, 'view');
     if (!hasAccess) {
       return res.status(403).json({ error });
     }
@@ -54,10 +55,10 @@ export default async function handler(req, res) {
         FROM artefacts a
         LEFT JOIN users u ON u.id = a.owner_id
         LEFT JOIN users cb ON cb.id = a.created_by
-        WHERE a.project_id = $1
+        WHERE a.domain_id = $1
           AND a.artefact_type LIKE 'pdw_%'
       `;
-      const params = [projectId];
+      const params = [domainId];
       let paramIdx = 2;
 
       // Filter by single type
@@ -138,10 +139,10 @@ export default async function handler(req, res) {
       let countSql = `
         SELECT COUNT(*) as total
         FROM artefacts a
-        WHERE a.project_id = $1
+        WHERE a.domain_id = $1
           AND a.artefact_type LIKE 'pdw_%'
       `;
-      const countParams = [projectId];
+      const countParams = [domainId];
       const countResult = await query(countSql, countParams);
 
       return res.status(200).json({
@@ -159,7 +160,7 @@ export default async function handler(req, res) {
   if (req.method === 'POST') {
     // Create PDW artefact
     const {
-      projectId,
+      domainId,
       artefactType,
       name,
       description,
@@ -170,8 +171,8 @@ export default async function handler(req, res) {
       ...typeSpecificFields
     } = req.body;
 
-    if (!projectId) {
-      return res.status(400).json({ error: 'Project ID is required' });
+    if (!domainId) {
+      return res.status(400).json({ error: 'Domain ID is required' });
     }
 
     if (!artefactType) {
@@ -186,7 +187,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Artefact name is required' });
     }
 
-    const { hasAccess, error } = await checkProjectAccess(req, projectId, 'create');
+    const { hasAccess, error } = await checkDomainAccess(req, domainId, 'create');
     if (!hasAccess) {
       return res.status(403).json({ error });
     }
@@ -198,12 +199,21 @@ export default async function handler(req, res) {
     }
 
     // Validate required fields
+    // Note: 'name' and 'description' are extracted as top-level params, so skip them in typeSpecificFields check
     if (typeDef.fields) {
       for (const [fieldName, fieldDef] of Object.entries(typeDef.fields)) {
-        if (fieldDef.required && !typeSpecificFields[fieldName] && fieldName !== 'name') {
+        // Skip core fields that are handled separately
+        if (fieldName === 'name' || fieldName === 'description') continue;
+
+        if (fieldDef.required && !typeSpecificFields[fieldName]) {
           return res.status(400).json({ error: `Field '${fieldDef.label || fieldName}' is required` });
         }
       }
+    }
+
+    // Check description separately if it's required for this type
+    if (typeDef.fields?.description?.required && !description?.trim()) {
+      return res.status(400).json({ error: `Field '${typeDef.fields.description.label || 'Description'}' is required` });
     }
 
     // Merge type-specific fields into customFields
@@ -222,13 +232,13 @@ export default async function handler(req, res) {
     try {
       const result = await query(
         `INSERT INTO artefacts (
-          project_id, artefact_type, name, description, status,
+          domain_id, artefact_type, name, description, status,
           architecture_state, priority, owner_id, tags, custom_fields,
           created_by, created_at, updated_at
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, now(), now())
         RETURNING *`,
         [
-          projectId,
+          domainId,
           artefactType,
           name.trim(),
           description || '',

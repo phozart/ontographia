@@ -130,7 +130,7 @@ export default async function handler(req, res) {
       });
     } catch (err) {
       console.error('Error listing DWD cases:', err);
-      return res.status(500).json({ error: 'Failed to list cases' });
+      return res.status(500).json({ error: 'Failed to list cases', details: err.message });
     }
   }
 
@@ -179,7 +179,7 @@ export default async function handler(req, res) {
       return res.status(201).json(result.rows[0]);
     } catch (err) {
       console.error('Error creating DWD case:', err);
-      return res.status(500).json({ error: 'Failed to create case' });
+      return res.status(500).json({ error: 'Failed to create case', details: err.message });
     }
   }
 

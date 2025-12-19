@@ -1,292 +1,24 @@
 // components/dwd/views/AdjustmentLog.js
 // DWD Adjustment Log - View and manage adjustments (interventions)
-// Includes comprehensive guidance on designing and testing adjustments
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useDWD } from '../DWDContext';
-import DWDArtefactCard from '../artefacts/DWDArtefactCard';
+import GuidancePanel from '../shared/GuidancePanel';
+import QuickStartCard from '../shared/QuickStartCard';
+import { ADJUSTMENT_LOG_GUIDANCE } from '../../../lib/dwd-guidance';
 
 // MUI Icons
 import TuneIcon from '@mui/icons-material/Tune';
 import AddIcon from '@mui/icons-material/Add';
-import FilterListIcon from '@mui/icons-material/FilterList';
 import SearchIcon from '@mui/icons-material/Search';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
 import CancelIcon from '@mui/icons-material/Cancel';
 import LightbulbIcon from '@mui/icons-material/Lightbulb';
 import HelpIcon from '@mui/icons-material/Help';
-import CloseIcon from '@mui/icons-material/Close';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import TipsAndUpdatesIcon from '@mui/icons-material/TipsAndUpdates';
 import InfoIcon from '@mui/icons-material/Info';
 import ReplayIcon from '@mui/icons-material/Replay';
-import BuildIcon from '@mui/icons-material/Build';
-import ScienceIcon from '@mui/icons-material/Science';
-
-// Adjustment guidance content
-const ADJUSTMENT_GUIDANCE = {
-  purpose: "Adjustments are deliberate changes to how work is designed - who does what, how they coordinate, and what authority they have. Good adjustments are reversible experiments that address signals or improve fit.",
-  whatIsAdjustment: {
-    description: "An adjustment is a specific, testable change to the work system. Unlike big transformations, adjustments are small enough to try quickly and reverse if they don't work.",
-    examples: [
-      "Change who handles a type of work",
-      "Increase authority for a specific decision",
-      "Add or remove a coordination step",
-      "Automate part of a process",
-      "Change how work is routed or triaged"
-    ]
-  },
-  status: {
-    description: "Track each adjustment through its lifecycle to learn what works.",
-    stages: [
-      { status: "Proposed", color: "#9ca3af", description: "Idea for an adjustment, not yet tried", icon: "Proposal" },
-      { status: "Trying", color: "#f59e0b", description: "Currently testing this adjustment in practice", icon: "Experiment" },
-      { status: "Adopted", color: "#10b981", description: "Worked well, now permanent part of design", icon: "Success" },
-      { status: "Reverted", color: "#ef4444", description: "Didn't work as expected, rolled back", icon: "Rollback" }
-    ]
-  },
-  reversibility: {
-    description: "Consider how easy it is to undo an adjustment before implementing it. Prefer easily reversible adjustments.",
-    levels: [
-      { level: "Easy to Reverse", color: "#10b981", description: "Can quickly go back to previous state", examples: ["Reassign work", "Change routing rules", "Update authority levels"] },
-      { level: "Medium", color: "#f59e0b", description: "Some effort required to reverse", examples: ["Train people in new skills", "Change team structures", "Modify handoff points"] },
-      { level: "Hard to Reverse", color: "#ef4444", description: "Significant cost or effort to undo", examples: ["Hire/fire decisions", "System changes", "Major process redesigns"] }
-    ]
-  },
-  process: {
-    description: "Follow a structured approach to testing adjustments.",
-    steps: [
-      { step: 1, name: "Identify Signal", description: "What problem or opportunity prompted this adjustment?" },
-      { step: 2, name: "Design Adjustment", description: "What specific change will you make? Be precise." },
-      { step: 3, name: "Define Success", description: "How will you know if it worked? What will improve?" },
-      { step: 4, name: "Try It", description: "Implement the change for a defined trial period" },
-      { step: 5, name: "Capture Learning", description: "What happened? Was your hypothesis correct?" },
-      { step: 6, name: "Decide", description: "Adopt it permanently or revert and try something else" }
-    ]
-  },
-  tips: [
-    "Start with the most reversible adjustments first",
-    "Define success criteria before you try",
-    "Set a time limit for trials",
-    "Document learnings whether successful or not",
-    "One adjustment at a time to see what caused the effect"
-  ],
-  pitfalls: [
-    "Making adjustments without clear signals or reasons",
-    "Trying multiple changes at once (can't tell what worked)",
-    "Not defining what success looks like",
-    "Forgetting to capture learnings from reverted adjustments",
-    "Making hard-to-reverse changes without testing first"
-  ]
-};
-
-// Guidance panel component
-function GuidancePanel({ onClose, initialSection = 'purpose' }) {
-  const [expandedSection, setExpandedSection] = useState(initialSection);
-
-  return (
-    <div className="dwd-guidance-panel">
-      <div className="dwd-guidance-panel__header">
-        <div className="dwd-guidance-panel__title">
-          <LightbulbIcon />
-          <span>Adjustments Guide</span>
-        </div>
-        <button className="dwd-guidance-panel__close" onClick={onClose}>
-          <CloseIcon fontSize="small" />
-        </button>
-      </div>
-
-      <div className="dwd-guidance-panel__content">
-        {/* Purpose */}
-        <div className="dwd-guidance-section">
-          <button
-            className={`dwd-guidance-section__header ${expandedSection === 'purpose' ? 'expanded' : ''}`}
-            onClick={() => setExpandedSection(expandedSection === 'purpose' ? null : 'purpose')}
-          >
-            <span>What are Adjustments?</span>
-            <ChevronRightIcon className={expandedSection === 'purpose' ? 'rotated' : ''} />
-          </button>
-          {expandedSection === 'purpose' && (
-            <div className="dwd-guidance-section__body">
-              <p>{ADJUSTMENT_GUIDANCE.purpose}</p>
-              <p style={{ marginTop: 12 }}>{ADJUSTMENT_GUIDANCE.whatIsAdjustment.description}</p>
-              <h5>Examples:</h5>
-              <ul>
-                {ADJUSTMENT_GUIDANCE.whatIsAdjustment.examples.map((ex, i) => (
-                  <li key={i}>{ex}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
-
-        {/* Status Stages */}
-        <div className="dwd-guidance-section">
-          <button
-            className={`dwd-guidance-section__header ${expandedSection === 'status' ? 'expanded' : ''}`}
-            onClick={() => setExpandedSection(expandedSection === 'status' ? null : 'status')}
-          >
-            <span>Adjustment Lifecycle</span>
-            <ChevronRightIcon className={expandedSection === 'status' ? 'rotated' : ''} />
-          </button>
-          {expandedSection === 'status' && (
-            <div className="dwd-guidance-section__body">
-              <p>{ADJUSTMENT_GUIDANCE.status.description}</p>
-              <div className="dwd-status-stages">
-                {ADJUSTMENT_GUIDANCE.status.stages.map((stage, i) => (
-                  <div key={i} className="dwd-status-stage" style={{ borderLeftColor: stage.color }}>
-                    <span className="dwd-status-stage__name" style={{ color: stage.color }}>{stage.status}</span>
-                    <span className="dwd-status-stage__desc">{stage.description}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Reversibility */}
-        <div className="dwd-guidance-section">
-          <button
-            className={`dwd-guidance-section__header ${expandedSection === 'reversibility' ? 'expanded' : ''}`}
-            onClick={() => setExpandedSection(expandedSection === 'reversibility' ? null : 'reversibility')}
-          >
-            <span>Reversibility Matters</span>
-            <ChevronRightIcon className={expandedSection === 'reversibility' ? 'rotated' : ''} />
-          </button>
-          {expandedSection === 'reversibility' && (
-            <div className="dwd-guidance-section__body">
-              <p>{ADJUSTMENT_GUIDANCE.reversibility.description}</p>
-              {ADJUSTMENT_GUIDANCE.reversibility.levels.map((level, i) => (
-                <div key={i} className="dwd-reversibility-level" style={{ borderLeftColor: level.color }}>
-                  <h5 style={{ color: level.color }}>
-                    <ReplayIcon fontSize="small" />
-                    {level.level}
-                  </h5>
-                  <p>{level.description}</p>
-                  <span className="dwd-reversibility-examples">e.g., {level.examples.join(', ')}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Process */}
-        <div className="dwd-guidance-section">
-          <button
-            className={`dwd-guidance-section__header ${expandedSection === 'process' ? 'expanded' : ''}`}
-            onClick={() => setExpandedSection(expandedSection === 'process' ? null : 'process')}
-          >
-            <span>How to Test Adjustments</span>
-            <ChevronRightIcon className={expandedSection === 'process' ? 'rotated' : ''} />
-          </button>
-          {expandedSection === 'process' && (
-            <div className="dwd-guidance-section__body">
-              <p>{ADJUSTMENT_GUIDANCE.process.description}</p>
-              <ol className="dwd-guidance-steps">
-                {ADJUSTMENT_GUIDANCE.process.steps.map((step) => (
-                  <li key={step.step}>
-                    <span className="step-number">{step.step}</span>
-                    <div>
-                      <strong>{step.name}</strong>
-                      <p>{step.description}</p>
-                    </div>
-                  </li>
-                ))}
-              </ol>
-            </div>
-          )}
-        </div>
-
-        {/* Tips & Pitfalls */}
-        <div className="dwd-guidance-section">
-          <button
-            className={`dwd-guidance-section__header ${expandedSection === 'tips' ? 'expanded' : ''}`}
-            onClick={() => setExpandedSection(expandedSection === 'tips' ? null : 'tips')}
-          >
-            <span>Tips & Pitfalls</span>
-            <ChevronRightIcon className={expandedSection === 'tips' ? 'rotated' : ''} />
-          </button>
-          {expandedSection === 'tips' && (
-            <div className="dwd-guidance-section__body">
-              <div className="dwd-tips-donts">
-                <div className="dwd-tips">
-                  <h5><CheckCircleIcon style={{ color: '#22c55e' }} /> Best Practices</h5>
-                  <ul>
-                    {ADJUSTMENT_GUIDANCE.tips.map((tip, i) => (
-                      <li key={i}>{tip}</li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="dwd-donts">
-                  <h5><CancelIcon style={{ color: '#ef4444' }} /> Common Mistakes</h5>
-                  <ul>
-                    {ADJUSTMENT_GUIDANCE.pitfalls.map((pitfall, i) => (
-                      <li key={i}>{pitfall}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Quick start card for empty states
-function QuickStartCard({ onCreate }) {
-  return (
-    <div className="dwd-quickstart">
-      <div className="dwd-quickstart__header">
-        <TipsAndUpdatesIcon />
-        <h3>Designing Work Adjustments</h3>
-      </div>
-      <p className="dwd-quickstart__description">
-        Adjustments are small, testable changes to how work is organized. Think of them as experiments -
-        try something, learn from it, and either adopt or revert.
-      </p>
-      <div className="dwd-quickstart__flow">
-        <div className="dwd-quickstart__step">
-          <span className="dwd-quickstart__step-num">1</span>
-          <span>Spot a signal or problem</span>
-        </div>
-        <ArrowForwardIcon className="dwd-quickstart__arrow" />
-        <div className="dwd-quickstart__step">
-          <span className="dwd-quickstart__step-num">2</span>
-          <span>Design a small adjustment</span>
-        </div>
-        <ArrowForwardIcon className="dwd-quickstart__arrow" />
-        <div className="dwd-quickstart__step">
-          <span className="dwd-quickstart__step-num">3</span>
-          <span>Try it and observe</span>
-        </div>
-        <ArrowForwardIcon className="dwd-quickstart__arrow" />
-        <div className="dwd-quickstart__step">
-          <span className="dwd-quickstart__step-num">4</span>
-          <span>Adopt or revert</span>
-        </div>
-      </div>
-      <div className="dwd-quickstart__example-box">
-        <h4><ScienceIcon fontSize="small" /> Example Adjustment:</h4>
-        <p>"Give support agents authority to approve refunds up to $50 without escalation"</p>
-        <div className="dwd-quickstart__example-meta">
-          <span><strong>Signal:</strong> Too many escalations for small refunds</span>
-          <span><strong>Success:</strong> 30% fewer escalations, same customer satisfaction</span>
-          <span><strong>Reversibility:</strong> Easy - just update the policy</span>
-        </div>
-      </div>
-      <div className="dwd-quickstart__actions">
-        <button className="btn btn--primary" onClick={() => onCreate?.('dwd_adjustment')}>
-          <AddIcon fontSize="small" />
-          Design Your First Adjustment
-        </button>
-      </div>
-    </div>
-  );
-}
+import UndoIcon from '@mui/icons-material/Undo';
 
 export default function AdjustmentLog({
   onSelectArtefact,
@@ -309,6 +41,9 @@ export default function AdjustmentLog({
   const [showGuidance, setShowGuidance] = useState(false);
   const [draggedItem, setDraggedItem] = useState(null);
   const [dragOverColumn, setDragOverColumn] = useState(null);
+
+  // Undo toast state
+  const [undoToast, setUndoToast] = useState(null);
 
   // Get adjustments
   const adjustments = useMemo(() => {
@@ -409,6 +144,18 @@ export default function AdjustmentLog({
     setDragOverColumn(null);
   };
 
+  // Timer ref for undo toast auto-dismiss
+  const undoTimerRef = useRef(null);
+
+  // Clear undo toast on unmount
+  useEffect(() => {
+    return () => {
+      if (undoTimerRef.current) {
+        clearTimeout(undoTimerRef.current);
+      }
+    };
+  }, []);
+
   const handleDrop = async (e, newStatus) => {
     e.preventDefault();
     setDragOverColumn(null);
@@ -421,15 +168,37 @@ export default function AdjustmentLog({
       return;
     }
 
+    // Store previous state for undo
+    const previousStatus = currentStatus;
+    const adjustmentId = draggedItem.id;
+    const adjustmentName = draggedItem.name;
+
     // Update the adjustment status
     try {
-      await updateArtefact(draggedItem.id, {
+      await updateArtefact(adjustmentId, {
         ...draggedItem,
         custom_fields: {
           ...draggedItem.custom_fields,
           adjustment_status: newStatus,
         },
       });
+
+      // Show undo toast
+      if (undoTimerRef.current) {
+        clearTimeout(undoTimerRef.current);
+      }
+
+      setUndoToast({
+        adjustmentId,
+        adjustmentName,
+        previousStatus,
+        newStatus,
+      });
+
+      // Auto-dismiss after 5 seconds
+      undoTimerRef.current = setTimeout(() => {
+        setUndoToast(null);
+      }, 5000);
     } catch (error) {
       console.error('Failed to update adjustment status:', error);
     }
@@ -437,11 +206,40 @@ export default function AdjustmentLog({
     setDraggedItem(null);
   };
 
+  // Undo status change
+  const handleUndo = async () => {
+    if (!undoToast) return;
+
+    try {
+      const adjustment = adjustments.find(a => a.id === undoToast.adjustmentId);
+      if (adjustment) {
+        await updateArtefact(undoToast.adjustmentId, {
+          ...adjustment,
+          custom_fields: {
+            ...adjustment.custom_fields,
+            adjustment_status: undoToast.previousStatus,
+          },
+        });
+      }
+    } catch (error) {
+      console.error('Failed to undo status change:', error);
+    }
+
+    // Clear the toast
+    if (undoTimerRef.current) {
+      clearTimeout(undoTimerRef.current);
+    }
+    setUndoToast(null);
+  };
+
   return (
     <div className="dwd-adjustment-log">
       {/* Guidance Panel */}
       {showGuidance && (
-        <GuidancePanel onClose={() => setShowGuidance(false)} />
+        <GuidancePanel
+          guidance={ADJUSTMENT_LOG_GUIDANCE}
+          onClose={() => setShowGuidance(false)}
+        />
       )}
 
       {/* Header */}
@@ -515,7 +313,12 @@ export default function AdjustmentLog({
       </div>
 
       {/* Empty State */}
-      {isEmpty && <QuickStartCard onCreate={onCreateArtefact} />}
+      {isEmpty && (
+        <QuickStartCard
+          quickStart={ADJUSTMENT_LOG_GUIDANCE.quickStart}
+          onCreate={onCreateArtefact}
+        />
+      )}
 
       {/* Learning Reminder */}
       {!isEmpty && needsLearning.length > 0 && (
@@ -692,6 +495,25 @@ export default function AdjustmentLog({
               )}
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Undo Toast */}
+      {undoToast && (
+        <div className="dwd-undo-toast">
+          <span className="dwd-undo-toast__message">
+            Moved "{undoToast.adjustmentName}" to {undoToast.newStatus}
+          </span>
+          <button className="dwd-undo-toast__btn" onClick={handleUndo}>
+            <UndoIcon fontSize="small" />
+            Undo
+          </button>
+          <button
+            className="dwd-undo-toast__dismiss"
+            onClick={() => setUndoToast(null)}
+          >
+            ×
+          </button>
         </div>
       )}
     </div>

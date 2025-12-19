@@ -4,6 +4,13 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
+import Alert from '@mui/material/Alert';
 import SettingsIcon from '@mui/icons-material/Settings';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import MenuIcon from '@mui/icons-material/Menu';
@@ -29,9 +36,147 @@ import { LogoWordmark } from './Logo';
 import { useDomains } from './DomainContext';
 import { useNotifications } from './NotificationContext';
 
+// Password validation helper
+function validatePassword(password) {
+  const errors = [];
+  if (password.length < 8) errors.push('At least 8 characters');
+  if (!/[A-Z]/.test(password)) errors.push('At least one uppercase letter');
+  if (!/\d/.test(password)) errors.push('At least one number');
+  return errors;
+}
+
+// Change Password Dialog Component
+function ChangePasswordDialog({ open, onClose, userId }) {
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
+
+  const passwordErrors = validatePassword(newPassword);
+  const isPasswordValid = passwordErrors.length === 0;
+  const passwordsMatch = newPassword === confirmPassword;
+  const canSubmit = currentPassword && isPasswordValid && passwordsMatch;
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!canSubmit) return;
+
+    setSaving(true);
+    setError('');
+    setSuccess(false);
+
+    try {
+      const res = await fetch('/api/auth/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId,
+          currentPassword,
+          newPassword,
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || 'Failed to change password');
+      }
+
+      setSuccess(true);
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+
+      // Close after showing success
+      setTimeout(() => {
+        onClose();
+        setSuccess(false);
+      }, 1500);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleClose = () => {
+    setCurrentPassword('');
+    setNewPassword('');
+    setConfirmPassword('');
+    setError('');
+    setSuccess(false);
+    onClose();
+  };
+
+  return (
+    <Dialog open={open} onClose={handleClose} maxWidth="xs" fullWidth>
+      <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <LockIcon />
+        Change Password
+      </DialogTitle>
+      <form onSubmit={handleSubmit}>
+        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          {error && <Alert severity="error">{error}</Alert>}
+          {success && <Alert severity="success">Password changed successfully!</Alert>}
+
+          <TextField
+            label="Current Password"
+            type="password"
+            value={currentPassword}
+            onChange={e => setCurrentPassword(e.target.value)}
+            required
+            fullWidth
+            autoFocus
+          />
+
+          <TextField
+            label="New Password"
+            type="password"
+            value={newPassword}
+            onChange={e => setNewPassword(e.target.value)}
+            required
+            fullWidth
+            error={newPassword.length > 0 && !isPasswordValid}
+            helperText={
+              newPassword.length > 0 && !isPasswordValid
+                ? `Missing: ${passwordErrors.join(', ')}`
+                : 'Min 8 characters, 1 uppercase, 1 number'
+            }
+          />
+
+          <TextField
+            label="Confirm New Password"
+            type="password"
+            value={confirmPassword}
+            onChange={e => setConfirmPassword(e.target.value)}
+            required
+            fullWidth
+            error={confirmPassword.length > 0 && !passwordsMatch}
+            helperText={confirmPassword.length > 0 && !passwordsMatch ? 'Passwords do not match' : ''}
+          />
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={handleClose} disabled={saving}>
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            variant="contained"
+            disabled={!canSubmit || saving}
+          >
+            {saving ? 'Changing...' : 'Change Password'}
+          </Button>
+        </DialogActions>
+      </form>
+    </Dialog>
+  );
+}
+
 export default function TopBar({ theme, onThemeChange }) {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const menuRef = useRef(null);
   const userMenuRef = useRef(null);
   const { role, user, logout } = useAuth();
@@ -437,6 +582,32 @@ export default function TopBar({ theme, onThemeChange }) {
                 </Tooltip>
                 {userMenuOpen && (
                   <div className="settings-dropdown" style={{ right: 0, left: 'auto' }}>
+                    <div style={{ padding: '8px 14px', borderBottom: '1px solid var(--border)', marginBottom: 4 }}>
+                      <div style={{ fontWeight: 600, fontSize: 14 }}>{user}</div>
+                      <div style={{ fontSize: 12, color: 'var(--text-muted)', textTransform: 'capitalize' }}>{role}</div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUserMenuOpen(false);
+                        setShowPasswordDialog(true);
+                      }}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        width: '100%',
+                        padding: '10px 14px',
+                        textAlign: 'left',
+                        background: 'transparent',
+                        border: 'none',
+                        cursor: 'pointer',
+                        fontSize: 14,
+                      }}
+                    >
+                      <LockIcon fontSize="small" />
+                      Change Password
+                    </button>
                     <button
                       type="button"
                       onClick={() => {
@@ -444,11 +615,17 @@ export default function TopBar({ theme, onThemeChange }) {
                         logout();
                       }}
                       style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        width: '100%',
                         padding: '10px 14px',
                         textAlign: 'left',
                         background: 'transparent',
                         border: 'none',
                         cursor: 'pointer',
+                        fontSize: 14,
+                        color: '#ef4444',
                       }}
                     >
                       Logout
@@ -607,6 +784,13 @@ export default function TopBar({ theme, onThemeChange }) {
           </nav>
         </div>
       )}
+
+      {/* Password Change Dialog */}
+      <ChangePasswordDialog
+        open={showPasswordDialog}
+        onClose={() => setShowPasswordDialog(false)}
+        userId={user}
+      />
     </>
   );
 }

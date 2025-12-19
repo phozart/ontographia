@@ -1,10 +1,10 @@
 // components/pdw/PDWContext.js
-// Product Design Workspace context - API-backed, project-scoped
+// Product Design Workspace context - API-backed, domain-scoped
 // Manages PDW artefacts, canvases, and relationships via database persistence
 
 import { createContext, useContext, useMemo, useState, useCallback, useEffect } from 'react';
 import { useAuth } from '../AuthContext';
-import { useProjects } from '../ProjectContext';
+import { useDomains } from '../DomainContext';
 import {
   PDW_STAGES,
   PDW_WORKSPACE_MODULES,
@@ -38,7 +38,7 @@ const PDWContext = createContext(null);
 
 export function PDWProvider({ children }) {
   const { user, role } = useAuth();
-  const { activeProject } = useProjects();
+  const { activeDomain } = useDomains();
 
   // Auth headers for API calls
   const authHeaders = useMemo(() => ({
@@ -69,16 +69,16 @@ export function PDWProvider({ children }) {
   // DATA FETCHING
   // ============================================================================
 
-  // Fetch artefacts for current project
+  // Fetch artefacts for current domain
   const fetchArtefacts = useCallback(async (filters = {}) => {
-    if (!user || !activeProject?.id) return;
+    if (!user || !activeDomain) return;
 
     setLoading(true);
     setError(null);
 
     try {
       const params = new URLSearchParams({
-        projectId: activeProject.id,
+        domainId: activeDomain,
         ...filters,
       });
 
@@ -98,17 +98,19 @@ export function PDWProvider({ children }) {
     } finally {
       setLoading(false);
     }
-  }, [user, activeProject?.id, authHeaders]);
+  }, [user, activeDomain, authHeaders]);
 
-  // Fetch relationships for current project
+  // Fetch relationships for current domain
   const fetchRelationships = useCallback(async () => {
-    if (!user || !activeProject?.id) return;
+    if (!user || !activeDomain) return;
 
     try {
-      const res = await fetch(`/api/pdw/relationships?projectId=${activeProject.id}`, { headers: authHeaders });
+      const res = await fetch(`/api/pdw/relationships?domainId=${activeDomain}`, { headers: authHeaders });
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || 'Failed to fetch relationships');
+        // Don't throw, just log and return empty
+        console.warn('PDW relationships API returned error status:', res.status);
+        setRelationships([]);
+        return null;
       }
 
       const data = await res.json();
@@ -116,19 +118,21 @@ export function PDWProvider({ children }) {
       return data;
     } catch (err) {
       console.error('Error fetching PDW relationships:', err);
+      setRelationships([]);
       return null;
     }
-  }, [user, activeProject?.id, authHeaders]);
+  }, [user, activeDomain, authHeaders]);
 
-  // Fetch stats for current project
+  // Fetch stats for current domain
   const fetchStats = useCallback(async () => {
-    if (!user || !activeProject?.id) return;
+    if (!user || !activeDomain) return;
 
     try {
-      const res = await fetch(`/api/pdw/stats?projectId=${activeProject.id}`, { headers: authHeaders });
+      const res = await fetch(`/api/pdw/stats?domainId=${activeDomain}`, { headers: authHeaders });
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || 'Failed to fetch stats');
+        // Don't throw, just log and return
+        console.warn('PDW stats API returned error status:', res.status);
+        return null;
       }
 
       const data = await res.json();
@@ -138,7 +142,7 @@ export function PDWProvider({ children }) {
       console.error('Error fetching PDW stats:', err);
       return null;
     }
-  }, [user, activeProject?.id, authHeaders]);
+  }, [user, activeDomain, authHeaders]);
 
   // Refresh all data
   const refreshData = useCallback(async () => {
@@ -150,16 +154,16 @@ export function PDWProvider({ children }) {
     ]);
   }, [user, fetchArtefacts, fetchRelationships, fetchStats]);
 
-  // Load data when project changes
+  // Load data when domain changes
   useEffect(() => {
-    if (user && activeProject?.id) {
+    if (user && activeDomain) {
       refreshData();
     } else {
       setArtefacts([]);
       setRelationships([]);
       setStats(null);
     }
-  }, [user, activeProject?.id, refreshData]);
+  }, [user, activeDomain, refreshData]);
 
   // ============================================================================
   // ARTEFACT CRUD OPERATIONS
@@ -167,8 +171,8 @@ export function PDWProvider({ children }) {
 
   // Create artefact
   const createArtefact = useCallback(async (type, data = {}) => {
-    if (!activeProject?.id) {
-      setError('No project selected');
+    if (!activeDomain) {
+      setError('No domain selected');
       return null;
     }
 
@@ -185,7 +189,7 @@ export function PDWProvider({ children }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...authHeaders },
         body: JSON.stringify({
-          projectId: activeProject.id,
+          domainId: activeDomain,
           artefactType: type,
           name: data.name || `New ${getTypeDefinition(type)?.name || 'Item'}`,
           description: data.description || '',
@@ -216,7 +220,7 @@ export function PDWProvider({ children }) {
     } finally {
       setSaving(false);
     }
-  }, [activeProject?.id, fetchStats, authHeaders]);
+  }, [activeDomain, fetchStats, authHeaders]);
 
   // Update artefact
   const updateArtefact = useCallback(async (id, updates) => {

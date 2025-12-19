@@ -47,12 +47,11 @@ export default async function handler(req, res) {
         `SELECT a.*,
           u.username as owner_username,
           cb.username as created_by_username,
-          p.name as project_name,
-          p.domain_id
+          d.name as domain_name
         FROM artefacts a
         LEFT JOIN users u ON u.id = a.owner_id
         LEFT JOIN users cb ON cb.id = a.created_by
-        LEFT JOIN projects p ON p.id = a.project_id
+        LEFT JOIN domains d ON d.id = a.domain_id
         WHERE a.id = $1`,
         [id]
       );
@@ -145,7 +144,7 @@ export default async function handler(req, res) {
 
     // Remove fields that shouldn't be in customFields
     delete mergedCustomFields.id;
-    delete mergedCustomFields.projectId;
+    delete mergedCustomFields.domainId;
     delete mergedCustomFields.createdAt;
     delete mergedCustomFields.updatedAt;
     delete mergedCustomFields.createdBy;

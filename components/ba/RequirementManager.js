@@ -693,7 +693,7 @@ export function RequirementDetailPanel({ requirement, onClose, onEdit }) {
               {requirement.acceptanceCriteria.map((criterion, i) => (
                 <li key={i}>
                   <CheckCircleIcon fontSize="small" />
-                  {criterion}
+                  {typeof criterion === 'object' ? (criterion.text || JSON.stringify(criterion)) : criterion}
                 </li>
               ))}
             </ul>
@@ -811,10 +811,11 @@ export function RelationshipManager({ requirement, onClose }) {
   const handleAddRelationship = () => {
     if (!selectedTarget) return;
 
+    // createRelationship expects (type, fromId, toId)
     if (isSource) {
-      createRelationship(requirement.id, selectedTarget, selectedType);
+      createRelationship(selectedType, requirement.id, selectedTarget);
     } else {
-      createRelationship(selectedTarget, requirement.id, selectedType);
+      createRelationship(selectedType, selectedTarget, requirement.id);
     }
     setSelectedTarget('');
   };

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Box, Button, Typography, Chip, Stack } from '@mui/material';
 import BrandPoster from '../BrandPoster';
 
-export default function Hero() {
+export default function Hero({ user }) {
   return (
     <Box
       component="section"
@@ -46,8 +46,17 @@ export default function Hero() {
             border: '1px solid var(--border)',
           }}
         />
-        <Typography variant="h2" component="h1" sx={{ fontWeight: 800, lineHeight: 1.1, mb: 2 }}>
-          A living map of your knowledge
+        <Typography
+          variant="h3"
+          component="h1"
+          sx={{
+            fontWeight: 700,
+            lineHeight: 1.2,
+            mb: 2,
+            color: 'var(--text)',
+          }}
+        >
+          Where Work Is Understood and Remembered.
         </Typography>
         <Typography
           variant="body1"
@@ -60,25 +69,44 @@ export default function Hero() {
             mb: 4,
           }}
         >
-          Ontographia is a semantic modeling and graph navigation studio. Align concepts,
-          surface relationships, and keep meaning intact as your organization evolves.
+          A connected knowledge platform for enterprise architecture, requirements,
+          portfolios, system dynamics, and structured thinking. Not another document repository -
+          a living graph where everything connects.
         </Typography>
         <Stack direction="row" spacing={2} justifyContent="center" flexWrap="wrap">
-          <Button
-            component={Link}
-            href="/login"
-            variant="contained"
-            size="large"
-            sx={{
-              borderRadius: 999,
-              px: 4,
-              fontWeight: 700,
-              background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
-              '&:hover': { background: 'linear-gradient(135deg, #2563eb, #1e40af)' },
-            }}
-          >
-            Log in to explore
-          </Button>
+          {user ? (
+            <Button
+              component={Link}
+              href="/home"
+              variant="contained"
+              size="large"
+              sx={{
+                borderRadius: 999,
+                px: 4,
+                fontWeight: 700,
+                background: 'linear-gradient(135deg, #334155, #1e293b)',
+                '&:hover': { background: 'linear-gradient(135deg, #1e293b, #0f172a)' },
+              }}
+            >
+              Go to Dashboard
+            </Button>
+          ) : (
+            <Button
+              component={Link}
+              href="/login"
+              variant="contained"
+              size="large"
+              sx={{
+                borderRadius: 999,
+                px: 4,
+                fontWeight: 700,
+                background: 'linear-gradient(135deg, #334155, #1e293b)',
+                '&:hover': { background: 'linear-gradient(135deg, #1e293b, #0f172a)' },
+              }}
+            >
+              Log in to explore
+            </Button>
+          )}
           <Button
             component="a"
             href="#demo"

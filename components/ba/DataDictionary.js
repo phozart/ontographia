@@ -4,6 +4,8 @@
 
 import { useState, useMemo, useCallback } from 'react';
 import { useArtefacts, ARTEFACT_TYPES } from '../ArtefactContext';
+import Autocomplete from '@mui/material/Autocomplete';
+import TextField from '@mui/material/TextField';
 
 // MUI Icons
 import MenuBookIcon from '@mui/icons-material/MenuBook';
@@ -338,22 +340,96 @@ function DataElementFormModal({ element, requirements, onSave, onClose }) {
                   <LinkIcon fontSize="small" style={{ verticalAlign: 'middle', marginRight: 4 }} />
                   Link to Requirements
                 </label>
-                <div className="requirements-selector">
-                  {requirements.slice(0, 10).map(req => (
-                    <label key={req.id} className="req-checkbox">
-                      <input
-                        type="checkbox"
-                        checked={formData.linkedRequirements.includes(req.id)}
-                        onChange={() => toggleRequirement(req.id)}
-                      />
-                      <span className="req-id">{req.requirementId || req.id.slice(0, 8)}</span>
-                      <span className="req-name">{req.name}</span>
-                    </label>
-                  ))}
-                  {requirements.length > 10 && (
-                    <p className="more-reqs">+{requirements.length - 10} more requirements</p>
+
+                {/* Display linked requirements as chips */}
+                {formData.linkedRequirements?.length > 0 && (
+                  <div className="linked-requirements-chips">
+                    {formData.linkedRequirements.map(reqId => {
+                      const req = requirements.find(r => r.id === reqId);
+                      if (!req) return null;
+                      const typeDef = ARTEFACT_TYPES[req.artefactType];
+                      return (
+                        <div key={reqId} className="linked-req-chip">
+                          <span className="req-type-badge" style={{ backgroundColor: typeDef?.color }}>
+                            {typeDef?.icon || req.artefactType?.slice(0, 2)}
+                          </span>
+                          <span>{req.businessId || ''} {req.name}</span>
+                          <button type="button" onClick={() => toggleRequirement(reqId)}>×</button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Autocomplete for searching requirements */}
+                <Autocomplete
+                  options={requirements.filter(r => !formData.linkedRequirements?.includes(r.id))}
+                  getOptionLabel={(option) => `${option.businessId || ''} ${option.name}`.trim()}
+                  onChange={(event, value) => {
+                    if (value) {
+                      setFormData(prev => ({
+                        ...prev,
+                        linkedRequirements: [...prev.linkedRequirements, value.id]
+                      }));
+                    }
+                  }}
+                  value={null}
+                  renderOption={(props, option) => {
+                    const typeDef = ARTEFACT_TYPES[option.artefactType];
+                    return (
+                      <li {...props} key={option.id}>
+                        <span
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            width: 22,
+                            height: 22,
+                            backgroundColor: typeDef?.color || '#6b7280',
+                            borderRadius: 4,
+                            color: 'white',
+                            fontSize: 10,
+                            marginRight: 10,
+                            flexShrink: 0
+                          }}
+                        >
+                          {typeDef?.icon || option.artefactType?.slice(0, 2)}
+                        </span>
+                        <span style={{ fontWeight: 500, marginRight: 8, color: 'var(--accent)' }}>
+                          {option.businessId || ''}
+                        </span>
+                        <span>{option.name}</span>
+                      </li>
+                    );
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      placeholder="Search requirements..."
+                      size="small"
+                      sx={{
+                        marginTop: '8px',
+                        '& .MuiOutlinedInput-root': {
+                          backgroundColor: 'var(--bg)',
+                          '& fieldset': { borderColor: 'var(--border)' },
+                          '&:hover fieldset': { borderColor: 'var(--accent)' },
+                          '&.Mui-focused fieldset': { borderColor: 'var(--accent)' },
+                        },
+                        '& .MuiInputBase-input': { color: 'var(--text)', fontSize: 13 },
+                      }}
+                    />
                   )}
-                </div>
+                  sx={{
+                    '& .MuiAutocomplete-listbox': {
+                      backgroundColor: 'var(--panel)',
+                      '& .MuiAutocomplete-option': {
+                        color: 'var(--text)',
+                        '&:hover': { backgroundColor: 'var(--accent-soft)' },
+                        '&[aria-selected="true"]': { backgroundColor: 'var(--accent-soft)' },
+                      },
+                    },
+                  }}
+                />
               </div>
             )}
           </div>
@@ -457,10 +533,10 @@ function DataElementDetailPanel({ element, requirements, onEdit, onClose }) {
                 return (
                   <div key={req.id} className="linked-req">
                     <span className="req-icon" style={{ backgroundColor: typeDef?.color }}>
-                      {typeDef?.icon}
+                      {typeDef?.icon || req.artefactType?.slice(0, 2)}
                     </span>
                     <div>
-                      <span className="req-id">{req.requirementId || req.id.slice(0, 8)}</span>
+                      <span className="req-id">{req.businessId || req.requirementId || req.id.slice(0, 8)}</span>
                       <span className="req-name">{req.name}</span>
                     </div>
                   </div>

@@ -1197,9 +1197,9 @@ function Navigator({
   };
 
   return (
-    <div className="navigator">
+    <div className="navigator" style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
       {/* Home Button */}
-      <div className="nav-home">
+      <div className="nav-home" style={{ flexShrink: 0 }}>
         <button
           className={`nav-home-btn ${activeView === 'home' ? 'active' : ''}`}
           onClick={() => handleViewSelect('home', null)}
@@ -1210,7 +1210,7 @@ function Navigator({
       </div>
 
       {/* Grouped View Switcher */}
-      <div className="nav-views-grouped">
+      <div className="nav-views-grouped" style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
         {viewGroups.map(group => {
           const hasActiveView = group.views.some(v => v.id === activeView);
           return (
@@ -1246,7 +1246,7 @@ function Navigator({
       </div>
 
       {/* Quick create */}
-      <div className="nav-footer">
+      <div className="nav-footer" style={{ flexShrink: 0 }}>
         <button className="nav-create-btn" onClick={() => onCreate(null)}>
           <AddIcon fontSize="small" />
           <span>New Artefact</span>
@@ -1914,7 +1914,8 @@ export default function RequirementsStudio() {
 
   // Relationship handler
   const handleCreateRelationship = useCallback(async (fromId, toId, type) => {
-    await createRelationship(fromId, toId, type);
+    // createRelationship expects (type, fromId, toId)
+    await createRelationship(type, fromId, toId);
     setShowRelBuilder(false);
   }, [createRelationship]);
 

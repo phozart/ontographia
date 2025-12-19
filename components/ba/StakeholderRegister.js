@@ -789,6 +789,10 @@ export default function StakeholderRegister({ onSelectArtefact }) {
 
   // Handlers
   const handleSelect = (stakeholder) => {
+    // Open edit popup when clicking on a stakeholder in grid view
+    setEditingStakeholder(stakeholder);
+    setShowFormModal(true);
+    // Also notify parent if callback provided
     if (onSelectArtefact) {
       onSelectArtefact(stakeholder);
     }

@@ -21,6 +21,7 @@ import SchoolIcon from '@mui/icons-material/School';
 import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
 import LightbulbIcon from '@mui/icons-material/Lightbulb';
 import HubIcon from '@mui/icons-material/Hub';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 
 export default function HomePage() {
   const { role, user } = useAuth();
@@ -79,6 +80,16 @@ export default function HomePage() {
       icon: <ArchitectureIcon sx={{ fontSize: 32 }} />,
       gradient: 'linear-gradient(135deg, #0ea5e9, #0284c7)',
       quickStart: 'Start by creating a Capability',
+      level: 'Domain-level',
+    },
+    {
+      title: 'Portfolio Studio',
+      subtitle: 'Prioritize investments',
+      description: 'Visual prioritization with Priority Matrix, Stack Rank, and WSJF/RICE scoring. Committee voting, budget envelopes, and dependency mapping.',
+      href: '/portfolio-studio',
+      icon: <TrendingUpIcon sx={{ fontSize: 32 }} />,
+      gradient: 'linear-gradient(135deg, #14b8a6, #0d9488)',
+      quickStart: 'Start with Priority Matrix',
       level: 'Domain-level',
     },
   ];
@@ -154,7 +165,7 @@ export default function HomePage() {
     <Box className="page-container" sx={{ maxWidth: 1200, mx: 'auto' }}>
       {/* Welcome Section */}
       <Box sx={{ mb: 5 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, mb: 3 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, mb: 2 }}>
           <BrandPoster width={80} />
           <Box>
             <Typography variant="h4" sx={{ fontWeight: 800, color: 'var(--text)' }}>
@@ -166,6 +177,17 @@ export default function HomePage() {
             </Typography>
           </Box>
         </Box>
+        <Typography
+          variant="body2"
+          sx={{
+            fontStyle: 'italic',
+            color: 'var(--text-muted)',
+            mb: 3,
+            pl: '96px',
+          }}
+        >
+          Ontographia is the place where work is understood before it is done, and remembered after it is done.
+        </Typography>
 
         {/* Context Warnings */}
         {!activeDomainObj && (
@@ -359,8 +381,8 @@ export default function HomePage() {
               component={Link}
               href="/knowledge-studio"
               sx={{
-                background: 'linear-gradient(135deg, #8b5cf6, #6366f1)',
-                '&:hover': { background: 'linear-gradient(135deg, #6366f1, #4f46e5)' },
+                background: 'linear-gradient(135deg, #334155, #1e293b)',
+                '&:hover': { background: 'linear-gradient(135deg, #1e293b, #0f172a)' },
               }}
             >
               Knowledge Studio
@@ -370,11 +392,22 @@ export default function HomePage() {
               component={Link}
               href="/ea-workspace"
               sx={{
-                background: 'linear-gradient(135deg, #0ea5e9, #0284c7)',
-                '&:hover': { background: 'linear-gradient(135deg, #0284c7, #0369a1)' },
+                background: 'linear-gradient(135deg, #475569, #334155)',
+                '&:hover': { background: 'linear-gradient(135deg, #334155, #1e293b)' },
               }}
             >
               EA Workspace
+            </Button>
+            <Button
+              variant="contained"
+              component={Link}
+              href="/portfolio-studio"
+              sx={{
+                background: 'linear-gradient(135deg, #475569, #334155)',
+                '&:hover': { background: 'linear-gradient(135deg, #334155, #1e293b)' },
+              }}
+            >
+              Portfolio Studio
             </Button>
             <Button
               variant="outlined"

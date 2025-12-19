@@ -4,6 +4,8 @@
 
 import { useState, useMemo, useCallback } from 'react';
 import { useArtefacts, ARTEFACT_TYPES } from '../ArtefactContext';
+import Autocomplete from '@mui/material/Autocomplete';
+import TextField from '@mui/material/TextField';
 
 // MUI Icons
 import EventIcon from '@mui/icons-material/Event';
@@ -571,27 +573,95 @@ function SessionFormModal({ session, stakeholders, requirements, onSave, onClose
           {requirements.length > 0 && (
             <div className="form-section">
               <h4>Linked Requirements</h4>
-              <p className="section-hint">Select requirements discovered or discussed in this session</p>
-              <div className="requirements-checklist">
-                {requirements.slice(0, 10).map(req => {
-                  const typeDef = ARTEFACT_TYPES[req.artefactType];
-                  return (
-                    <label key={req.id} className="req-checkbox">
-                      <input
-                        type="checkbox"
-                        checked={formData.linkedRequirements.includes(req.id)}
-                        onChange={() => handleToggleRequirement(req.id)}
-                      />
-                      <span className="req-type" style={{ backgroundColor: typeDef?.color }}>
-                        {typeDef?.icon}
-                      </span>
-                      <span className="req-name">{req.name}</span>
-                    </label>
-                  );
-                })}
-                {requirements.length > 10 && (
-                  <span className="more-reqs">+{requirements.length - 10} more requirements</span>
-                )}
+              <p className="section-hint">Search and select requirements discovered or discussed in this session</p>
+
+              {/* Display selected requirements as chips */}
+              {formData.linkedRequirements.length > 0 && (
+                <div className="linked-requirements-chips">
+                  {formData.linkedRequirements.map(reqId => {
+                    const req = requirements.find(r => r.id === reqId);
+                    if (!req) return null;
+                    const typeDef = ARTEFACT_TYPES[req.artefactType];
+                    return (
+                      <div key={reqId} className="linked-req-chip">
+                        <span className="req-type-badge" style={{ backgroundColor: typeDef?.color }}>
+                          {typeDef?.icon}
+                        </span>
+                        <span>{req.businessId || ''} {req.name}</span>
+                        <button type="button" onClick={() => handleToggleRequirement(reqId)}>×</button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Autocomplete for searching requirements */}
+              <div className="requirements-autocomplete">
+                <Autocomplete
+                  options={requirements.filter(r => !formData.linkedRequirements.includes(r.id))}
+                  getOptionLabel={(option) => `${option.businessId || ''} ${option.name}`.trim()}
+                  onChange={(event, value) => {
+                    if (value) {
+                      setFormData(prev => ({
+                        ...prev,
+                        linkedRequirements: [...prev.linkedRequirements, value.id]
+                      }));
+                    }
+                  }}
+                  value={null}
+                  renderOption={(props, option) => {
+                    const typeDef = ARTEFACT_TYPES[option.artefactType];
+                    return (
+                      <li {...props} key={option.id}>
+                        <span
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            width: 24,
+                            height: 24,
+                            backgroundColor: typeDef?.color,
+                            borderRadius: 4,
+                            color: 'white',
+                            fontSize: 12,
+                            marginRight: 10,
+                            flexShrink: 0
+                          }}
+                        >
+                          {typeDef?.icon}
+                        </span>
+                        <span style={{ fontWeight: 500, marginRight: 8 }}>{option.businessId || ''}</span>
+                        <span>{option.name}</span>
+                      </li>
+                    );
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      placeholder="Search requirements by ID or name..."
+                      size="small"
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          backgroundColor: 'var(--bg)',
+                          '& fieldset': { borderColor: 'var(--border)' },
+                          '&:hover fieldset': { borderColor: 'var(--accent)' },
+                          '&.Mui-focused fieldset': { borderColor: 'var(--accent)' },
+                        },
+                        '& .MuiInputBase-input': { color: 'var(--text)', fontSize: 13 },
+                      }}
+                    />
+                  )}
+                  sx={{
+                    '& .MuiAutocomplete-listbox': {
+                      backgroundColor: 'var(--panel)',
+                      '& .MuiAutocomplete-option': {
+                        color: 'var(--text)',
+                        '&:hover': { backgroundColor: 'var(--accent-soft)' },
+                        '&[aria-selected="true"]': { backgroundColor: 'var(--accent-soft)' },
+                      },
+                    },
+                  }}
+                />
               </div>
             </div>
           )}

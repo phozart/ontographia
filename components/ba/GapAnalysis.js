@@ -494,9 +494,8 @@ export default function GapAnalysis({ projectId }) {
     if (editingGap) {
       updateArtefact(editingGap.id, gapData);
     } else {
-      createArtefact({
+      createArtefact('Gap', {
         ...gapData,
-        type: 'Gap',
         projectId
       });
     }

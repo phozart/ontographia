@@ -5,6 +5,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../components/AuthContext';
+import GuidancePanel, { GuidanceToggle } from '../components/GuidancePanel';
+import { KNOWLEDGE_STUDIO_GUIDANCE } from '../lib/studio-guidance';
 
 // MUI Icons
 import HubIcon from '@mui/icons-material/Hub';
@@ -58,6 +60,7 @@ export default function KnowledgeStudioPage() {
   const [sidebarHovered, setSidebarHovered] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(200);
   const [isResizing, setIsResizing] = useState(false);
+  const [showGuidance, setShowGuidance] = useState(false);
   const sidebarRef = useRef(null);
 
   // Load sidebar state from localStorage
@@ -332,7 +335,10 @@ export default function KnowledgeStudioPage() {
             )}
           </div>
           <div className="ks-topbar-actions">
-            {/* Actions could go here */}
+            <GuidanceToggle
+              active={showGuidance}
+              onClick={() => setShowGuidance(!showGuidance)}
+            />
           </div>
         </div>
 
@@ -340,6 +346,18 @@ export default function KnowledgeStudioPage() {
         <div className="ks-content">
           {renderContent()}
         </div>
+
+        {/* Guidance Panel */}
+        {showGuidance && (
+          <div className="ks-guidance" style={{ width: 300, minWidth: 300 }}>
+            <GuidancePanel
+              title="Knowledge Studio Guide"
+              guidance={KNOWLEDGE_STUDIO_GUIDANCE}
+              activeView={activeView}
+              onClose={() => setShowGuidance(false)}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

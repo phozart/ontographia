@@ -1,9 +1,10 @@
 // pages/api/pdw/stats.js
 // Product Design Workspace - Statistics and Health API
 // Get counts, stage progress, and health metrics for PDW artefacts
+// Domain-scoped
 
 import { query } from '../../../lib/pg';
-import { getUserFromRequest, checkProjectAccess } from '../../../lib/projectAccess';
+import { getUserFromRequest, checkDomainAccess } from '../../../lib/projectAccess';
 import {
   PDW_STAGES,
   PDW_WORKSPACE_MODULES,
@@ -24,19 +25,19 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { projectId } = req.query;
+  const { domainId } = req.query;
 
-  if (!projectId) {
-    return res.status(400).json({ error: 'Project ID required' });
+  if (!domainId) {
+    return res.status(400).json({ error: 'Domain ID required' });
   }
 
-  const { hasAccess, error } = await checkProjectAccess(req, projectId, 'view');
+  const { hasAccess, error } = await checkDomainAccess(req, domainId, 'view');
   if (!hasAccess) {
     return res.status(403).json({ error });
   }
 
   try {
-    // Get all PDW artefacts for this project
+    // Get all PDW artefacts for this domain
     const artefactsResult = await query(
       `SELECT
         artefact_type,
@@ -45,9 +46,9 @@ export default async function handler(req, res) {
         created_at,
         updated_at
        FROM artefacts
-       WHERE project_id = $1
+       WHERE domain_id = $1
          AND artefact_type LIKE 'pdw_%'`,
-      [projectId]
+      [domainId]
     );
 
     const artefacts = artefactsResult.rows;
@@ -108,9 +109,9 @@ export default async function handler(req, res) {
       `SELECT COUNT(*) as count
        FROM artefact_relationships r
        JOIN artefacts fa ON fa.id = r.from_artefact_id
-       WHERE fa.project_id = $1
+       WHERE fa.domain_id = $1
          AND fa.artefact_type LIKE 'pdw_%'`,
-      [projectId]
+      [domainId]
     );
 
     // Get recent activity (last 7 days)
@@ -119,12 +120,12 @@ export default async function handler(req, res) {
         DATE(updated_at) as date,
         COUNT(*) as count
        FROM artefacts
-       WHERE project_id = $1
+       WHERE domain_id = $1
          AND artefact_type LIKE 'pdw_%'
          AND updated_at > NOW() - INTERVAL '7 days'
        GROUP BY DATE(updated_at)
        ORDER BY date DESC`,
-      [projectId]
+      [domainId]
     );
 
     // Get validation metrics

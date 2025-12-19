@@ -16,6 +16,10 @@ import AddIcon from '@mui/icons-material/Add';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import InfoIcon from '@mui/icons-material/Info';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import SchoolIcon from '@mui/icons-material/School';
+
+// Import principles helper
+import { getPrinciple } from '../../../lib/dwd-principles';
 
 export default function OverviewDashboard({
   onNavigate,
@@ -144,25 +148,51 @@ export default function OverviewDashboard({
             Observations
           </h3>
           <div className="dwd-observations-list">
-            {observations.map((obs, idx) => (
-              <div
-                key={obs.id || idx}
-                className={`dwd-observation dwd-observation--${obs.severity}`}
-              >
-                <div className="dwd-observation__content">
-                  <p>{obs.message}</p>
+            {observations.map((obs, idx) => {
+              const principle = obs.principle ? getPrinciple(obs.principle) : null;
+              return (
+                <div
+                  key={obs.id || idx}
+                  className={`dwd-observation dwd-observation--${obs.severity}`}
+                >
+                  {/* Principle Badge */}
+                  {principle && (
+                    <div
+                      className="dwd-observation__principle"
+                      style={{ borderLeftColor: principle.color }}
+                    >
+                      <span
+                        className="dwd-observation__principle-badge"
+                        style={{ backgroundColor: principle.color }}
+                      >
+                        <SchoolIcon fontSize="inherit" />
+                        P{principle.number}
+                      </span>
+                      <span className="dwd-observation__principle-name">
+                        {principle.shortName}
+                      </span>
+                    </div>
+                  )}
+                  <div className="dwd-observation__content">
+                    <p>{obs.message}</p>
+                    {obs.principleNote && (
+                      <p className="dwd-observation__principle-note">
+                        {obs.principleNote}
+                      </p>
+                    )}
+                  </div>
+                  {obs.suggestedAction && (
+                    <button
+                      className="dwd-observation__action"
+                      onClick={() => onCreateArtefact?.()}
+                    >
+                      {obs.suggestedAction}
+                      <ChevronRightIcon fontSize="small" />
+                    </button>
+                  )}
                 </div>
-                {obs.suggestedAction && (
-                  <button
-                    className="dwd-observation__action"
-                    onClick={() => onCreateArtefact?.()}
-                  >
-                    {obs.suggestedAction}
-                    <ChevronRightIcon fontSize="small" />
-                  </button>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}

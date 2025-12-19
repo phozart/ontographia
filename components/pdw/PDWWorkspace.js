@@ -1,10 +1,15 @@
 // components/pdw/PDWWorkspace.js
-// Product Design Workspace - Uses same Navigator pattern as RequirementsStudio
-// Reuses .navigator and .studio-main CSS classes for consistent layout
+// Product Design Workspace - Uses WorkspaceLayout pattern
 
 import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useRouter } from 'next/router';
+import Head from 'next/head';
+import styles from './PDWWorkspace.module.css';
 import { usePDW } from './PDWContext';
-import { useProjects } from '../ProjectContext';
+import { useDomains } from '../DomainContext';
+
+// Shared UI components
+import { WorkspaceLayout, Breadcrumb, BreadcrumbSeparator, Breadcrumbs } from '../ui';
 
 // View components
 import OverviewDashboard from './views/OverviewDashboard';
@@ -24,7 +29,6 @@ import DashboardIcon from '@mui/icons-material/Dashboard';
 import SearchIcon from '@mui/icons-material/Search';
 import EmojiObjectsIcon from '@mui/icons-material/EmojiObjects';
 import ScienceIcon from '@mui/icons-material/Science';
-import ViewModuleIcon from '@mui/icons-material/ViewModule';
 import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 import CollectionsBookmarkIcon from '@mui/icons-material/CollectionsBookmark';
 import SchoolIcon from '@mui/icons-material/School';
@@ -32,10 +36,8 @@ import GavelIcon from '@mui/icons-material/Gavel';
 import AddIcon from '@mui/icons-material/Add';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import NavigateNextIcon from '@mui/icons-material/NavigateNext';
-import FolderOpenIcon from '@mui/icons-material/FolderOpen';
-import WarningIcon from '@mui/icons-material/Warning';
 import InsightsIcon from '@mui/icons-material/Insights';
+import DesignServicesIcon from '@mui/icons-material/DesignServices';
 
 // View groups configuration
 const VIEW_GROUPS = [
@@ -95,8 +97,8 @@ const VIEW_INFO = {
   'decisions': { name: 'Decision Trail', group: 'Outcomes' },
 };
 
-// Navigator component - matches RequirementsStudio Navigator structure
-function PDWNavigator({ activeView, onViewChange, stats, onCreateClick }) {
+// Navigator component - uses CSS module for consistent styling
+function PDWNavigator({ activeView, onViewChange, stats, onCreateClick, collapsed, onToggleCollapse }) {
   const [expandedGroups, setExpandedGroups] = useState(() => {
     const initial = {};
     VIEW_GROUPS.forEach(g => {
@@ -121,51 +123,57 @@ function PDWNavigator({ activeView, onViewChange, stats, onCreateClick }) {
   }), [stats]);
 
   return (
-    <div className="navigator">
+    <nav className={styles.navigator}>
+      {/* Header */}
+      <div className={styles.navHeader}>
+        <div className={styles.navHeaderTitle}>
+          <DesignServicesIcon className={styles.navHeaderIcon} />
+          <span>Product Design</span>
+        </div>
+      </div>
+
       {/* Home/Overview Button */}
-      <div className="nav-home">
+      <div className={styles.navHome}>
         <button
-          className={`nav-home-btn ${activeView === 'overview' ? 'active' : ''}`}
+          className={`${styles.navHomeBtn} ${activeView === 'overview' ? styles.active : ''}`}
           onClick={() => onViewChange('overview')}
         >
           <DashboardIcon fontSize="small" />
           <span>Overview</span>
-          {stats?.total > 0 && <span className="nav-count">{stats.total}</span>}
+          {stats?.total > 0 && <span className={styles.navCount}>{stats.total}</span>}
         </button>
       </div>
 
       {/* Grouped Views */}
-      <div className="nav-views-grouped">
+      <div className={styles.navViewsGrouped}>
         {VIEW_GROUPS.map(group => {
           const hasActiveView = group.views.some(v => v.id === activeView);
           const groupCount = group.views.reduce((sum, v) => sum + (viewCounts[v.id] || 0), 0);
 
           return (
-            <div key={group.id} className={`nav-group ${hasActiveView ? 'has-active' : ''}`}>
+            <div key={group.id} className={styles.navGroup}>
               <button
-                className={`nav-group-header ${expandedGroups[group.id] ? 'expanded' : ''} ${hasActiveView ? 'has-active' : ''}`}
+                className={`${styles.navGroupHeader} ${hasActiveView ? styles.hasActive : ''}`}
                 onClick={() => toggleGroup(group.id)}
-                style={{ borderLeftColor: group.color }}
               >
                 {expandedGroups[group.id] ? <ExpandMoreIcon fontSize="small" /> : <ChevronRightIcon fontSize="small" />}
-                <span className="group-name">{group.name}</span>
-                {groupCount > 0 && <span className="group-count">{groupCount}</span>}
+                <span className={styles.groupName}>{group.name}</span>
+                {groupCount > 0 && <span className={styles.groupCount}>{groupCount}</span>}
               </button>
               {expandedGroups[group.id] && (
-                <div className="nav-group-views">
+                <div className={styles.navGroupViews}>
                   {group.views.map(v => {
                     const Icon = v.icon;
                     const count = viewCounts[v.id] || 0;
                     return (
                       <button
                         key={v.id}
-                        className={`nav-view-btn ${activeView === v.id ? 'active' : ''}`}
+                        className={`${styles.navViewBtn} ${activeView === v.id ? styles.active : ''}`}
                         onClick={() => onViewChange(v.id)}
-                        style={activeView === v.id ? { borderColor: v.color, color: v.color } : {}}
                       >
                         <Icon fontSize="small" />
                         <span>{v.name}</span>
-                        {count > 0 && <span className="nav-count">{count}</span>}
+                        {count > 0 && <span className={styles.navCount}>{count}</span>}
                       </button>
                     );
                   })}
@@ -177,13 +185,13 @@ function PDWNavigator({ activeView, onViewChange, stats, onCreateClick }) {
       </div>
 
       {/* Quick Create Button */}
-      <div className="navigator-footer">
-        <button className="nav-create-btn" onClick={onCreateClick}>
+      <div className={styles.navFooter}>
+        <button className={styles.navCreateBtn} onClick={onCreateClick}>
           <AddIcon fontSize="small" />
           <span>New Artefact</span>
         </button>
       </div>
-    </div>
+    </nav>
   );
 }
 
@@ -243,15 +251,16 @@ function CreateTypeSelector({ isOpen, onClose, onSelectType, typeDefs }) {
 
 // Main workspace component
 export default function PDWWorkspace() {
-  const { activeProject } = useProjects();
+  const router = useRouter();
+  const { activeDomain } = useDomains();
 
   const {
     artefacts,
     loading,
     error,
     saving,
-    activeView,
-    setActiveView,
+    activeView: contextActiveView,
+    setActiveView: setContextActiveView,
     selectedId,
     setSelectedId,
     refreshData,
@@ -262,6 +271,10 @@ export default function PDWWorkspace() {
     PDW_STAGES,
   } = usePDW();
 
+  // Local view state for URL sync
+  const [activeView, setActiveViewState] = useState('overview');
+  const [urlInitialized, setUrlInitialized] = useState(false);
+
   // Modal state
   const [showTypeSelector, setShowTypeSelector] = useState(false);
   const [showArtefactModal, setShowArtefactModal] = useState(false);
@@ -271,6 +284,39 @@ export default function PDWWorkspace() {
 
   // Delete confirmation
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+
+  // Set active view and update URL
+  const setActiveView = useCallback((viewId) => {
+    setActiveViewState(viewId);
+    setContextActiveView(viewId);
+    // Update URL with view parameter
+    const url = new URL(window.location.href);
+    if (viewId === 'overview') {
+      url.searchParams.delete('view');
+    } else {
+      url.searchParams.set('view', viewId);
+    }
+    router.replace(url.pathname + url.search, undefined, { shallow: true });
+  }, [router, setContextActiveView]);
+
+  // Initialize view from URL on mount
+  useEffect(() => {
+    if (!router.isReady || urlInitialized) return;
+
+    const viewFromUrl = router.query.view;
+    if (viewFromUrl && typeof viewFromUrl === 'string') {
+      // Validate the view exists
+      const isValidView = VIEW_GROUPS.some(g =>
+        g.views?.some(v => v.id === viewFromUrl)
+      ) || viewFromUrl === 'overview';
+
+      if (isValidView) {
+        setActiveViewState(viewFromUrl);
+        setContextActiveView(viewFromUrl);
+      }
+    }
+    setUrlInitialized(true);
+  }, [router.isReady, router.query.view, urlInitialized, setContextActiveView]);
 
   // Calculate stats for navigator
   const navStats = useMemo(() => {
@@ -340,9 +386,24 @@ export default function PDWWorkspace() {
   }, []);
 
   const handleNavigate = useCallback((viewOrStage, type) => {
-    if (type) {
-      setActiveView(viewOrStage);
+    // Handle type-based navigation (when user clicks on an artefact type)
+    if (viewOrStage === 'type' && type) {
+      // Map artefact types to views
+      const typeViewMap = {
+        pdw_opportunity: 'discovery',
+        pdw_problem: 'discovery',
+        pdw_insight: 'discovery',
+        pdw_idea: 'ideation',
+        pdw_concept: 'ideation',
+        pdw_hypothesis: 'ideation',
+        pdw_experiment: 'validation',
+        pdw_assumption: 'validation',
+        pdw_learning: 'learning',
+        pdw_decision: 'decisions',
+      };
+      setActiveView(typeViewMap[type] || 'overview');
     } else if (PDW_STAGES?.[viewOrStage]) {
+      // Handle stage-based navigation
       const stageViewMap = {
         discover: 'discovery',
         ideate: 'ideation',
@@ -352,6 +413,7 @@ export default function PDWWorkspace() {
       };
       setActiveView(stageViewMap[viewOrStage] || 'overview');
     } else {
+      // Direct view navigation
       setActiveView(viewOrStage);
     }
   }, [setActiveView, PDW_STAGES]);
@@ -421,53 +483,31 @@ export default function PDWWorkspace() {
     }
   };
 
-  // No project selected - use same class as RequirementsStudio
-  if (!activeProject) {
-    return (
-      <div className="requirements-studio">
-        <div className="studio-no-project">
-          <FolderOpenIcon style={{ fontSize: 64, opacity: 0.3, marginBottom: 16 }} />
-          <h2>No Project Selected</h2>
-          <p>Select a project from the dropdown above to start working.</p>
-        </div>
-      </div>
-    );
-  }
+  // Dynamic page title
+  const pageTitle = useMemo(() => {
+    if (activeView === 'overview') return 'Product Design | Ontographia';
+    if (currentViewInfo?.name) return `${currentViewInfo.name} - Product Design | Ontographia`;
+    return 'Product Design | Ontographia';
+  }, [activeView, currentViewInfo]);
 
-  return (
-    <div className="requirements-studio">
-      {/* Navigator - uses same CSS as RequirementsStudio */}
-      <PDWNavigator
-        activeView={activeView}
-        onViewChange={setActiveView}
-        stats={navStats}
-        onCreateClick={handleCreateClick}
-      />
+  // Build breadcrumbs for current view
+  const breadcrumbsContent = activeView !== 'overview' ? (
+    <Breadcrumbs>
+      <Breadcrumb icon={DashboardIcon} label="Overview" onClick={() => setActiveView('overview')} />
+      {currentViewInfo.group && (
+        <>
+          <BreadcrumbSeparator />
+          <Breadcrumb label={currentViewInfo.group} />
+        </>
+      )}
+      <BreadcrumbSeparator />
+      <Breadcrumb label={currentViewInfo.name} active />
+    </Breadcrumbs>
+  ) : null;
 
-      {/* Main content area - uses same CSS as RequirementsStudio */}
-      <div className="studio-main">
-        {/* Breadcrumbs */}
-        {activeView !== 'overview' && (
-          <div className="studio-breadcrumbs">
-            <button className="breadcrumb-item" onClick={() => setActiveView('overview')}>
-              <DashboardIcon fontSize="small" />
-              <span>Overview</span>
-            </button>
-            {currentViewInfo.group && (
-              <>
-                <NavigateNextIcon fontSize="small" className="breadcrumb-separator" />
-                <span className="breadcrumb-group">{currentViewInfo.group}</span>
-              </>
-            )}
-            <NavigateNextIcon fontSize="small" className="breadcrumb-separator" />
-            <span className="breadcrumb-current">{currentViewInfo.name}</span>
-          </div>
-        )}
-
-        {/* View content */}
-        {renderView()}
-      </div>
-
+  // Build modals
+  const modalsContent = (
+    <>
       {/* Create type selector modal */}
       <CreateTypeSelector
         isOpen={showTypeSelector}
@@ -499,14 +539,32 @@ export default function PDWWorkspace() {
           </div>
         </div>
       )}
+    </>
+  );
 
-      {/* Error toast */}
-      {error && (
-        <div className="pdw-toast pdw-toast--error">
-          <WarningIcon fontSize="small" />
-          <span>{error}</span>
-        </div>
-      )}
-    </div>
+  return (
+    <>
+      <Head>
+        <title>{pageTitle}</title>
+      </Head>
+      <WorkspaceLayout
+        navigator={
+          <PDWNavigator
+            activeView={activeView}
+            onViewChange={setActiveView}
+            stats={navStats}
+            onCreateClick={handleCreateClick}
+          />
+        }
+        breadcrumbs={breadcrumbsContent}
+        error={error}
+        noProject={!activeDomain}
+        noSelectionTitle="No Domain Selected"
+        noSelectionMessage="Select a domain to start working."
+        modals={modalsContent}
+      >
+        {renderView()}
+      </WorkspaceLayout>
+    </>
   );
 }

@@ -1,5 +1,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { useArtefacts } from '../ArtefactContext';
+import { useArtefacts, ARTEFACT_TYPES } from '../ArtefactContext';
+import Autocomplete from '@mui/material/Autocomplete';
+import TextField from '@mui/material/TextField';
 
 // MUI Icons
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
@@ -85,7 +87,7 @@ const QuestionCard = ({ question, stakeholders, requirements, onEdit, onStatusCh
         {relatedReq && (
           <div className="question-requirement">
             <span className="meta-label">Req:</span>
-            <span className="meta-value">{relatedReq.title || relatedReq.id}</span>
+            <span className="meta-value">{relatedReq.businessId || ''} {relatedReq.name || relatedReq.title || relatedReq.id}</span>
           </div>
         )}
       </div>
@@ -182,7 +184,7 @@ const ListView = ({ questions, stakeholders, requirements, onEdit }) => {
                   </span>
                 </td>
                 <td>{assignee?.name || '-'}</td>
-                <td>{req?.title || req?.id || '-'}</td>
+                <td>{req ? `${req.businessId || ''} ${req.name || req.title || ''}`.trim() : '-'}</td>
                 <td>
                   {days}
                   {aging && <span style={{ color: aging.color, marginLeft: '4px' }}>({aging.label})</span>}
@@ -349,15 +351,68 @@ const QuestionFormModal = ({
 
             <div className="form-group">
               <label>Related Requirement</label>
-              <select
-                value={formData.relatedRequirement}
-                onChange={(e) => setFormData({ ...formData, relatedRequirement: e.target.value })}
-              >
-                <option value="">-- Select Requirement --</option>
-                {requirements.map(r => (
-                  <option key={r.id} value={r.id}>{r.title || r.id}</option>
-                ))}
-              </select>
+              <Autocomplete
+                options={requirements}
+                getOptionLabel={(option) => `${option.businessId || ''} ${option.name || option.title || ''}`.trim()}
+                value={requirements.find(r => r.id === formData.relatedRequirement) || null}
+                onChange={(event, value) => {
+                  setFormData({ ...formData, relatedRequirement: value?.id || '' });
+                }}
+                renderOption={(props, option) => {
+                  const typeDef = ARTEFACT_TYPES[option.artefactType];
+                  return (
+                    <li {...props} key={option.id}>
+                      <span
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          width: 22,
+                          height: 22,
+                          backgroundColor: typeDef?.color || '#6b7280',
+                          borderRadius: 4,
+                          color: 'white',
+                          fontSize: 10,
+                          marginRight: 10,
+                          flexShrink: 0
+                        }}
+                      >
+                        {typeDef?.icon || 'R'}
+                      </span>
+                      <span style={{ fontWeight: 500, marginRight: 8, color: 'var(--accent)' }}>
+                        {option.businessId || ''}
+                      </span>
+                      <span>{option.name || option.title}</span>
+                    </li>
+                  );
+                }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    placeholder="Search requirements by ID or name..."
+                    size="small"
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        backgroundColor: 'var(--bg)',
+                        '& fieldset': { borderColor: 'var(--border)' },
+                        '&:hover fieldset': { borderColor: 'var(--accent)' },
+                        '&.Mui-focused fieldset': { borderColor: 'var(--accent)' },
+                      },
+                      '& .MuiInputBase-input': { color: 'var(--text)', fontSize: 13 },
+                    }}
+                  />
+                )}
+                sx={{
+                  '& .MuiAutocomplete-listbox': {
+                    backgroundColor: 'var(--panel)',
+                    '& .MuiAutocomplete-option': {
+                      color: 'var(--text)',
+                      '&:hover': { backgroundColor: 'var(--accent-soft)' },
+                      '&[aria-selected="true"]': { backgroundColor: 'var(--accent-soft)' },
+                    },
+                  },
+                }}
+              />
             </div>
           </div>
 
@@ -756,16 +811,69 @@ export default function QuestionsLog({ projectId }) {
             ))}
           </select>
         </div>
-        <div className="filter-group">
-          <select
-            value={filterRequirement}
-            onChange={(e) => setFilterRequirement(e.target.value)}
-          >
-            <option value="">All Requirements</option>
-            {requirements.map(r => (
-              <option key={r.id} value={r.id}>{r.title || r.id}</option>
-            ))}
-          </select>
+        <div className="filter-group filter-autocomplete">
+          <Autocomplete
+            options={requirements}
+            getOptionLabel={(option) => `${option.businessId || ''} ${option.name || option.title || ''}`.trim()}
+            value={requirements.find(r => r.id === filterRequirement) || null}
+            onChange={(event, value) => setFilterRequirement(value?.id || '')}
+            renderOption={(props, option) => {
+              const typeDef = ARTEFACT_TYPES[option.artefactType];
+              return (
+                <li {...props} key={option.id}>
+                  <span
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: 20,
+                      height: 20,
+                      backgroundColor: typeDef?.color || '#6b7280',
+                      borderRadius: 4,
+                      color: 'white',
+                      fontSize: 10,
+                      marginRight: 8,
+                      flexShrink: 0
+                    }}
+                  >
+                    {typeDef?.icon || 'R'}
+                  </span>
+                  <span style={{ fontWeight: 500, marginRight: 6 }}>{option.businessId || ''}</span>
+                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {option.name || option.title}
+                  </span>
+                </li>
+              );
+            }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                placeholder="All Requirements"
+                size="small"
+                sx={{
+                  minWidth: 200,
+                  '& .MuiOutlinedInput-root': {
+                    backgroundColor: 'var(--bg)',
+                    '& fieldset': { borderColor: 'var(--border)' },
+                    '&:hover fieldset': { borderColor: 'var(--accent)' },
+                    '&.Mui-focused fieldset': { borderColor: 'var(--accent)' },
+                  },
+                  '& .MuiInputBase-input': { color: 'var(--text)', fontSize: 13 },
+                }}
+              />
+            )}
+            sx={{
+              '& .MuiAutocomplete-listbox': {
+                backgroundColor: 'var(--panel)',
+                maxHeight: 300,
+                '& .MuiAutocomplete-option': {
+                  color: 'var(--text)',
+                  '&:hover': { backgroundColor: 'var(--accent-soft)' },
+                  '&[aria-selected="true"]': { backgroundColor: 'var(--accent-soft)' },
+                },
+              },
+            }}
+          />
         </div>
         <div className="filter-group">
           <select

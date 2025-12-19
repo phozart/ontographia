@@ -270,25 +270,25 @@ export default function PDWArtefactModal({
   // Render field based on type
   const renderField = (fieldKey, field) => {
     const value = formData[fieldKey];
-    const props = { field, value, onChange: handleFieldChange, fieldKey, key: fieldKey };
+    const props = { field, value, onChange: handleFieldChange, fieldKey };
 
     switch (field.type) {
       case 'text':
-        return <TextField {...props} />;
+        return <TextField key={fieldKey} {...props} />;
       case 'textarea':
-        return <TextAreaField {...props} />;
+        return <TextAreaField key={fieldKey} {...props} />;
       case 'select':
-        return <SelectField {...props} />;
+        return <SelectField key={fieldKey} {...props} />;
       case 'range':
-        return <RangeField {...props} />;
+        return <RangeField key={fieldKey} {...props} />;
       case 'number':
-        return <NumberField {...props} />;
+        return <NumberField key={fieldKey} {...props} />;
       case 'date':
-        return <DateField {...props} />;
+        return <DateField key={fieldKey} {...props} />;
       case 'tags':
-        return <TagsField {...props} />;
+        return <TagsField key={fieldKey} {...props} />;
       default:
-        return <TextField {...props} />;
+        return <TextField key={fieldKey} {...props} />;
     }
   };
 

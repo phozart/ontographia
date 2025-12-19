@@ -37,6 +37,11 @@ export default function DWDArtefactCard({
   onDelete,
   compact = false,
   showActions = true,
+  // Optional: pass relationships from parent to avoid N+1 queries
+  // If not provided, will fetch individually (less performant for lists)
+  relationships: relationshipsProp = null,
+  // Optional: pass relationship count directly if you don't need full data
+  relationshipCount = null,
 }) {
   const { getTypeDefinition, getRelated, DWD_TYPE_DEFS } = useDWD();
 
@@ -44,9 +49,16 @@ export default function DWDArtefactCard({
     return getTypeDefinition(artefact.artefact_type) || DWD_TYPE_DEFS[artefact.artefact_type];
   }, [artefact.artefact_type, getTypeDefinition, DWD_TYPE_DEFS]);
 
+  // Use provided relationships if available, otherwise fetch (N+1 fallback)
   const relationships = useMemo(() => {
+    if (relationshipsProp !== null) return relationshipsProp;
+    // Only fetch if we need to display count and it wasn't provided
+    if (relationshipCount !== null) return [];
     return getRelated(artefact.id);
-  }, [getRelated, artefact.id]);
+  }, [relationshipsProp, relationshipCount, getRelated, artefact.id]);
+
+  // Calculate display count
+  const relCount = relationshipCount ?? relationships.length;
 
   const customFields = artefact.custom_fields || {};
 
@@ -195,10 +207,10 @@ export default function DWDArtefactCard({
         )}
       </div>
 
-      {relationships.length > 0 && (
+      {relCount > 0 && (
         <div className="dwd-card__footer">
           <span className="dwd-card__rel-count">
-            {relationships.length} relationship{relationships.length !== 1 ? 's' : ''}
+            {relCount} relationship{relCount !== 1 ? 's' : ''}
           </span>
         </div>
       )}

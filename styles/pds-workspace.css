@@ -1,0 +1,850 @@
+/* pds-workspace.css - Global styles for Project Design Workspace */
+
+/* ============================================================================
+   PDS Navigator Styles
+   ============================================================================ */
+
+.navigator-project-selector {
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.navigator-project-active {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--surface-raised);
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.navigator-project-active svg {
+  color: var(--accent);
+  font-size: 18px;
+}
+
+.navigator-project-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.navigator-project-empty {
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.navigator-actions {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.navigator-action-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.navigator-action-btn:hover:not(:disabled) {
+  background: var(--surface-hover);
+  border-color: var(--border-strong);
+}
+
+.navigator-action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.navigator-action-btn--primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+.navigator-action-btn--primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+.navigator-footer {
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+  margin-top: auto;
+}
+
+.navigator-export-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.navigator-export-btn:hover {
+  background: var(--surface-raised);
+  color: var(--text);
+}
+
+/* ============================================================================
+   PDS Delete Confirmation Modal
+   ============================================================================ */
+
+.pds-delete-confirm {
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 24px;
+  width: 400px;
+  max-width: 90vw;
+  box-shadow: var(--shadow-lg);
+}
+
+.pds-delete-confirm h3 {
+  margin: 0 0 12px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.pds-delete-confirm p {
+  margin: 0 0 20px 0;
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.pds-delete-confirm__actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+/* ============================================================================
+   PDS Placeholder View
+   ============================================================================ */
+
+.pds-placeholder-view {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 400px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.pds-placeholder-view h2 {
+  margin: 0 0 8px 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.pds-placeholder-view p {
+  margin: 0;
+  font-size: 14px;
+}
+
+/* ============================================================================
+   PDS Tools Palette
+   ============================================================================ */
+
+.pds-tools-palette-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.15s ease;
+}
+
+.pds-tools-palette {
+  background: var(--surface);
+  border-radius: 16px;
+  width: 720px;
+  max-width: 90vw;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-xl);
+  animation: slideUp 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.pds-tools-palette__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.pds-tools-palette__title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.pds-tools-palette__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.pds-tools-palette__close:hover {
+  background: var(--surface-raised);
+  color: var(--text);
+}
+
+.pds-tools-palette__search {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.pds-tools-palette__search-icon {
+  color: var(--text-muted);
+}
+
+.pds-tools-palette__search-input {
+  flex: 1;
+  padding: 8px 0;
+  background: transparent;
+  border: none;
+  font-size: 15px;
+  color: var(--text);
+  outline: none;
+}
+
+.pds-tools-palette__search-input::placeholder {
+  color: var(--text-muted);
+}
+
+.pds-tools-palette__filters {
+  display: flex;
+  gap: 8px;
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+}
+
+.pds-tools-palette__filter {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  font-size: 13px;
+  color: var(--text-muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.pds-tools-palette__filter:hover {
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+.pds-tools-palette__filter--active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+.pds-tools-palette__filter svg {
+  font-size: 16px;
+}
+
+.pds-tools-palette__content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 24px;
+}
+
+.pds-tools-palette__stage-group {
+  margin-bottom: 24px;
+}
+
+.pds-tools-palette__stage-group:last-child {
+  margin-bottom: 0;
+}
+
+.pds-tools-palette__stage-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+.pds-tools-palette__stage-header svg {
+  font-size: 16px;
+}
+
+.pds-tools-palette__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+@media (max-width: 600px) {
+  .pds-tools-palette__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.pds-tools-palette__tool {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.pds-tools-palette__tool:hover {
+  border-color: var(--accent);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.pds-tools-palette__tool--active {
+  background: var(--accent-subtle);
+  border-color: var(--accent);
+}
+
+.pds-tools-palette__tool-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  color: white;
+  flex-shrink: 0;
+}
+
+.pds-tools-palette__tool-icon svg {
+  font-size: 20px;
+}
+
+.pds-tools-palette__tool-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.pds-tools-palette__tool-name {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+
+.pds-tools-palette__tool-desc {
+  display: block;
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.pds-tools-palette__tool-star {
+  color: #f59e0b;
+  flex-shrink: 0;
+}
+
+.pds-tools-palette__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.pds-tools-palette__empty svg {
+  font-size: 48px;
+  margin-bottom: 12px;
+  opacity: 0.5;
+}
+
+.pds-tools-palette__empty p {
+  margin: 0;
+  font-size: 14px;
+}
+
+.pds-tools-palette__footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+  background: var(--surface-raised);
+  border-radius: 0 0 16px 16px;
+}
+
+.pds-tools-palette__footer p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.pds-tools-palette__footer strong {
+  color: var(--text);
+}
+
+/* ============================================================================
+   PDS Inline Tools
+   ============================================================================ */
+
+.pds-inline-tools {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.pds-inline-tools__label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.pds-inline-tools__list {
+  display: flex;
+  gap: 8px;
+}
+
+.pds-inline-tools__btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 12px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.pds-inline-tools__btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.pds-inline-tools__btn svg {
+  font-size: 14px;
+}
+
+/* ============================================================================
+   PDS View Common Styles
+   ============================================================================ */
+
+.pds-view {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.pds-view__header {
+  padding: 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.pds-view__title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 8px 0;
+}
+
+.pds-view__title h1 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.pds-view__title-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--accent);
+  color: white;
+}
+
+.pds-view__description {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.pds-view__content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+}
+
+.pds-view__actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+/* ============================================================================
+   PDS Cards Grid
+   ============================================================================ */
+
+.pds-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.pds-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.pds-card:hover {
+  border-color: var(--accent);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.pds-card__header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.pds-card__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  color: white;
+  flex-shrink: 0;
+}
+
+.pds-card__title {
+  flex: 1;
+  min-width: 0;
+}
+
+.pds-card__title h3 {
+  margin: 0 0 2px 0;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pds-card__type {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.pds-card__badge {
+  padding: 2px 8px;
+  background: var(--surface-raised);
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.pds-card__body {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+
+.pds-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pds-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.pds-card__meta-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pds-card__meta-item svg {
+  font-size: 14px;
+}
+
+/* ============================================================================
+   PDS Stage Badges
+   ============================================================================ */
+
+.pds-stage-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.pds-stage-badge--intent {
+  background: rgba(139, 92, 246, 0.1);
+  color: #8b5cf6;
+}
+
+.pds-stage-badge--structure {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+
+.pds-stage-badge--uncertainty {
+  background: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+}
+
+.pds-stage-badge--control {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
+.pds-stage-badge--learning {
+  background: rgba(99, 102, 241, 0.1);
+  color: #6366f1;
+}
+
+/* ============================================================================
+   PDS Status Badges
+   ============================================================================ */
+
+.pds-status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.pds-status-badge--draft {
+  background: rgba(148, 163, 184, 0.2);
+  color: #64748b;
+}
+
+.pds-status-badge--active {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+
+.pds-status-badge--completed {
+  background: rgba(34, 197, 94, 0.1);
+  color: #22c55e;
+}
+
+.pds-status-badge--blocked {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.pds-status-badge--at-risk {
+  background: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+}
+
+/* ============================================================================
+   PDS Empty States
+   ============================================================================ */
+
+.pds-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.pds-empty-state__icon {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-raised);
+  border-radius: 16px;
+  margin-bottom: 16px;
+  color: var(--text-muted);
+}
+
+.pds-empty-state__icon svg {
+  font-size: 32px;
+}
+
+.pds-empty-state__title {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.pds-empty-state__description {
+  margin: 0 0 20px 0;
+  font-size: 14px;
+  color: var(--text-muted);
+  max-width: 400px;
+  line-height: 1.5;
+}
+
+/* ============================================================================
+   PDS Split Layout (for tools)
+   ============================================================================ */
+
+.pds-split-layout {
+  display: flex;
+  height: 100%;
+}
+
+.pds-split-layout__main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+}
+
+.pds-split-layout__sidebar {
+  width: 320px;
+  border-left: 1px solid var(--border);
+  background: var(--surface-raised);
+  overflow-y: auto;
+}
+
+/* ============================================================================
+   PDS Section Headers
+   ============================================================================ */
+
+.pds-section {
+  margin-bottom: 32px;
+}
+
+.pds-section:last-child {
+  margin-bottom: 0;
+}
+
+.pds-section__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.pds-section__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.pds-section__title svg {
+  color: var(--text-muted);
+}
+
+.pds-section__count {
+  padding: 2px 8px;
+  background: var(--surface-raised);
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+}

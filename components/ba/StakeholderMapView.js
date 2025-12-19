@@ -69,7 +69,7 @@ function StakeholderCard({ stakeholder, onSelect, onDragStart, onDragEnd, select
       draggable
       onDragStart={(e) => onDragStart(e, stakeholder)}
       onDragEnd={onDragEnd}
-      onClick={() => onSelect(stakeholder)}
+      onClick={(e) => onSelect(stakeholder, e)}
     >
       <div className="stakeholder-card-header">
         <div className="stakeholder-avatar" style={{ backgroundColor: ARTEFACT_TYPES.Stakeholder?.color }}>
@@ -150,8 +150,8 @@ function Quadrant({ quadrant, stakeholders, onSelectStakeholder, selectedId, onD
   );
 }
 
-// ============ STAKEHOLDER DETAIL PANEL ============
-function StakeholderDetailPanel({ stakeholder, requirements, onClose, onSelectRequirement }) {
+// ============ STAKEHOLDER DETAIL POPUP ============
+function StakeholderDetailPopup({ stakeholder, requirements, onClose, onSelectRequirement, onEdit, position }) {
   if (!stakeholder) return null;
 
   const ownedRequirements = requirements.filter(r =>
@@ -160,15 +160,23 @@ function StakeholderDetailPanel({ stakeholder, requirements, onClose, onSelectRe
     r.source?.includes(stakeholder.name)
   );
 
+  // Calculate popup position to stay within viewport
+  const popupStyle = {
+    top: Math.min(position?.y || 100, window.innerHeight - 520),
+    left: Math.min(position?.x || 100, window.innerWidth - 360),
+  };
+
   return (
-    <div className="stakeholder-side-panel">
-      <div className="side-panel-header">
-        <h3>Stakeholder Details</h3>
-        <button onClick={onClose} className="icon-btn">
-          <CloseIcon fontSize="small" />
-        </button>
-      </div>
-      <div className="side-panel-content">
+    <>
+      <div className="stakeholder-popup-overlay" onClick={onClose} />
+      <div className="stakeholder-popup" style={popupStyle}>
+        <div className="stakeholder-popup-header">
+          <h3>Stakeholder Details</h3>
+          <button onClick={onClose} className="icon-btn">
+            <CloseIcon fontSize="small" />
+          </button>
+        </div>
+        <div className="stakeholder-popup-content">
         {/* Basic Info */}
         <div className="stakeholder-detail-section">
           <div className="stakeholder-profile">
@@ -256,8 +264,15 @@ function StakeholderDetailPanel({ stakeholder, requirements, onClose, onSelectRe
             </p>
           </div>
         </div>
+        </div>
+        <div className="stakeholder-popup-actions">
+          <button className="btn btn-secondary" onClick={onClose}>Close</button>
+          {onEdit && (
+            <button className="btn btn-primary" onClick={() => onEdit(stakeholder)}>Edit</button>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 
@@ -286,8 +301,17 @@ function getQuadrantId(influence, interest) {
 // ============ MAIN STAKEHOLDER MAP VIEW ============
 export default function StakeholderMapView({ artefacts, relationships, onSelectArtefact, onUpdateArtefact, onCreate }) {
   const [selectedStakeholder, setSelectedStakeholder] = useState(null);
+  const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
   const [draggedStakeholder, setDraggedStakeholder] = useState(null);
   const canvasRef = useRef(null);
+
+  // Handle stakeholder selection with position tracking
+  const handleSelectStakeholder = useCallback((stakeholder, event) => {
+    if (event) {
+      setPopupPosition({ x: event.clientX + 20, y: event.clientY - 50 });
+    }
+    setSelectedStakeholder(stakeholder);
+  }, []);
 
   // Filter stakeholders from artefacts
   const stakeholders = useMemo(() => {
@@ -460,7 +484,7 @@ export default function StakeholderMapView({ artefacts, relationships, onSelectA
           <Quadrant
             quadrant={QUADRANTS.keepSatisfied}
             stakeholders={stakeholdersByQuadrant.keepSatisfied}
-            onSelectStakeholder={setSelectedStakeholder}
+            onSelectStakeholder={handleSelectStakeholder}
             selectedId={selectedStakeholder?.id}
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
@@ -470,7 +494,7 @@ export default function StakeholderMapView({ artefacts, relationships, onSelectA
           <Quadrant
             quadrant={QUADRANTS.manageClosely}
             stakeholders={stakeholdersByQuadrant.manageClosely}
-            onSelectStakeholder={setSelectedStakeholder}
+            onSelectStakeholder={handleSelectStakeholder}
             selectedId={selectedStakeholder?.id}
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
@@ -482,7 +506,7 @@ export default function StakeholderMapView({ artefacts, relationships, onSelectA
           <Quadrant
             quadrant={QUADRANTS.monitor}
             stakeholders={stakeholdersByQuadrant.monitor}
-            onSelectStakeholder={setSelectedStakeholder}
+            onSelectStakeholder={handleSelectStakeholder}
             selectedId={selectedStakeholder?.id}
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
@@ -492,7 +516,7 @@ export default function StakeholderMapView({ artefacts, relationships, onSelectA
           <Quadrant
             quadrant={QUADRANTS.keepInformed}
             stakeholders={stakeholdersByQuadrant.keepInformed}
-            onSelectStakeholder={setSelectedStakeholder}
+            onSelectStakeholder={handleSelectStakeholder}
             selectedId={selectedStakeholder?.id}
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
@@ -505,17 +529,19 @@ export default function StakeholderMapView({ artefacts, relationships, onSelectA
             INTEREST →
           </div>
         </div>
-
-        {/* Side Panel for selected stakeholder */}
-        {selectedStakeholder && (
-          <StakeholderDetailPanel
-            stakeholder={selectedStakeholder}
-            requirements={requirements}
-            onClose={() => setSelectedStakeholder(null)}
-            onSelectRequirement={onSelectArtefact}
-          />
-        )}
       </div>
+
+      {/* Floating Popup for selected stakeholder */}
+      {selectedStakeholder && (
+        <StakeholderDetailPopup
+          stakeholder={selectedStakeholder}
+          requirements={requirements}
+          position={popupPosition}
+          onClose={() => setSelectedStakeholder(null)}
+          onSelectRequirement={onSelectArtefact}
+          onEdit={onSelectArtefact}
+        />
+      )}
 
       {/* Empty State */}
       {stakeholders.length === 0 && (

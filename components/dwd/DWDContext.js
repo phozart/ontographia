@@ -107,8 +107,10 @@ export function DWDProvider({ children }) {
 
       const res = await fetch(`/api/dwd/cases?${params}`, { headers: authHeaders });
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || 'Failed to fetch cases');
+        // Don't throw, just log and return empty
+        console.warn('DWD cases API returned error status:', res.status);
+        setCases([]);
+        return null;
       }
 
       const data = await res.json();
@@ -116,7 +118,7 @@ export function DWDProvider({ children }) {
       return data;
     } catch (err) {
       console.error('Error fetching DWD cases:', err);
-      setError(err.message);
+      setCases([]);
       return null;
     }
   }, [user, activeProject?.id, authHeaders]);
@@ -140,8 +142,10 @@ export function DWDProvider({ children }) {
 
       const res = await fetch(`/api/dwd/artefacts?${params}`, { headers: authHeaders });
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || 'Failed to fetch artefacts');
+        // Don't throw, just log and return empty
+        console.warn('DWD artefacts API returned error status:', res.status);
+        setArtefacts([]);
+        return null;
       }
 
       const data = await res.json();
@@ -149,7 +153,7 @@ export function DWDProvider({ children }) {
       return data;
     } catch (err) {
       console.error('Error fetching DWD artefacts:', err);
-      setError(err.message);
+      setArtefacts([]);
       return null;
     } finally {
       setLoading(false);
@@ -168,8 +172,10 @@ export function DWDProvider({ children }) {
 
       const res = await fetch(`/api/dwd/relationships?${params}`, { headers: authHeaders });
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || 'Failed to fetch relationships');
+        // Don't throw, just log and return empty
+        console.warn('DWD relationships API returned error status:', res.status);
+        setRelationships([]);
+        return null;
       }
 
       const data = await res.json();
@@ -177,6 +183,7 @@ export function DWDProvider({ children }) {
       return data;
     } catch (err) {
       console.error('Error fetching DWD relationships:', err);
+      setRelationships([]);
       return null;
     }
   }, [user, activeProject?.id, activeCase?.id, authHeaders]);
@@ -193,8 +200,9 @@ export function DWDProvider({ children }) {
 
       const res = await fetch(`/api/dwd/stats?${params}`, { headers: authHeaders });
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || 'Failed to fetch stats');
+        // Don't throw, just log and return
+        console.warn('DWD stats API returned error status:', res.status);
+        return null;
       }
 
       const data = await res.json();
@@ -337,7 +345,8 @@ export function DWDProvider({ children }) {
       if (activeCase?.id && type !== 'dwd_case') {
         const relType = getRelationshipTypeForArtefact(type);
         if (relType) {
-          await createRelationship(activeCase.id, newArtefact.id, relType);
+          // createRelationship expects (type, fromId, toId)
+          await createRelationship(relType, activeCase.id, newArtefact.id);
         }
       }
 

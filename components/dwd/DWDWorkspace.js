@@ -1,10 +1,18 @@
 // components/dwd/DWDWorkspace.js
 // Dynamic Work Design Workspace - Main workspace component
-// Uses same Navigator pattern as RequirementsStudio for consistent layout
 
-import { useState, useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import { useDWD } from './DWDContext';
 import { useProjects } from '../ProjectContext';
+
+// Shared UI components
+import { WorkspaceLayout, Breadcrumb, BreadcrumbSeparator, Breadcrumbs } from '../ui';
+
+// Extracted components
+import DWDNavigator, { VIEW_INFO } from './DWDNavigator';
+import CreateTypeSelector from './CreateTypeSelector';
+import useDWDModals from './hooks/useDWDModals';
 
 // View components
 import OverviewDashboard from './views/OverviewDashboard';
@@ -13,6 +21,17 @@ import WorkLandscape from './views/WorkLandscape';
 import WorkActorFit from './views/WorkActorFit';
 import AdjustmentLog from './views/AdjustmentLog';
 import LearningCapture from './views/LearningCapture';
+import FitAnalysis from './views/FitAnalysis';
+import WorkFlowCanvas from './WorkFlowCanvas';
+import VolatilityAssessment from './VolatilityAssessment';
+import DiagnosticWizard from './DiagnosticWizard';
+import PatternLibrary from './PatternLibrary';
+import ExperimentTracker from './ExperimentTracker';
+import CrossStudioLinker from './CrossStudioLinker';
+import DWDReportGenerator from './DWDReportGenerator';
+import EffectivenessDashboard from './views/EffectivenessDashboard';
+import CaseTimeline from './views/CaseTimeline';
+import TraceMatrix from './views/TraceMatrix';
 
 // Artefact components
 import DWDArtefactModal from './artefacts/DWDArtefactModal';
@@ -20,377 +39,245 @@ import DWDArtefactModal from './artefacts/DWDArtefactModal';
 // MUI Icons
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import FolderIcon from '@mui/icons-material/Folder';
-import AssignmentIcon from '@mui/icons-material/Assignment';
-import PersonIcon from '@mui/icons-material/Person';
-import WarningIcon from '@mui/icons-material/Warning';
-import TuneIcon from '@mui/icons-material/Tune';
-import LightbulbIcon from '@mui/icons-material/Lightbulb';
-import AddIcon from '@mui/icons-material/Add';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import NavigateNextIcon from '@mui/icons-material/NavigateNext';
-import FolderOpenIcon from '@mui/icons-material/FolderOpen';
-import SearchIcon from '@mui/icons-material/Search';
-import BuildIcon from '@mui/icons-material/Build';
-import SchoolIcon from '@mui/icons-material/School';
+import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
+import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 
-// View groups configuration
-const VIEW_GROUPS = [
-  {
-    id: 'diagnose',
-    name: 'Diagnose',
-    color: '#f59e0b',
-    views: [
-      { id: 'cases', name: 'Work Situations', icon: FolderIcon, color: '#6366f1' },
-      { id: 'landscape', name: 'Work Landscape', icon: AssignmentIcon, color: '#3b82f6' },
-      { id: 'actors', name: 'Work-Actor Fit', icon: PersonIcon, color: '#8b5cf6' },
-    ]
-  },
-  {
-    id: 'design',
-    name: 'Design',
-    color: '#8b5cf6',
-    views: [
-      { id: 'adjustments', name: 'Adjustments', icon: TuneIcon, color: '#10b981' },
-    ]
-  },
-  {
-    id: 'learn',
-    name: 'Learn',
-    color: '#10b981',
-    views: [
-      { id: 'learnings', name: 'Learning Capture', icon: LightbulbIcon, color: '#06b6d4' },
-    ]
-  },
-];
-
-// View info for breadcrumbs
-const VIEW_INFO = {
-  'overview': { name: 'Overview', group: null },
-  'cases': { name: 'Work Situations', group: 'Diagnose' },
-  'landscape': { name: 'Work Landscape', group: 'Diagnose' },
-  'actors': { name: 'Work-Actor Fit', group: 'Diagnose' },
-  'adjustments': { name: 'Adjustments', group: 'Design' },
-  'learnings': { name: 'Learning Capture', group: 'Learn' },
-};
-
-// Navigator component
-function DWDNavigator({ activeView, onViewChange, stats, onCreateClick, activeCase }) {
-  const [expandedGroups, setExpandedGroups] = useState(() => {
-    const initial = {};
-    VIEW_GROUPS.forEach(g => {
-      initial[g.id] = true; // Start all expanded
-    });
-    return initial;
-  });
-
-  const toggleGroup = (groupId) => {
-    setExpandedGroups(prev => ({ ...prev, [groupId]: !prev[groupId] }));
-  };
-
-  // Calculate counts per view
-  const viewCounts = useMemo(() => ({
-    cases: stats?.cases || 0,
-    landscape: stats?.workItems || 0,
-    actors: stats?.actors || 0,
-    adjustments: stats?.adjustments || 0,
-    learnings: stats?.learnings || 0,
-  }), [stats]);
-
-  return (
-    <div className="navigator">
-      {/* Home/Overview Button */}
-      <div className="nav-home">
-        <button
-          className={`nav-home-btn ${activeView === 'overview' ? 'active' : ''}`}
-          onClick={() => onViewChange('overview')}
-        >
-          <DashboardIcon fontSize="small" />
-          <span>Overview</span>
-          {stats?.total > 0 && <span className="nav-count">{stats.total}</span>}
-        </button>
-      </div>
-
-      {/* Active Case Indicator */}
-      {activeCase && (
-        <div className="nav-active-case">
-          <FolderIcon fontSize="small" style={{ color: '#6366f1' }} />
-          <span className="nav-active-case__name">{activeCase.name}</span>
-        </div>
-      )}
-
-      {/* Grouped Views */}
-      <div className="nav-views-grouped">
-        {VIEW_GROUPS.map(group => {
-          const hasActiveView = group.views.some(v => v.id === activeView);
-          const groupCount = group.views.reduce((sum, v) => sum + (viewCounts[v.id] || 0), 0);
-
-          return (
-            <div key={group.id} className={`nav-group ${hasActiveView ? 'has-active' : ''}`}>
-              <button
-                className={`nav-group-header ${expandedGroups[group.id] ? 'expanded' : ''} ${hasActiveView ? 'has-active' : ''}`}
-                onClick={() => toggleGroup(group.id)}
-                style={{ borderLeftColor: group.color }}
-              >
-                {expandedGroups[group.id] ? <ExpandMoreIcon fontSize="small" /> : <ChevronRightIcon fontSize="small" />}
-                <span className="group-name">{group.name}</span>
-                {groupCount > 0 && <span className="group-count">{groupCount}</span>}
-              </button>
-              {expandedGroups[group.id] && (
-                <div className="nav-group-views">
-                  {group.views.map(v => {
-                    const Icon = v.icon;
-                    const count = viewCounts[v.id] || 0;
-                    return (
-                      <button
-                        key={v.id}
-                        className={`nav-view-btn ${activeView === v.id ? 'active' : ''}`}
-                        onClick={() => onViewChange(v.id)}
-                        style={activeView === v.id ? { borderColor: v.color, color: v.color } : {}}
-                      >
-                        <Icon fontSize="small" />
-                        <span>{v.name}</span>
-                        {count > 0 && <span className="nav-count">{count}</span>}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Quick Create Button */}
-      <div className="navigator-footer">
-        <button className="nav-create-btn" onClick={onCreateClick}>
-          <AddIcon fontSize="small" />
-          <span>New Artefact</span>
-        </button>
-      </div>
-    </div>
-  );
-}
-
-// Create artefact type selector modal
-function CreateTypeSelector({ isOpen, onClose, onSelectType, typeDefs }) {
-  if (!isOpen) return null;
-
-  const categories = {
-    diagnose: {
-      name: 'Diagnose',
-      icon: SearchIcon,
-      color: '#f59e0b',
-      types: ['dwd_case', 'dwd_work_item', 'dwd_actor', 'dwd_signal']
-    },
-    design: {
-      name: 'Design',
-      icon: BuildIcon,
-      color: '#8b5cf6',
-      types: ['dwd_adjustment', 'dwd_coordination_pattern']
-    },
-    learn: {
-      name: 'Learn',
-      icon: SchoolIcon,
-      color: '#10b981',
-      types: ['dwd_learning', 'dwd_outcome']
-    },
-  };
-
-  return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="dwd-type-selector" onClick={(e) => e.stopPropagation()}>
-        <div className="dwd-type-selector__header">
-          <h3>Create New Artefact</h3>
-          <button className="dwd-type-selector__close" onClick={onClose}>×</button>
-        </div>
-        <div className="dwd-type-selector__content">
-          {Object.entries(categories).map(([catId, category]) => {
-            const Icon = category.icon;
-            return (
-              <div key={catId} className="dwd-type-selector__category">
-                <h4 style={{ color: category.color }}>
-                  <Icon fontSize="small" style={{ marginRight: 8, verticalAlign: 'middle' }} />
-                  {category.name}
-                </h4>
-                <div className="dwd-type-selector__types">
-                  {category.types.map(typeId => {
-                    const typeDef = typeDefs?.[typeId];
-                    if (!typeDef) return null;
-                    return (
-                      <button
-                        key={typeId}
-                        className="dwd-type-selector__type"
-                        onClick={() => onSelectType(typeId)}
-                        style={{ borderColor: typeDef.color }}
-                      >
-                        <span className="dwd-type-selector__type-dot" style={{ backgroundColor: typeDef.color }} />
-                        <span className="dwd-type-selector__type-name">{typeDef.name}</span>
-                        <span className="dwd-type-selector__type-desc">{typeDef.description}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Main workspace component
 export default function DWDWorkspace() {
+  const router = useRouter();
   const { activeProject } = useProjects();
 
   const {
     artefacts,
     cases,
-    stats,
     activeCase,
     setActiveCase,
-    loading,
     error,
     saving,
     activeView,
     setActiveView,
-    selectedId,
     setSelectedId,
     refreshData,
     createArtefact,
-    updateArtefact,
+    createRelationship,
     deleteArtefact,
     DWD_TYPE_DEFS,
     DWD_STAGES,
   } = useDWD();
 
-  // Modal state
-  const [showTypeSelector, setShowTypeSelector] = useState(false);
-  const [showArtefactModal, setShowArtefactModal] = useState(false);
-  const [modalMode, setModalMode] = useState('create');
-  const [modalType, setModalType] = useState(null);
-  const [editingArtefact, setEditingArtefact] = useState(null);
+  // Centralized modal state
+  const modals = useDWDModals();
 
-  // Delete confirmation
-  const [deleteConfirm, setDeleteConfirm] = useState(null);
+  // Sync view state with URL query parameter
+  useEffect(() => {
+    const { view } = router.query;
+    if (view && typeof view === 'string' && view !== activeView) {
+      // Valid view IDs
+      const validViews = ['overview', 'cases', 'canvas', 'landscape', 'actors', 'fit', 'timeline', 'adjustments', 'experiments', 'learnings', 'tracematrix', 'effectiveness'];
+      if (validViews.includes(view)) {
+        setActiveView(view);
+      }
+    }
+  }, [router.query]);
+
+  // Update URL when view changes
+  const handleViewChange = useCallback((newView) => {
+    setActiveView(newView);
+    // Update URL without full navigation
+    const url = new URL(window.location.href);
+    if (newView === 'overview') {
+      url.searchParams.delete('view');
+    } else {
+      url.searchParams.set('view', newView);
+    }
+    router.replace(url.pathname + url.search, undefined, { shallow: true });
+  }, [setActiveView, router]);
 
   // Calculate stats for navigator
-  const navStats = useMemo(() => {
-    return {
-      total: artefacts.length,
-      cases: cases.length,
-      workItems: artefacts.filter(a => a.artefact_type === 'dwd_work_item').length,
-      actors: artefacts.filter(a => a.artefact_type === 'dwd_actor').length,
-      signals: artefacts.filter(a => a.artefact_type === 'dwd_signal').length,
-      adjustments: artefacts.filter(a => a.artefact_type === 'dwd_adjustment').length,
-      learnings: artefacts.filter(a => a.artefact_type === 'dwd_learning').length,
-    };
-  }, [artefacts, cases]);
+  const navStats = useMemo(() => ({
+    total: artefacts.length,
+    cases: cases.length,
+    workItems: artefacts.filter(a => a.artefact_type === 'dwd_work_item').length,
+    actors: artefacts.filter(a => a.artefact_type === 'dwd_actor').length,
+    signals: artefacts.filter(a => a.artefact_type === 'dwd_signal').length,
+    adjustments: artefacts.filter(a => a.artefact_type === 'dwd_adjustment').length,
+    learnings: artefacts.filter(a => a.artefact_type === 'dwd_learning').length,
+  }), [artefacts, cases]);
 
   // Handlers
-  const handleCreateClick = useCallback(() => {
-    setShowTypeSelector(true);
-  }, []);
-
   const handleSelectType = useCallback((type) => {
-    setShowTypeSelector(false);
-    setModalType(type);
-    setModalMode('create');
-    setEditingArtefact(null);
-    setShowArtefactModal(true);
-  }, []);
+    modals.typeSelector.close();
+    modals.artefactModal.open(type, 'create');
+  }, [modals]);
 
   const handleCreateArtefact = useCallback((type) => {
-    setModalType(type);
-    setModalMode('create');
-    setEditingArtefact(null);
-    setShowArtefactModal(true);
-  }, []);
+    modals.artefactModal.open(type, 'create');
+  }, [modals]);
 
   const handleEditArtefact = useCallback((artefact) => {
-    setModalType(artefact.artefact_type);
-    setModalMode('edit');
-    setEditingArtefact(artefact);
-    setShowArtefactModal(true);
-  }, []);
+    modals.artefactModal.open(artefact.artefact_type, 'edit', artefact);
+  }, [modals]);
 
   const handleSelectArtefact = useCallback((artefact) => {
     setSelectedId(artefact.id);
   }, [setSelectedId]);
 
   const handleDeleteArtefact = useCallback((artefact) => {
-    setDeleteConfirm(artefact);
-  }, []);
+    modals.deleteConfirm.open(artefact);
+  }, [modals]);
 
   const confirmDelete = useCallback(async () => {
-    if (deleteConfirm) {
-      await deleteArtefact(deleteConfirm.id);
-      setDeleteConfirm(null);
+    if (modals.deleteConfirm.artefact) {
+      await deleteArtefact(modals.deleteConfirm.artefact.id);
+      modals.deleteConfirm.close();
     }
-  }, [deleteConfirm, deleteArtefact]);
+  }, [modals.deleteConfirm, deleteArtefact]);
 
-  const handleCloseModal = useCallback(() => {
-    setShowArtefactModal(false);
-    setModalType(null);
-    setEditingArtefact(null);
-  }, []);
+  const handleWizardComplete = useCallback((createdCase) => {
+    modals.wizard.close();
+    if (createdCase) {
+      setActiveCase(createdCase);
+      handleViewChange('landscape');
+      refreshData();
+    }
+  }, [modals.wizard, setActiveCase, handleViewChange, refreshData]);
+
+  const handleLinkCreated = useCallback(() => {
+    refreshData();
+  }, [refreshData]);
+
+  const handleSelectPattern = useCallback(async (pattern) => {
+    try {
+      const caseArtefact = await createArtefact('dwd_case', {
+        name: `${pattern.name} - New Case`,
+        description: pattern.description,
+        summary: pattern.description,
+        case_status: 'active',
+        created_from_pattern: pattern.id,
+      });
+
+      if (caseArtefact?.id) {
+        // Create suggested work items
+        for (const wi of pattern.suggestedWorkItems) {
+          const workItem = await createArtefact('dwd_work_item', {
+            name: wi.name,
+            description: '',
+            custom_fields: {
+              item_type: wi.type,
+              volatility: wi.volatility,
+              item_state: 'open',
+            },
+          });
+          if (workItem?.id) {
+            await createRelationship(caseArtefact.id, workItem.id, 'case_has_work_item', null);
+          }
+        }
+
+        // Create suggested actors
+        for (const actor of pattern.suggestedActors) {
+          const a = await createArtefact('dwd_actor', {
+            name: actor.name,
+            description: '',
+            custom_fields: {
+              actor_type: actor.type,
+              authority_level: actor.authority,
+            },
+          });
+          if (a?.id) {
+            await createRelationship(caseArtefact.id, a.id, 'case_has_actor', null);
+          }
+        }
+
+        // Create suggested signals
+        for (const signalType of pattern.signals) {
+          const signal = await createArtefact('dwd_signal', {
+            name: signalType.replace('_', ' '),
+            description: '',
+            custom_fields: {
+              signal_type: signalType,
+              frequency: 'frequent',
+              impact: 'medium',
+            },
+          });
+          if (signal?.id) {
+            await createRelationship(caseArtefact.id, signal.id, 'case_has_signal', null);
+          }
+        }
+
+        modals.patternLibrary.close();
+        setActiveCase(caseArtefact);
+        handleViewChange('landscape');
+        refreshData();
+      }
+    } catch (err) {
+      console.error('Failed to create case from pattern:', err);
+      alert('Failed to create case from pattern: ' + err.message);
+    }
+  }, [createArtefact, createRelationship, setActiveCase, handleViewChange, refreshData, modals.patternLibrary]);
 
   const handleNavigate = useCallback((viewOrStage, type) => {
     if (type) {
-      setActiveView(viewOrStage);
+      handleViewChange(viewOrStage);
     } else if (DWD_STAGES?.[viewOrStage]) {
       const stageViewMap = {
         diagnose: 'landscape',
         design: 'adjustments',
         learn: 'learnings',
       };
-      setActiveView(stageViewMap[viewOrStage] || 'overview');
+      handleViewChange(stageViewMap[viewOrStage] || 'overview');
     } else {
-      setActiveView(viewOrStage);
+      handleViewChange(viewOrStage);
     }
-  }, [setActiveView, DWD_STAGES]);
+  }, [handleViewChange, DWD_STAGES]);
 
   const handleSelectCase = useCallback((c) => {
     setActiveCase(c);
-    setActiveView('landscape');
-  }, [setActiveCase, setActiveView]);
+    handleViewChange('landscape');
+  }, [setActiveCase, handleViewChange]);
 
   // Get current view info for breadcrumbs
   const currentViewInfo = VIEW_INFO[activeView] || { name: activeView, group: null };
 
+  // Standard props passed to all views
+  const viewProps = {
+    onSelectArtefact: handleSelectArtefact,
+    onEditArtefact: handleEditArtefact,
+    onDeleteArtefact: handleDeleteArtefact,
+    onCreateArtefact: handleCreateArtefact,
+    onOpenLinker: modals.linker.open,
+  };
+
   // Render current view
   const renderView = () => {
-    const viewProps = {
-      onSelectArtefact: handleSelectArtefact,
-      onEditArtefact: handleEditArtefact,
-      onDeleteArtefact: handleDeleteArtefact,
-      onCreateArtefact: handleCreateArtefact,
-    };
-
     switch (activeView) {
       case 'cases':
-        return (
-          <CaseBrowser
-            {...viewProps}
-            onSelectCase={handleSelectCase}
-          />
-        );
+        return <CaseBrowser {...viewProps} onSelectCase={handleSelectCase} />;
+      case 'canvas':
+        return <WorkFlowCanvas {...viewProps} onAssessVolatility={modals.volatilityAssessment.open} />;
       case 'landscape':
         return <WorkLandscape {...viewProps} />;
       case 'actors':
         return <WorkActorFit {...viewProps} />;
+      case 'fit':
+        return <FitAnalysis {...viewProps} />;
       case 'adjustments':
-        return <AdjustmentLog {...viewProps} />;
+        return <AdjustmentLog {...viewProps} onOpenExperiment={modals.experimentTracker.open} />;
+      case 'experiments':
+        return <AdjustmentLog {...viewProps} filterStatus={['trying']} onOpenExperiment={modals.experimentTracker.open} />;
       case 'learnings':
         return <LearningCapture {...viewProps} />;
+      case 'effectiveness':
+        return <EffectivenessDashboard onNavigate={handleNavigate} />;
+      case 'timeline':
+        return <CaseTimeline {...viewProps} />;
+      case 'tracematrix':
+        return <TraceMatrix {...viewProps} />;
       case 'overview':
       default:
         return (
           <OverviewDashboard
             onNavigate={handleNavigate}
             onSelectArtefact={handleSelectArtefact}
-            onCreateArtefact={handleCreateClick}
+            onCreateArtefact={modals.typeSelector.open}
             onEditArtefact={handleEditArtefact}
             onDeleteArtefact={handleDeleteArtefact}
           />
@@ -398,87 +285,58 @@ export default function DWDWorkspace() {
     }
   };
 
-  // No project selected
-  if (!activeProject) {
-    return (
-      <div className="requirements-studio">
-        <div className="studio-no-project">
-          <FolderOpenIcon style={{ fontSize: 64, opacity: 0.3, marginBottom: 16 }} />
-          <h2>No Project Selected</h2>
-          <p>Select a project from the dropdown above to start working.</p>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="requirements-studio">
-      {/* Navigator - uses same CSS as RequirementsStudio */}
-      <DWDNavigator
-        activeView={activeView}
-        onViewChange={setActiveView}
-        stats={navStats}
-        onCreateClick={handleCreateClick}
-        activeCase={activeCase}
+  // Build breadcrumbs
+  const breadcrumbsContent = activeView !== 'overview' ? (
+    <Breadcrumbs>
+      <Breadcrumb
+        icon={DashboardIcon}
+        label="Overview"
+        onClick={() => setActiveView('overview')}
       />
+      {currentViewInfo.group && (
+        <>
+          <BreadcrumbSeparator />
+          <Breadcrumb label={currentViewInfo.group} />
+        </>
+      )}
+      <BreadcrumbSeparator />
+      <Breadcrumb label={currentViewInfo.name} active />
+      {activeCase && (
+        <>
+          <BreadcrumbSeparator />
+          <Breadcrumb icon={FolderIcon} label={activeCase.name} active />
+        </>
+      )}
+    </Breadcrumbs>
+  ) : null;
 
-      {/* Main content area */}
-      <div className="studio-main">
-        {/* Breadcrumbs */}
-        {activeView !== 'overview' && (
-          <div className="studio-breadcrumbs">
-            <button className="breadcrumb-item" onClick={() => setActiveView('overview')}>
-              <DashboardIcon fontSize="small" />
-              <span>Overview</span>
-            </button>
-            {currentViewInfo.group && (
-              <>
-                <NavigateNextIcon fontSize="small" className="breadcrumb-separator" />
-                <span className="breadcrumb-group">{currentViewInfo.group}</span>
-              </>
-            )}
-            <NavigateNextIcon fontSize="small" className="breadcrumb-separator" />
-            <span className="breadcrumb-current">{currentViewInfo.name}</span>
-            {activeCase && (
-              <>
-                <NavigateNextIcon fontSize="small" className="breadcrumb-separator" />
-                <span className="breadcrumb-case" style={{ color: '#6366f1' }}>
-                  <FolderIcon fontSize="small" />
-                  {activeCase.name}
-                </span>
-              </>
-            )}
-          </div>
-        )}
-
-        {/* View content */}
-        {renderView()}
-      </div>
-
+  // Build modals
+  const modalsContent = (
+    <>
       {/* Create type selector modal */}
       <CreateTypeSelector
-        isOpen={showTypeSelector}
-        onClose={() => setShowTypeSelector(false)}
+        isOpen={modals.typeSelector.isOpen}
+        onClose={modals.typeSelector.close}
         onSelectType={handleSelectType}
         typeDefs={DWD_TYPE_DEFS}
       />
 
       {/* Artefact create/edit modal */}
       <DWDArtefactModal
-        isOpen={showArtefactModal}
-        onClose={handleCloseModal}
-        artefact={modalMode === 'edit' ? editingArtefact : null}
-        type={modalType}
+        isOpen={modals.artefactModal.isOpen}
+        onClose={modals.artefactModal.close}
+        artefact={modals.artefactModal.artefact}
+        type={modals.artefactModal.type}
       />
 
       {/* Delete confirmation modal */}
-      {deleteConfirm && (
-        <div className="modal-backdrop" onClick={() => setDeleteConfirm(null)}>
+      {modals.deleteConfirm.isOpen && (
+        <div className="modal-backdrop" onClick={modals.deleteConfirm.close}>
           <div className="dwd-delete-confirm" onClick={(e) => e.stopPropagation()}>
             <h3>Delete Artefact?</h3>
-            <p>Are you sure you want to delete "{deleteConfirm.name}"? This action cannot be undone.</p>
+            <p>Are you sure you want to delete "{modals.deleteConfirm.artefact?.name}"? This action cannot be undone.</p>
             <div className="dwd-delete-confirm__actions">
-              <button className="btn btn--secondary" onClick={() => setDeleteConfirm(null)}>Cancel</button>
+              <button className="btn btn--secondary" onClick={modals.deleteConfirm.close}>Cancel</button>
               <button className="btn btn--danger" onClick={confirmDelete} disabled={saving}>
                 {saving ? 'Deleting...' : 'Delete'}
               </button>
@@ -487,13 +345,103 @@ export default function DWDWorkspace() {
         </div>
       )}
 
-      {/* Error toast */}
-      {error && (
-        <div className="dwd-toast dwd-toast--error">
-          <WarningIcon fontSize="small" />
-          <span>{error}</span>
-        </div>
-      )}
-    </div>
+      {/* Volatility Assessment Modal */}
+      <VolatilityAssessment
+        isOpen={modals.volatilityAssessment.isOpen}
+        onClose={modals.volatilityAssessment.close}
+        workItem={modals.volatilityAssessment.target}
+      />
+
+      {/* Diagnostic Wizard Modal */}
+      <DiagnosticWizard
+        open={modals.wizard.isOpen}
+        onClose={modals.wizard.close}
+        onComplete={handleWizardComplete}
+        createArtefact={createArtefact}
+        createRelationship={createRelationship}
+      />
+
+      {/* Pattern Library Modal */}
+      <PatternLibrary
+        open={modals.patternLibrary.isOpen}
+        onClose={modals.patternLibrary.close}
+        onSelectPattern={handleSelectPattern}
+        onStartBlank={() => {
+          modals.patternLibrary.close();
+          handleCreateArtefact('dwd_case');
+        }}
+        onStartWizard={() => {
+          modals.patternLibrary.close();
+          modals.wizard.open();
+        }}
+      />
+
+      {/* Experiment Tracker Modal */}
+      <ExperimentTracker
+        adjustment={modals.experimentTracker.adjustment}
+        open={modals.experimentTracker.isOpen}
+        onClose={modals.experimentTracker.close}
+        onUpdate={refreshData}
+      />
+
+      {/* Cross-Studio Linker Modal */}
+      <CrossStudioLinker
+        open={modals.linker.isOpen}
+        onClose={modals.linker.close}
+        sourceArtefact={modals.linker.target}
+        existingLinks={modals.linker.existingLinks}
+        onLinkCreated={handleLinkCreated}
+      />
+
+      {/* Report Generator Modal */}
+      <DWDReportGenerator
+        open={modals.reportGenerator.isOpen}
+        onClose={modals.reportGenerator.close}
+      />
+    </>
+  );
+
+  // Toolbar actions (Diagnostic Wizard, Pattern Library)
+  const actionsContent = (
+    <>
+      <button
+        className="workspace-action-btn workspace-action-btn--primary"
+        onClick={modals.wizard.open}
+        title="Launch guided diagnostic wizard"
+      >
+        <AutoFixHighIcon fontSize="small" />
+        <span>Diagnostic Wizard</span>
+      </button>
+      <button
+        className="workspace-action-btn"
+        onClick={modals.patternLibrary.open}
+        title="Browse common work design patterns"
+      >
+        <LibraryBooksIcon fontSize="small" />
+        <span>Pattern Library</span>
+      </button>
+    </>
+  );
+
+  return (
+    <WorkspaceLayout
+      navigator={
+        <DWDNavigator
+          activeView={activeView}
+          onViewChange={handleViewChange}
+          stats={navStats}
+          onCreateClick={modals.typeSelector.open}
+          activeCase={activeCase}
+          onOpenExport={modals.reportGenerator.open}
+        />
+      }
+      breadcrumbs={breadcrumbsContent}
+      actions={actionsContent}
+      error={error}
+      noProject={!activeProject}
+      modals={modalsContent}
+    >
+      {renderView()}
+    </WorkspaceLayout>
   );
 }

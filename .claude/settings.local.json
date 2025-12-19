@@ -14,7 +14,27 @@
       "Bash(trace)",
       "Bash(coverage \")",
       "Bash(grep:*)",
-      "Bash(npx acorn:*)"
+      "Bash(npx acorn:*)",
+      "Bash(dir \"C:\\Users\\hardyp\\dev\\POM\\Knowledge-graph\\pages\")",
+      "Bash(findstr:*)",
+      "Bash(dir /b \"C:\\Users\\hardyp\\dev\\POM\\Knowledge-graph\\pages\\diagram*.js\")",
+      "Bash(cd:*)",
+      "Bash(curl:*)",
+      "Bash(docker ps:*)",
+      "Bash(docker exec:*)",
+      "Bash(npm test:*)",
+      "Bash(xargs -I {} sh -c 'echo \"\"=== {} ===\"\" && head -30 \"\"{}\"\"')",
+      "Bash(dir:*)",
+      "Bash(git mv:*)",
+      "Bash(ls:*)",
+      "WebSearch",
+      "WebFetch(domain:bigthink.com)",
+      "WebFetch(domain:executive.mit.edu)",
+      "Bash(xargs:*)",
+      "Bash(npx next lint:*)",
+      "Bash(ls -la \"C:\\Users\\hardyp\\dev\\POM\\Knowledge-graph\\components\\srs\"\" 2>&1 || echo \"Directory may not exist \")",
+      "Bash(node -c:*)",
+      "Bash(python -c \"import os; os.remove(r''\\\\?\\C:\\Users\\hardyp\\dev\\POM\\Knowledge-graph\\nul'')\")"
     ]
   }
 }

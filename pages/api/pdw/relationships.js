@@ -1,9 +1,10 @@
 // pages/api/pdw/relationships.js
 // Product Design Workspace - Relationships API
 // Manage relationships between PDW artefacts
+// Domain-scoped
 
 import { query } from '../../../lib/pg';
-import { getUserFromRequest, checkProjectAccess, checkArtefactAccess } from '../../../lib/projectAccess';
+import { getUserFromRequest, checkDomainAccess, checkArtefactAccess } from '../../../lib/projectAccess';
 import { PDW_RELATIONSHIP_TYPES, isPDWType, isValidRelationship } from '../../../lib/pdw-types';
 
 export default async function handler(req, res) {
@@ -14,11 +15,11 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'GET') {
-    // List relationships for a project or artefact
-    const { projectId, artefactId, type } = req.query;
+    // List relationships for a domain or artefact
+    const { domainId, artefactId, type } = req.query;
 
-    if (!projectId && !artefactId) {
-      return res.status(400).json({ error: 'Either projectId or artefactId is required' });
+    if (!domainId && !artefactId) {
+      return res.status(400).json({ error: 'Either domainId or artefactId is required' });
     }
 
     try {
@@ -39,14 +40,14 @@ export default async function handler(req, res) {
       const params = [];
       let paramIdx = 1;
 
-      if (projectId) {
-        // Check project access
-        const { hasAccess, error } = await checkProjectAccess(req, projectId, 'view');
+      if (domainId) {
+        // Check domain access
+        const { hasAccess, error } = await checkDomainAccess(req, domainId, 'view');
         if (!hasAccess) {
           return res.status(403).json({ error });
         }
-        sql += ` AND fa.project_id = $${paramIdx}`;
-        params.push(projectId);
+        sql += ` AND fa.domain_id = $${paramIdx}`;
+        params.push(domainId);
         paramIdx++;
       }
 
@@ -102,7 +103,7 @@ export default async function handler(req, res) {
     try {
       // Get both artefacts to validate types
       const artefactsResult = await query(
-        `SELECT id, artefact_type, project_id FROM artefacts WHERE id = ANY($1::uuid[])`,
+        `SELECT id, artefact_type, domain_id FROM artefacts WHERE id = ANY($1::uuid[])`,
         [[fromArtefactId, toArtefactId]]
       );
 
@@ -118,13 +119,13 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Both artefacts must be PDW types' });
       }
 
-      // Verify they're in the same project
-      if (fromArtefact.project_id !== toArtefact.project_id) {
-        return res.status(400).json({ error: 'Artefacts must be in the same project' });
+      // Verify they're in the same domain
+      if (fromArtefact.domain_id !== toArtefact.domain_id) {
+        return res.status(400).json({ error: 'Artefacts must be in the same domain' });
       }
 
-      // Check project access
-      const { hasAccess, error } = await checkProjectAccess(req, fromArtefact.project_id, 'create');
+      // Check domain access
+      const { hasAccess, error } = await checkDomainAccess(req, fromArtefact.domain_id, 'create');
       if (!hasAccess) {
         return res.status(403).json({ error });
       }
@@ -180,7 +181,7 @@ export default async function handler(req, res) {
         // Delete by relationship ID
         // First get the relationship to check access
         const relResult = await query(
-          `SELECT r.*, fa.project_id
+          `SELECT r.*, fa.domain_id
            FROM artefact_relationships r
            JOIN artefacts fa ON fa.id = r.from_artefact_id
            WHERE r.id = $1`,
@@ -191,7 +192,7 @@ export default async function handler(req, res) {
           return res.status(404).json({ error: 'Relationship not found' });
         }
 
-        const { hasAccess, error } = await checkProjectAccess(req, relResult.rows[0].project_id, 'delete');
+        const { hasAccess, error } = await checkDomainAccess(req, relResult.rows[0].domain_id, 'delete');
         if (!hasAccess) {
           return res.status(403).json({ error });
         }
@@ -201,7 +202,7 @@ export default async function handler(req, res) {
       } else if (fromArtefactId && toArtefactId && relationshipType) {
         // Delete by from/to/type
         const artefactResult = await query(
-          `SELECT project_id FROM artefacts WHERE id = $1`,
+          `SELECT domain_id FROM artefacts WHERE id = $1`,
           [fromArtefactId]
         );
 
@@ -209,7 +210,7 @@ export default async function handler(req, res) {
           return res.status(404).json({ error: 'From artefact not found' });
         }
 
-        const { hasAccess, error } = await checkProjectAccess(req, artefactResult.rows[0].project_id, 'delete');
+        const { hasAccess, error } = await checkDomainAccess(req, artefactResult.rows[0].domain_id, 'delete');
         if (!hasAccess) {
           return res.status(403).json({ error });
         }

@@ -9,6 +9,8 @@ import { useDomains } from '../components/DomainContext';
 import { useProjects } from '../components/ProjectContext';
 import { usePresence } from '../components/PresenceContext';
 import RequirementsStudioComponent from '../components/ba/RequirementsStudio';
+import GuidancePanel, { GuidanceToggle } from '../components/GuidancePanel';
+import { REQUIREMENTS_STUDIO_GUIDANCE } from '../lib/studio-guidance';
 import {
   ProjectSelector,
   ProjectCreationModal,
@@ -29,6 +31,7 @@ export default function RequirementsStudioPage() {
   const [showProjectDashboard, setShowProjectDashboard] = useState(false);
   const [showProjectSettings, setShowProjectSettings] = useState(false);
   const [showProjectCreation, setShowProjectCreation] = useState(false);
+  const [showGuidance, setShowGuidance] = useState(false);
 
   // Presence tracking
   useEffect(() => {
@@ -101,16 +104,37 @@ export default function RequirementsStudioPage() {
         >
           <SettingsIcon fontSize="small" />
         </button>
+        <GuidanceToggle
+          active={showGuidance}
+          onClick={() => setShowGuidance(!showGuidance)}
+        />
       </div>
 
-      {/* Main workspace - new artefact-centric design */}
-      <RequirementsStudioComponent />
+      {/* Main content area with optional guidance panel */}
+      <div className="studio-content-area">
+        {/* Main workspace - new artefact-centric design */}
+        <div className="studio-main-content">
+          <RequirementsStudioComponent />
+        </div>
+
+        {/* Guidance Panel */}
+        {showGuidance && (
+          <div className="studio-guidance-panel">
+            <GuidancePanel
+              title="Requirements Guide"
+              guidance={REQUIREMENTS_STUDIO_GUIDANCE}
+              activeView="default"
+              onClose={() => setShowGuidance(false)}
+            />
+          </div>
+        )}
+      </div>
 
       {/* Project Dashboard Modal */}
-      {showProjectDashboard && (
+      {showProjectDashboard && activeProject && (
         <div className="modal-overlay" onClick={() => setShowProjectDashboard(false)}>
           <div className="modal-content modal-large" onClick={e => e.stopPropagation()}>
-            <ProjectDashboard onClose={() => setShowProjectDashboard(false)} />
+            <ProjectDashboard project={activeProject} onClose={() => setShowProjectDashboard(false)} />
           </div>
         </div>
       )}
@@ -143,6 +167,27 @@ export default function RequirementsStudioPage() {
           background: var(--bg);
         }
 
+        .studio-content-area {
+          display: flex;
+          flex: 1;
+          overflow: hidden;
+        }
+
+        .studio-main-content {
+          flex: 1;
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
+        }
+
+        .studio-guidance-panel {
+          width: 320px;
+          min-width: 320px;
+          height: 100%;
+          border-left: 1px solid var(--border);
+          overflow: hidden;
+        }
+
         .studio-topbar {
           display: flex;
           align-items: center;
@@ -170,9 +215,10 @@ export default function RequirementsStudioPage() {
           transition: all 0.15s ease;
         }
 
-        .toolbar-btn:hover:not(:disabled) {
+        .toolbar-btn:hover {
           background: var(--accent-soft);
           border-color: var(--accent);
+       
         }
 
         .toolbar-btn:disabled {

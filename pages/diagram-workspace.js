@@ -2,6 +2,8 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { useAuth } from '../components/AuthContext';
 import { useDomains } from '../components/DomainContext';
+import GuidancePanel, { GuidanceToggle } from '../components/GuidancePanel';
+import { DIAGRAM_GUIDANCE } from '../lib/studio-guidance';
 
 // Generate unique comment ID
 const generateCommentId = () => `comment-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -73,6 +75,7 @@ export default function DiagramWorkspacePage() {
   const [showCommentsPanel, setShowCommentsPanel] = useState(false);
   const [newCommentText, setNewCommentText] = useState('');
   const [replyingTo, setReplyingTo] = useState(null);
+  const [showGuidance, setShowGuidance] = useState(false);
 
   // Pan and zoom state
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
@@ -1050,6 +1053,10 @@ export default function DiagramWorkspacePage() {
                 <span className="comment-badge">{comments.length}</span>
               )}
             </button>
+            <GuidanceToggle
+              active={showGuidance}
+              onClick={() => setShowGuidance(!showGuidance)}
+            />
             <button className="btn-secondary" onClick={clearCanvas}>Clear</button>
             <button className="btn-secondary" onClick={exportDiagram}>Export</button>
             <button className="btn" onClick={handleImport}>Import to Graph</button>
@@ -1721,6 +1728,24 @@ export default function DiagramWorkspacePage() {
               Post
             </button>
           </div>
+        </div>
+      )}
+
+      {/* Guidance Panel */}
+      {showGuidance && (
+        <div className="diagram-guidance-panel" style={{
+          width: 320,
+          minWidth: 320,
+          height: '100%',
+          borderLeft: '1px solid var(--border)',
+          overflow: 'hidden',
+        }}>
+          <GuidancePanel
+            title="Diagram Guide"
+            guidance={DIAGRAM_GUIDANCE}
+            activeView="default"
+            onClose={() => setShowGuidance(false)}
+          />
         </div>
       )}
     </div>

@@ -7,6 +7,13 @@ import { useDomains } from '../components/DomainContext';
 import { useNotifications } from '../components/NotificationContext';
 import { usePresence, PresenceIndicator } from '../components/PresenceContext';
 import { SYSTEM_DYNAMICS_TEMPLATES, TemplatePickerModal } from '../components/DiagramTemplates';
+import GuidancePanel, { GuidanceToggle } from '../components/GuidancePanel';
+import { SYSTEM_DYNAMICS_GUIDANCE } from '../lib/studio-guidance';
+// Systems Thinking Guidance - Views & Wizards
+import SchoolIcon from '@mui/icons-material/School';
+import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
+import PsychologyIcon from '@mui/icons-material/Psychology';
+import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import AddIcon from '@mui/icons-material/Add';
@@ -73,6 +80,13 @@ import {
   // Right Toolbar
   SDRightToolbar,
   useRightToolbar,
+  // Systems Thinking Guidance
+  SDGuidancePanel,
+  SDGuidanceToggle,
+  SDLearningCenter,
+  SDExamplesLibrary,
+  SDThinkingFramework,
+  SDSystemsThinkingWizard,
 } from '../components/sd';
 
 const CytoscapeComponent = dynamic(() => import('react-cytoscapejs'), { ssr: false });
@@ -367,7 +381,12 @@ export default function SystemDynamicsStudio() {
   const [showSimulationConfig, setShowSimulationConfig] = useState(false);
   const [showVersioning, setShowVersioning] = useState(false);
   const [showInsightMarkers, setShowInsightMarkers] = useState(false);
+  const [showGuidance, setShowGuidance] = useState(false);
   const [annotationToolActive, setAnnotationToolActive] = useState(null);
+
+  // Systems Thinking Guidance - View & Wizard states
+  const [activeSDView, setActiveSDView] = useState('canvas'); // 'canvas' | 'learning' | 'examples' | 'framework'
+  const [showSystemsThinkingWizard, setShowSystemsThinkingWizard] = useState(false);
   const [editingAnnotationId, setEditingAnnotationId] = useState(null);
 
   // Right Toolbar state
@@ -1813,23 +1832,61 @@ export default function SystemDynamicsStudio() {
         </div>
 
         <div className="sd-header-center">
-          {/* Diagram Mode Toggle */}
-          <div className="sd-mode-toggle">
+          {/* View Switcher Tabs */}
+          <div className="sd-view-tabs">
             <button
-              className={`mode-btn ${diagramMode === 'cld' ? 'active' : ''}`}
-              onClick={() => setDiagramMode('cld')}
-              title="Causal Loop Diagram mode"
+              className={`view-tab ${activeSDView === 'canvas' ? 'active' : ''}`}
+              onClick={() => setActiveSDView('canvas')}
+              title="Model Canvas - Build diagrams"
             >
-              CLD
+              <EditIcon fontSize="small" />
+              <span>Canvas</span>
             </button>
             <button
-              className={`mode-btn ${diagramMode === 'stockFlow' ? 'active' : ''}`}
-              onClick={() => setDiagramMode('stockFlow')}
-              title="Stock & Flow Diagram mode"
+              className={`view-tab ${activeSDView === 'learning' ? 'active' : ''}`}
+              onClick={() => setActiveSDView('learning')}
+              title="Learning Center - Systems Thinking education"
             >
-              S&F
+              <SchoolIcon fontSize="small" />
+              <span>Learn</span>
+            </button>
+            <button
+              className={`view-tab ${activeSDView === 'examples' ? 'active' : ''}`}
+              onClick={() => setActiveSDView('examples')}
+              title="Examples Library - Browse worked examples"
+            >
+              <LibraryBooksIcon fontSize="small" />
+              <span>Examples</span>
+            </button>
+            <button
+              className={`view-tab ${activeSDView === 'framework' ? 'active' : ''}`}
+              onClick={() => setActiveSDView('framework')}
+              title="Thinking Framework - Mental models reference"
+            >
+              <PsychologyIcon fontSize="small" />
+              <span>Framework</span>
             </button>
           </div>
+
+          {/* Diagram Mode Toggle - Only show on Canvas view */}
+          {activeSDView === 'canvas' && (
+            <div className="sd-mode-toggle">
+              <button
+                className={`mode-btn ${diagramMode === 'cld' ? 'active' : ''}`}
+                onClick={() => setDiagramMode('cld')}
+                title="Causal Loop Diagram mode"
+              >
+                CLD
+              </button>
+              <button
+                className={`mode-btn ${diagramMode === 'stockFlow' ? 'active' : ''}`}
+                onClick={() => setDiagramMode('stockFlow')}
+                title="Stock & Flow Diagram mode"
+              >
+                S&F
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="sd-header-right">
@@ -1941,10 +1998,28 @@ export default function SystemDynamicsStudio() {
             </button>
           </div>
 
+          {/* Wizard Button */}
+          <button
+            className={`sd-btn wizard-btn ${showSystemsThinkingWizard ? 'active' : ''}`}
+            onClick={() => setShowSystemsThinkingWizard(!showSystemsThinkingWizard)}
+            title="Systems Thinking Wizard - Guided model building"
+          >
+            <PsychologyIcon fontSize="small" />
+            <span>Wizard</span>
+          </button>
+
+          <SDGuidanceToggle
+            active={showGuidance}
+            onClick={() => setShowGuidance(!showGuidance)}
+          />
+
           <PresenceIndicator />
         </div>
       </div>
 
+      <div className="sd-content-area">
+      {/* Canvas View - Show when activeSDView === 'canvas' */}
+      {activeSDView === 'canvas' && (
       <div className="sd-main">
         {/* Professional Toolbox - Redesigned */}
         <div className="sd-toolbox">
@@ -2851,6 +2926,126 @@ export default function SystemDynamicsStudio() {
           </div>
         )}
       </div>
+      )}
+      {/* End of Canvas View */}
+
+      {/* Learning Center View */}
+      {activeSDView === 'learning' && (
+        <div className="sd-view-container">
+          <SDLearningCenter
+            onNavigate={(view) => setActiveSDView(view)}
+            onStartWizard={() => setShowSystemsThinkingWizard(true)}
+            onLoadExample={(example) => {
+              if (!example) return;
+              const newElements = (example.elements || []).map((el, idx) => ({
+                ...el,
+                id: el.id || `el-${Date.now()}-${idx}`,
+                position: {
+                  x: el.x || el.position?.x || (100 + (idx % 4) * 200),
+                  y: el.y || el.position?.y || (100 + Math.floor(idx / 4) * 150),
+                },
+              }));
+              const newConnections = (example.connections || []).map((conn, idx) => ({
+                ...conn,
+                id: conn.id || `conn-${Date.now()}-${idx}`,
+              }));
+              setElements(newElements);
+              setConnections(newConnections);
+              setDiagramName(example.name || 'Untitled');
+              setDiagramMode(example.diagramType || 'stockFlow');
+              setActiveSDView('canvas');
+              // Fit canvas to show all elements after a brief delay
+              setTimeout(() => {
+                if (cyRef.current) {
+                  cyRef.current.fit(cyRef.current.nodes(), 50);
+                }
+              }, 100);
+              saveToHistory();
+            }}
+          />
+        </div>
+      )}
+
+      {/* Examples Library View */}
+      {activeSDView === 'examples' && (
+        <div className="sd-view-container">
+          <SDExamplesLibrary
+            onLoadExample={(example) => {
+              if (!example) return;
+              // Convert example to diagram format and load
+              const newElements = (example.elements || []).map((el, idx) => ({
+                ...el,
+                id: el.id || `el-${Date.now()}-${idx}`,
+                position: {
+                  x: el.x || el.position?.x || (100 + (idx % 4) * 200),
+                  y: el.y || el.position?.y || (100 + Math.floor(idx / 4) * 150),
+                },
+              }));
+              const newConnections = (example.connections || []).map((conn, idx) => ({
+                ...conn,
+                id: conn.id || `conn-${Date.now()}-${idx}`,
+              }));
+              setElements(newElements);
+              setConnections(newConnections);
+              setDiagramName(example.name || 'Untitled');
+              setDiagramMode(example.diagramType || 'stockFlow');
+              setActiveSDView('canvas');
+              // Fit canvas to show all elements after a brief delay
+              setTimeout(() => {
+                if (cyRef.current) {
+                  cyRef.current.fit(cyRef.current.nodes(), 50);
+                }
+              }, 100);
+              saveToHistory();
+            }}
+            onNavigateToCanvas={() => setActiveSDView('canvas')}
+          />
+        </div>
+      )}
+
+      {/* Thinking Framework View */}
+      {activeSDView === 'framework' && (
+        <div className="sd-view-container">
+          <SDThinkingFramework />
+        </div>
+      )}
+
+      {/* Systems Thinking Wizard Modal */}
+      {showSystemsThinkingWizard && (
+        <div className="wizard-modal-backdrop">
+          <SDSystemsThinkingWizard
+            isOpen={true}
+            onClose={() => setShowSystemsThinkingWizard(false)}
+            onAddVariable={(variable) => {
+              const newEl = {
+                id: `var-${Date.now()}`,
+                type: diagramMode === 'stockFlow' ? variable.suggestedType : 'variable',
+                label: variable.name,
+                description: variable.description,
+                x: 200 + elements.length * 50,
+                y: 200 + elements.length * 30,
+              };
+              setElements(prev => [...prev, newEl]);
+              saveToHistory();
+            }}
+            onComplete={(modelData) => {
+              // Apply wizard results to canvas
+              if (modelData.elements && modelData.elements.length > 0) {
+                setElements(modelData.elements);
+              }
+              if (modelData.connections && modelData.connections.length > 0) {
+                setConnections(modelData.connections);
+              }
+              setShowSystemsThinkingWizard(false);
+              setActiveSDView('canvas');
+              saveToHistory();
+            }}
+            currentElements={elements}
+            currentConnections={connections}
+            diagramMode={diagramMode}
+          />
+        </div>
+      )}
 
       {/* Save Modal */}
       {showSaveModal && (
@@ -3036,6 +3231,22 @@ export default function SystemDynamicsStudio() {
         </div>
       )}
 
+      {/* Enhanced Guidance Panel with Systems Thinking */}
+      {showGuidance && (
+        <div className="sd-guidance-panel">
+          <SDGuidancePanel
+            title="Systems Thinking Guide"
+            activeView={diagramMode}
+            onClose={() => setShowGuidance(false)}
+            onNavigateToLearning={() => { setActiveSDView('learning'); setShowGuidance(false); }}
+            onNavigateToExamples={() => { setActiveSDView('examples'); setShowGuidance(false); }}
+            onNavigateToFramework={() => { setActiveSDView('framework'); setShowGuidance(false); }}
+            onStartWizard={() => { setShowSystemsThinkingWizard(true); setShowGuidance(false); }}
+          />
+        </div>
+      )}
+      </div>{/* Close sd-content-area */}
+
       <style jsx>{`
         /* ============================================
            SYSTEM DYNAMICS STUDIO - Professional CLD Tool
@@ -3047,6 +3258,135 @@ export default function SystemDynamicsStudio() {
           height: 100%;
           background: var(--bg);
           font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        .sd-content-area {
+          display: flex;
+          flex: 1;
+          overflow: hidden;
+        }
+
+        .sd-guidance-panel {
+          width: 320px;
+          min-width: 320px;
+          height: 100%;
+          border-left: 1px solid var(--border);
+          overflow: hidden;
+        }
+
+        /* ============================================
+           VIEW TABS - Systems Thinking Navigation
+           ============================================ */
+        .sd-view-tabs {
+          display: flex;
+          background: var(--bg);
+          border-radius: 8px;
+          padding: 3px;
+          border: 1px solid var(--border);
+          margin-right: 12px;
+        }
+
+        .view-tab {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          padding: 6px 12px;
+          border: none;
+          background: transparent;
+          color: var(--text-muted);
+          font-size: 12px;
+          font-weight: 500;
+          cursor: pointer;
+          border-radius: 6px;
+          transition: all 0.15s ease;
+          white-space: nowrap;
+        }
+
+        .view-tab:hover:not(.active) {
+          color: var(--text);
+          background: var(--border);
+        }
+
+        .view-tab.active {
+          background: var(--accent);
+          color: white !important;
+          box-shadow: 0 2px 4px rgba(99, 102, 241, 0.3);
+        }
+
+        .view-tab.active:hover {
+          filter: brightness(1.1);
+        }
+
+        .view-tab span {
+          display: none;
+        }
+
+        @media (min-width: 1200px) {
+          .view-tab span {
+            display: inline;
+          }
+        }
+
+        /* Wizard Button */
+        .wizard-btn {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          padding: 6px 12px;
+          background: var(--accent-soft);
+          color: var(--accent);
+          border: 1px solid var(--accent);
+          border-radius: 6px;
+          font-size: 12px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.15s ease;
+        }
+
+        .wizard-btn:hover {
+          background: var(--accent);
+          color: white !important;
+        }
+
+        .wizard-btn.active {
+          background: var(--accent);
+          color: white !important;
+        }
+
+        .wizard-btn.active:hover {
+          filter: brightness(1.1);
+        }
+
+        .wizard-btn span {
+          display: none;
+        }
+
+        @media (min-width: 1100px) {
+          .wizard-btn span {
+            display: inline;
+          }
+        }
+
+        /* View Containers */
+        .sd-view-container {
+          flex: 1;
+          overflow: auto;
+          background: var(--bg);
+        }
+
+        /* Wizard Modal */
+        .wizard-modal-backdrop {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.5);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 1000;
+          padding: 20px;
         }
 
         /* ============================================
@@ -3109,14 +3449,19 @@ export default function SystemDynamicsStudio() {
           transition: all 0.15s ease;
         }
 
-        .mode-btn:hover {
+        .mode-btn:hover:not(.active) {
           color: var(--text);
+          background: var(--border);
         }
 
         .mode-btn.active {
           background: var(--accent);
-          color: white;
+          color: white !important;
           box-shadow: 0 2px 4px rgba(99, 102, 241, 0.3);
+        }
+
+        .mode-btn.active:hover {
+          filter: brightness(1.1);
         }
 
         .sd-name-input {

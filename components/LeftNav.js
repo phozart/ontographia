@@ -1,10 +1,11 @@
 // components/LeftNav.js - Unified Navigation Sidebar
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
 import HomeIcon from '@mui/icons-material/Home';
+import HomeWorkIcon from '@mui/icons-material/HomeWork';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import AppsIcon from '@mui/icons-material/Apps';
 import HubIcon from '@mui/icons-material/Hub';
@@ -14,6 +15,7 @@ import AssignmentIcon from '@mui/icons-material/Assignment';
 import ArchitectureIcon from '@mui/icons-material/Architecture';
 import LightbulbIcon from '@mui/icons-material/Lightbulb';
 import DomainIcon from '@mui/icons-material/Domain';
+import FolderSharedIcon from '@mui/icons-material/FolderShared';
 import QuizIcon from '@mui/icons-material/Quiz';
 import LockIcon from '@mui/icons-material/Lock';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
@@ -26,36 +28,122 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import BuildIcon from '@mui/icons-material/Build';
+import HandshakeIcon from '@mui/icons-material/Handshake';
+import PsychologyIcon from '@mui/icons-material/Psychology';
+import SchoolIcon from '@mui/icons-material/School';
+import AutoStoriesIcon from '@mui/icons-material/AutoStories';
+import AutoGraphIcon from '@mui/icons-material/AutoGraph';
+import ChangeCircleIcon from '@mui/icons-material/ChangeCircle';
+import GridViewIcon from '@mui/icons-material/GridView';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import MapIcon from '@mui/icons-material/Map';
+import CategoryIcon from '@mui/icons-material/Category';
+import BusinessIcon from '@mui/icons-material/Business';
+import MiscellaneousServicesIcon from '@mui/icons-material/MiscellaneousServices';
+import FlagIcon from '@mui/icons-material/Flag';
+import GavelIcon from '@mui/icons-material/Gavel';
+import ShieldIcon from '@mui/icons-material/Shield';
+import BusinessCenterIcon from '@mui/icons-material/BusinessCenter';
 import { useAuth } from './AuthContext';
+import AboutModal from './AboutModal';
 import { useDomains } from './DomainContext';
 import { LogoMark } from './Logo';
+import { useMenuConfig } from './MenuConfigContext';
+
+// Icon mapping - convert string names from DB to actual components
+const ICON_MAP = {
+  HomeIcon,
+  DashboardIcon,
+  AppsIcon,
+  HubIcon,
+  AccountTreeIcon,
+  LoopIcon,
+  AssignmentIcon,
+  ArchitectureIcon,
+  LightbulbIcon,
+  LockIcon,
+  BuildIcon,
+  HandshakeIcon,
+  PsychologyIcon,
+  SchoolIcon,
+  AutoStoriesIcon,
+  AutoGraphIcon,
+  ChangeCircleIcon,
+  GridViewIcon,
+  CategoryIcon,
+  MiscellaneousServicesIcon,
+  FlagIcon,
+  GavelIcon,
+  ShieldIcon,
+  BusinessCenterIcon,
+};
 
 export default function LeftNav({ theme, onThemeChange }) {
   const router = useRouter();
-  const { role, user, logout } = useAuth();
-  const { activeDomain, accessibleDomains, setActiveDomain, activeDomainObj } = useDomains();
+  const { role, user, logout, canAccessPage, allowedPages } = useAuth();
+  const { activeDomain, accessibleDomains, setActiveDomain, activeDomainObj, personalDomainId, isPersonalDomain } = useDomains();
+  const {
+    config: menuConfig,
+    availableItems,
+    loading: menuLoading,
+    getItemDetails,
+  } = useMenuConfig();
   const [isPinned, setIsPinned] = useState(true);
   const [isHovered, setIsHovered] = useState(false);
   const [domainMenuOpen, setDomainMenuOpen] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(208);
   const [isResizing, setIsResizing] = useState(false);
-  const [expandedSections, setExpandedSections] = useState(['navigation', 'knowledge', 'reasoning', 'workspace']); // All sections expanded by default
+  const [expandedSections, setExpandedSections] = useState(['navigation', 'knowledge', 'workspace', 'reasoning']);
+  // Section order - default: workspace before reasoning (fallback when no config)
+  const [sectionOrder, setSectionOrder] = useState(['navigation', 'knowledge', 'workspace', 'reasoning']);
+  const [draggedSection, setDraggedSection] = useState(null);
+  const [helpMenuOpen, setHelpMenuOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
   const domainMenuRef = useRef(null);
+  const helpMenuRef = useRef(null);
   const settingsRef = useRef(null);
-  const userMenuRef = useRef(null);
   const navRef = useRef(null);
   const year = new Date().getFullYear();
 
-  // Load pinned state and width from localStorage
+  // Load saved state from localStorage after hydration
   useEffect(() => {
-    const stored = window.localStorage.getItem('left-nav-pinned');
-    if (stored === 'false') setIsPinned(false);
+    const storedPinned = window.localStorage.getItem('left-nav-pinned');
+    if (storedPinned === 'false') setIsPinned(false);
     const storedWidth = window.localStorage.getItem('left-nav-width');
     if (storedWidth) setSidebarWidth(parseInt(storedWidth, 10));
+    // Load saved section order
+    const storedSectionOrder = window.localStorage.getItem('left-nav-section-order');
+    if (storedSectionOrder) {
+      try {
+        const parsed = JSON.parse(storedSectionOrder);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setSectionOrder(parsed);
+        }
+      } catch (e) {
+        // Ignore parse errors
+      }
+    }
+    setHydrated(true);
   }, []);
+
+  // Expand any config sections not already in the expanded list
+  useEffect(() => {
+    if (menuConfig?.sections) {
+      const configSectionKeys = menuConfig.sections.map(s => s.key);
+      setExpandedSections(prev => {
+        const newExpanded = [...prev];
+        configSectionKeys.forEach(key => {
+          if (!newExpanded.includes(key)) {
+            newExpanded.push(key);
+          }
+        });
+        return newExpanded;
+      });
+    }
+  }, [menuConfig]);
 
   // Sync pinned state and width to CSS variables
   useEffect(() => {
@@ -108,11 +196,11 @@ export default function LeftNav({ theme, onThemeChange }) {
       if (domainMenuRef.current && !domainMenuRef.current.contains(e.target)) {
         setDomainMenuOpen(false);
       }
+      if (helpMenuRef.current && !helpMenuRef.current.contains(e.target)) {
+        setHelpMenuOpen(false);
+      }
       if (settingsRef.current && !settingsRef.current.contains(e.target)) {
         setSettingsOpen(false);
-      }
-      if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
-        setUserMenuOpen(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -127,7 +215,17 @@ export default function LeftNav({ theme, onThemeChange }) {
     });
 
   const isExpanded = isPinned || isHovered;
-  const showTooltips = !isExpanded;
+  // Only show tooltips after hydration to avoid server/client mismatch
+  const showTooltips = hydrated && !isExpanded;
+
+  // Hover handlers - only update state when not pinned
+  const handleMouseEnter = useCallback(() => {
+    if (!isPinned) setIsHovered(true);
+  }, [isPinned]);
+
+  const handleMouseLeave = useCallback(() => {
+    if (!isPinned) setIsHovered(false);
+  }, [isPinned]);
 
   // Toggle section expansion (now supports multiple expanded sections)
   const toggleSection = (section) => {
@@ -141,38 +239,72 @@ export default function LeftNav({ theme, onThemeChange }) {
   // Check if a section is expanded
   const isSectionExpanded = (section) => expandedSections.includes(section);
 
-  // Main navigation items
+  // Drag and drop handlers for sections
+  const handleDragStart = (e, sectionId) => {
+    setDraggedSection(sectionId);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e, sectionId) => {
+    e.preventDefault();
+    if (!draggedSection || draggedSection === sectionId) return;
+  };
+
+  const handleDrop = (e, targetSectionId) => {
+    e.preventDefault();
+    if (!draggedSection || draggedSection === targetSectionId) return;
+
+    const newOrder = [...sectionOrder];
+    const draggedIndex = newOrder.indexOf(draggedSection);
+    const targetIndex = newOrder.indexOf(targetSectionId);
+
+    if (draggedIndex !== -1 && targetIndex !== -1) {
+      newOrder.splice(draggedIndex, 1);
+      newOrder.splice(targetIndex, 0, draggedSection);
+      setSectionOrder(newOrder);
+      window.localStorage.setItem('left-nav-section-order', JSON.stringify(newOrder));
+    }
+    setDraggedSection(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedSection(null);
+  };
+
+  // Home item (standalone at top)
+  const homeItem = {
+    href: '/',
+    label: 'Home',
+    icon: HomeIcon,
+    active: isActive('/') && !isActive('/home') && !isActive('/navigation'),
+    roles: null,
+  };
+
+  // Main navigation items (without Home)
   const mainNavItems = [
     {
-      href: '/',
-      label: 'Home',
-      icon: HomeIcon,
-      active: isActive('/') && !isActive('/home') && !isActive('/projects-overview'),
-      roles: null, // visible to all
-    },
-    {
-      href: '/projects-overview',
+      href: '/navigation/projects-overview',
       label: 'Projects Overview',
       icon: DashboardIcon,
-      active: isActive('/projects-overview'),
-      roles: ['admin', 'editor', 'viewer'], // logged in users only
+      active: isActive('/navigation/projects-overview', '/projects-overview'),
+      roles: ['admin', 'editor', 'viewer'],
     },
     {
-      href: '/home',
+      href: '/navigation/home',
       label: 'Product',
       icon: AppsIcon,
-      active: isActive('/home'),
-      roles: null, // visible to all
+      active: isActive('/navigation/home', '/home'),
+      roles: null,
     },
   ];
 
   // Knowledge section items (only when logged in)
   const knowledgeNavItems = [
     {
-      href: '/knowledge-studio',
+      href: '/app/knowledge/studio',
       label: 'Knowledge Studio',
       icon: HubIcon,
-      active: isActive('/knowledge-studio', '/graphnavigator', '/semanticmodelbrowser', '/user-view', '/studio'),
+      active: isActive('/app/knowledge/studio', '/knowledge-studio', '/graphnavigator', '/semanticmodelbrowser', '/user-view', '/studio'),
       roles: ['admin', 'editor', 'viewer'],
     },
   ];
@@ -180,49 +312,150 @@ export default function LeftNav({ theme, onThemeChange }) {
   // Reasoning section items (only when logged in)
   const reasoningNavItems = [
     {
-      href: '/system-dynamics',
+      href: '/app/reasoning/system-dynamics',
       label: 'System Dynamics',
       icon: LoopIcon,
-      active: isActive('/system-dynamics'),
+      active: isActive('/app/reasoning/system-dynamics', '/system-dynamics'),
       roles: ['admin', 'editor', 'viewer'],
     },
     {
-      href: '/dynamic-work-design',
+      href: '/app/reasoning/dynamic-work-design',
       label: 'Work Design',
       icon: BuildIcon,
-      active: isActive('/dynamic-work-design'),
+      active: isActive('/app/reasoning/dynamic-work-design', '/dynamic-work-design'),
       roles: ['admin', 'editor', 'viewer'],
+    },
+    {
+      href: '/app/reasoning/negotiation',
+      label: 'N&P Studio',
+      icon: HandshakeIcon,
+      active: isActive('/app/reasoning/negotiation', '/negotiation-studio'),
+      roles: ['admin', 'editor', 'viewer'],
+    },
+    {
+      href: '/app/reasoning/sensemaking',
+      label: 'Sensemaking',
+      icon: PsychologyIcon,
+      active: isActive('/app/reasoning/sensemaking', '/sensemaking-studio'),
+      roles: ['admin', 'editor', 'viewer'],
+    },
+    {
+      href: '/app/reasoning/learning',
+      label: 'Learning Studio',
+      icon: SchoolIcon,
+      active: isActive('/app/reasoning/learning', '/learning-studio'),
+      roles: ['admin', 'editor', 'viewer'],
+    },
+    {
+      href: '/philosophy-studio',
+      label: 'Philosophy',
+      icon: AutoStoriesIcon,
+      active: isActive('/philosophy-studio'),
+      roles: ['admin', 'editor', 'viewer'],
+      bypassPagePermissions: true,
+    },
+    {
+      href: '/strategic-reasoning',
+      label: 'Strategic Reasoning',
+      icon: AutoGraphIcon,
+      active: isActive('/strategic-reasoning'),
+      roles: ['admin', 'editor', 'viewer'],
+      bypassPagePermissions: true,
     },
   ];
 
   // Workspace navigation items (only when logged in)
   const workspaceNavItems = [
     {
-      href: '/product-design-workspace',
+      href: '/app/workspaces/project-design',
+      label: 'Project Design',
+      icon: AccountTreeIcon,
+      active: isActive('/app/workspaces/project-design', '/project-design'),
+      roles: ['admin', 'editor', 'viewer'],
+      bypassPagePermissions: true,
+    },
+    {
+      href: '/app/workspaces/organisation',
+      label: 'Organisation Studio',
+      icon: BusinessIcon,
+      active: isActive('/app/workspaces/organisation', '/organisation-studio'),
+      roles: ['admin', 'editor', 'viewer'],
+      bypassPagePermissions: true,
+    },
+    {
+      href: '/business-service-studio',
+      label: 'Service Management',
+      icon: MiscellaneousServicesIcon,
+      active: isActive('/business-service-studio'),
+      roles: ['admin', 'editor', 'viewer'],
+      bypassPagePermissions: true,
+    },
+    {
+      href: '/performance-studio',
+      label: 'Performance Studio',
+      icon: FlagIcon,
+      active: isActive('/performance-studio'),
+      roles: ['admin', 'editor', 'viewer'],
+      bypassPagePermissions: true,
+    },
+    {
+      href: '/governance-studio',
+      label: 'Governance Studio',
+      icon: GavelIcon,
+      active: isActive('/governance-studio'),
+      roles: ['admin', 'editor', 'viewer'],
+      bypassPagePermissions: true,
+    },
+    {
+      href: '/risk-studio',
+      label: 'Risk & Resilience',
+      icon: ShieldIcon,
+      active: isActive('/risk-studio'),
+      roles: ['admin', 'editor', 'viewer'],
+      bypassPagePermissions: true,
+    },
+    {
+      href: '/app/workspaces/product-design',
       label: 'Product Design',
       icon: LightbulbIcon,
-      active: isActive('/product-design-workspace'),
+      active: isActive('/app/workspaces/product-design', '/product-design-workspace'),
       roles: ['admin', 'editor', 'viewer'],
     },
     {
-      href: '/requirements-studio',
+      href: '/app/workspaces/requirements',
       label: 'Requirements Studio',
       icon: AssignmentIcon,
-      active: isActive('/requirements-studio'),
+      active: isActive('/app/workspaces/requirements', '/requirements-studio'),
       roles: ['admin', 'editor', 'viewer'],
     },
     {
-      href: '/ea-studio',
+      href: '/app/workspaces/enterprise-architecture',
       label: 'Enterprise Architecture',
       icon: ArchitectureIcon,
-      active: isActive('/ea-studio'),
+      active: isActive('/app/workspaces/enterprise-architecture', '/ea-studio'),
       roles: ['admin', 'editor', 'viewer'],
     },
     {
-      href: '/diagram-workspace',
-      label: 'Diagrams',
-      icon: AccountTreeIcon,
-      active: isActive('/diagram-workspace'),
+      href: '/app/workspaces/portfolio',
+      label: 'Portfolio Studio',
+      icon: BusinessCenterIcon,
+      active: isActive('/app/workspaces/portfolio'),
+      roles: ['admin', 'editor', 'viewer'],
+      bypassPagePermissions: true,
+    },
+    {
+      href: '/diagram-studio-standalone',
+      label: 'Diagram Studio',
+      icon: GridViewIcon,
+      active: isActive('/diagram-studio-standalone'),
+      roles: ['admin', 'editor', 'viewer'],
+      bypassPagePermissions: true,
+    },
+    {
+      href: '/app/workspaces/change-management',
+      label: 'Change Studio',
+      icon: ChangeCircleIcon,
+      active: isActive('/app/workspaces/change-management'),
       roles: ['admin', 'editor', 'viewer'],
     },
   ];
@@ -230,13 +463,30 @@ export default function LeftNav({ theme, onThemeChange }) {
   // Admin navigation items (Data Management now in Knowledge Studio)
   const adminNavItems = [];
 
+  // Build href with domain query parameter for shareable links
+  const buildHrefWithDomain = (href) => {
+    if (!activeDomain) return href;
+    // Skip adding domain to home, login, admin pages
+    if (href === '/' || href.startsWith('/login') || href.startsWith('/admin')) return href;
+    // Add domain query parameter
+    const separator = href.includes('?') ? '&' : '?';
+    return `${href}${separator}dom=${activeDomain}`;
+  };
+
   const renderNavItem = (item) => {
+    // Check role-based access first
     if (item.roles && (!user || !item.roles.includes(role))) return null;
 
+    // Check dynamic page permissions if they've been loaded
+    // Only hide items if we have permission data and the page isn't allowed
+    // Skip permission check if bypassPagePermissions is set (for new pages not yet in DB)
+    if (!item.bypassPagePermissions && allowedPages.length > 0 && !canAccessPage(item.href)) return null;
+
     const Icon = item.icon;
+    const hrefWithDomain = buildHrefWithDomain(item.href);
     const linkContent = (
       <Link
-        href={item.href}
+        href={hrefWithDomain}
         className={`left-nav-item ${item.active ? 'active' : ''}`}
       >
         <span className="left-nav-icon">
@@ -262,12 +512,12 @@ export default function LeftNav({ theme, onThemeChange }) {
       <nav
         ref={navRef}
         className={`left-nav ${isExpanded ? 'expanded' : ''} ${isPinned ? 'pinned' : ''} ${isResizing ? 'resizing' : ''}`}
-        style={isExpanded ? { width: sidebarWidth } : undefined}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+        style={hydrated && isExpanded ? { width: sidebarWidth } : undefined}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
       >
-        {/* Scrollable content wrapper */}
-        <div className="left-nav-content">
+        {/* Fixed header (logo + home) - doesn't scroll */}
+        <div className="left-nav-fixed-header">
           {/* Logo header with integrated pin */}
           <div className="left-nav-header">
             <Link href="/" className="left-nav-logo-link">
@@ -289,34 +539,58 @@ export default function LeftNav({ theme, onThemeChange }) {
             )}
           </div>
 
+          {/* Home - always at top */}
+          <div className="left-nav-home">
+            {showTooltips ? (
+              <Tooltip title="Home" placement="right" arrow>
+                <Link href="/" className={`left-nav-item left-nav-home-item ${homeItem.active ? 'active' : ''}`}>
+                  <span className="left-nav-icon">
+                    <HomeIcon fontSize="small" />
+                  </span>
+                  <span className="left-nav-label">Home</span>
+                </Link>
+              </Tooltip>
+            ) : (
+              <Link href="/" className={`left-nav-item left-nav-home-item ${homeItem.active ? 'active' : ''}`}>
+                <span className="left-nav-icon">
+                  <HomeIcon fontSize="small" />
+                </span>
+                <span className="left-nav-label">Home</span>
+              </Link>
+            )}
+          </div>
+        </div>
+
+        {/* Scrollable content wrapper */}
+        <div className="left-nav-content">
           {/* Domain selector (moved up, logged in users) */}
           {user && accessibleDomains.length > 0 && (
             <div className="left-nav-domain left-nav-domain--top" ref={domainMenuRef}>
               {showTooltips ? (
-                <Tooltip title={`Domain: ${activeDomainObj?.name || 'Select'}`} placement="right" arrow>
+                <Tooltip title={`${isPersonalDomain ? 'My Workspace' : 'Domain'}: ${activeDomainObj?.name || 'Select'}`} placement="right" arrow>
                   <button
-                    className="left-nav-domain-btn"
+                    className={`left-nav-domain-btn ${isPersonalDomain ? 'personal' : ''}`}
                     onClick={() => setDomainMenuOpen(!domainMenuOpen)}
                   >
                     <span className="left-nav-icon">
-                      <DomainIcon fontSize="small" />
+                      {isPersonalDomain ? <HomeWorkIcon fontSize="small" /> : <DomainIcon fontSize="small" />}
                     </span>
                     <span className="left-nav-label">
-                      {activeDomainObj?.name || 'Domain'}
+                      {isPersonalDomain ? 'My Workspace' : (activeDomainObj?.name || 'Domain')}
                     </span>
                     <KeyboardArrowDownIcon fontSize="small" className="domain-arrow" />
                   </button>
                 </Tooltip>
               ) : (
                 <button
-                  className="left-nav-domain-btn"
+                  className={`left-nav-domain-btn ${isPersonalDomain ? 'personal' : ''}`}
                   onClick={() => setDomainMenuOpen(!domainMenuOpen)}
                 >
                   <span className="left-nav-icon">
-                    <DomainIcon fontSize="small" />
+                    {isPersonalDomain ? <HomeWorkIcon fontSize="small" /> : <DomainIcon fontSize="small" />}
                   </span>
                   <span className="left-nav-label">
-                    {activeDomainObj?.name || 'Select Domain'}
+                    {isPersonalDomain ? 'My Workspace' : (activeDomainObj?.name || 'Select Domain')}
                   </span>
                   <KeyboardArrowDownIcon fontSize="small" className="domain-arrow" />
                 </button>
@@ -325,41 +599,80 @@ export default function LeftNav({ theme, onThemeChange }) {
               {domainMenuOpen && isExpanded && (
                 <div className="left-nav-domain-menu">
                   <div className="domain-menu-header">Switch Domain</div>
-                  {accessibleDomains.map(d => (
-                    <button
-                      key={d.id}
-                      type="button"
-                      className={`domain-menu-item ${d.id === activeDomain ? 'active' : ''}`}
-                      onClick={() => {
-                        setActiveDomain(d.id);
-                        setDomainMenuOpen(false);
-                      }}
-                    >
-                      <DomainIcon fontSize="small" />
-                      <span>{d.name || d.id}</span>
-                      {d.id === activeDomain && <span className="domain-check">✓</span>}
-                    </button>
-                  ))}
+                  {accessibleDomains.map(d => {
+                    const isPersonal = d.id === personalDomainId;
+                    return (
+                      <button
+                        key={d.id}
+                        type="button"
+                        className={`domain-menu-item ${d.id === activeDomain ? 'active' : ''} ${isPersonal ? 'personal' : ''}`}
+                        onClick={() => {
+                          setActiveDomain(d.id);
+                          setDomainMenuOpen(false);
+                        }}
+                      >
+                        {isPersonal ? <HomeWorkIcon fontSize="small" /> : <FolderSharedIcon fontSize="small" />}
+                        <span>{isPersonal ? 'My Workspace' : (d.name || d.id)}</span>
+                        {d.id === activeDomain && <span className="domain-check">✓</span>}
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </div>
           )}
 
-          {/* Main Navigation */}
-          <div className={`left-nav-section ${isSectionExpanded('navigation') ? 'expanded' : 'collapsed'}`}>
-            {isExpanded && (
-              <button
-                className="left-nav-section-header"
-                onClick={() => toggleSection('navigation')}
-              >
-                <span className="left-nav-section-title">Navigation</span>
-                {isSectionExpanded('navigation') ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
-              </button>
-            )}
-            <div className="left-nav-section-items">
-              {mainNavItems.map(renderNavItem)}
-              {/* Login button when not logged in */}
-              {!user && (
+          {/* Dynamic sections rendered from config or fallback */}
+          {(() => {
+            // Use menuConfig sections if available, otherwise fallback
+            const sectionsToRender = menuConfig?.sections || sectionOrder.map(key => ({
+              key,
+              label: { navigation: 'Navigation', knowledge: 'Knowledge', workspace: 'Workspaces', reasoning: 'Reasoning' }[key] || key,
+              expanded: true,
+              items: [],
+            }));
+
+            // Fallback items mapping for when config items are empty
+            const fallbackSectionItems = {
+              navigation: mainNavItems,
+              knowledge: knowledgeNavItems,
+              workspace: workspaceNavItems,
+              reasoning: reasoningNavItems,
+            };
+
+            // Build nav items from config with fallback
+            const buildNavItems = (section) => {
+              if (section.items && section.items.length > 0 && availableItems.length > 0) {
+                // Use config items with details from availableItems
+                return section.items.map(configItem => {
+                  const details = availableItems.find(ai => ai.key === configItem.key);
+                  if (!details) return null;
+                  const Icon = ICON_MAP[details.icon] || CategoryIcon;
+                  return {
+                    href: details.href,
+                    label: configItem.label || details.label,
+                    icon: Icon,
+                    active: isActive(details.href),
+                    roles: details.roles,
+                    bypassPagePermissions: true,
+                  };
+                }).filter(Boolean);
+              }
+              // Fall back to hardcoded items
+              return fallbackSectionItems[section.key] || [];
+            };
+
+            return sectionsToRender.map((section, index) => {
+              // Skip sections requiring auth if not logged in
+              const requiresAuth = section.key !== 'navigation';
+              if (requiresAuth && !user) return null;
+
+              const items = buildNavItems(section);
+              // Always use local state for expand/collapse (config only defines structure)
+              const sectionExpanded = isSectionExpanded(section.key);
+
+              // Extra login link for navigation section when not logged in
+              const extra = section.key === 'navigation' && !user && (
                 showTooltips ? (
                   <Tooltip title="Login" placement="right" arrow>
                     <Link href="/login" className={`left-nav-item ${isActive('/login') ? 'active' : ''}`}>
@@ -377,120 +690,130 @@ export default function LeftNav({ theme, onThemeChange }) {
                     <span className="left-nav-label">Login</span>
                   </Link>
                 )
-              )}
-            </div>
-          </div>
+              );
 
-          {/* Knowledge Section (logged in users) */}
-          {user && (
-            <>
-              <div className="left-nav-divider" />
-              <div className={`left-nav-section ${isSectionExpanded('knowledge') ? 'expanded' : 'collapsed'}`}>
-                {isExpanded && (
-                  <button
-                    className="left-nav-section-header"
-                    onClick={() => toggleSection('knowledge')}
+              return (
+                <div key={section.key}>
+                  {index > 0 && <div className="left-nav-divider" />}
+                  <div
+                    className={`left-nav-section ${sectionExpanded ? 'expanded' : 'collapsed'} ${draggedSection === section.key ? 'dragging' : ''}`}
+                    draggable={isExpanded && user}
+                    onDragStart={(e) => handleDragStart(e, section.key)}
+                    onDragOver={(e) => handleDragOver(e, section.key)}
+                    onDrop={(e) => handleDrop(e, section.key)}
+                    onDragEnd={handleDragEnd}
                   >
-                    <span className="left-nav-section-title">Knowledge</span>
-                    {isSectionExpanded('knowledge') ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
-                  </button>
-                )}
-                <div className="left-nav-section-items">
-                  {knowledgeNavItems.map(renderNavItem)}
+                    {isExpanded && (
+                      <button
+                        className="left-nav-section-header"
+                        onClick={() => toggleSection(section.key)}
+                      >
+                        <span className="left-nav-drag-handle" title="Drag to reorder">⠿</span>
+                        <span className="left-nav-section-title">{section.label}</span>
+                        {sectionExpanded ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
+                      </button>
+                    )}
+                    <div className="left-nav-section-items">
+                      {items.map(renderNavItem)}
+                      {extra}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </>
-          )}
-
-          {/* Reasoning Section (logged in users) */}
-          {user && (
-            <>
-              <div className="left-nav-divider" />
-              <div className={`left-nav-section ${isSectionExpanded('reasoning') ? 'expanded' : 'collapsed'}`}>
-                {isExpanded && (
-                  <button
-                    className="left-nav-section-header"
-                    onClick={() => toggleSection('reasoning')}
-                  >
-                    <span className="left-nav-section-title">Reasoning</span>
-                    {isSectionExpanded('reasoning') ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
-                  </button>
-                )}
-                <div className="left-nav-section-items">
-                  {reasoningNavItems.map(renderNavItem)}
-                </div>
-              </div>
-            </>
-          )}
-
-          {/* Workspace Navigation (logged in users) */}
-          {user && (
-            <>
-              <div className="left-nav-divider" />
-              <div className={`left-nav-section ${isSectionExpanded('workspace') ? 'expanded' : 'collapsed'}`}>
-                {isExpanded && (
-                  <button
-                    className="left-nav-section-header"
-                    onClick={() => toggleSection('workspace')}
-                  >
-                    <span className="left-nav-section-title">Workspaces</span>
-                    {isSectionExpanded('workspace') ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
-                  </button>
-                )}
-                <div className="left-nav-section-items">
-                  {workspaceNavItems.map(renderNavItem)}
-                </div>
-              </div>
-            </>
-          )}
+              );
+            });
+          })()}
 
           {/* Spacer */}
           <div className="left-nav-spacer" />
         </div>
 
-        {/* Bottom section: compact controls bar */}
+        {/* Bottom section: 2 consolidated menus */}
         <div className="left-nav-bottom">
-          {/* Help link */}
-          {showTooltips ? (
-            <Tooltip title="Help" placement="right" arrow>
-              <Link href="/help" className={`left-nav-bottom-btn ${isActive('/help') ? 'active' : ''}`}>
-                <QuizIcon fontSize="small" />
-              </Link>
-            </Tooltip>
-          ) : (
-            <Link href="/help" className={`left-nav-bottom-btn ${isActive('/help') ? 'active' : ''}`}>
-              <QuizIcon fontSize="small" />
-              {isExpanded && <span>Help</span>}
-            </Link>
-          )}
-
-          {/* Settings with theme toggle inside */}
-          <div className="left-nav-menu-wrapper" ref={settingsRef}>
+          {/* Help & Info Menu */}
+          <div className="left-nav-menu-wrapper" ref={helpMenuRef}>
             {showTooltips ? (
-              <Tooltip title="Settings" placement="right" arrow>
+              <Tooltip title="Help & Info" placement="right" arrow>
                 <button
-                  className="left-nav-bottom-btn"
-                  onClick={() => setSettingsOpen(o => !o)}
-                  aria-expanded={settingsOpen}
-                  aria-label="Settings"
+                  className={`left-nav-bottom-btn ${isActive('/help', '/sitemap') ? 'active' : ''}`}
+                  onClick={() => setHelpMenuOpen(o => !o)}
+                  aria-expanded={helpMenuOpen}
+                  aria-label="Help & Info"
                 >
-                  <SettingsIcon fontSize="small" />
+                  <QuizIcon fontSize="small" />
                 </button>
               </Tooltip>
             ) : (
               <button
-                className="left-nav-bottom-btn"
+                className={`left-nav-bottom-btn ${isActive('/help', '/sitemap') ? 'active' : ''}`}
+                onClick={() => setHelpMenuOpen(o => !o)}
+                aria-expanded={helpMenuOpen}
+                aria-label="Help & Info"
+              >
+                <QuizIcon fontSize="small" />
+                {isExpanded && <span>Help</span>}
+              </button>
+            )}
+            {helpMenuOpen && (
+              <div className="left-nav-dropdown left-nav-dropdown--up">
+                <Link href="/help" className={isActive('/help') ? 'active' : ''} onClick={() => setHelpMenuOpen(false)}>
+                  <QuizIcon fontSize="small" />
+                  <span>Help Center</span>
+                </Link>
+                <Link href="/sitemap" className={isActive('/sitemap') ? 'active' : ''} onClick={() => setHelpMenuOpen(false)}>
+                  <MapIcon fontSize="small" />
+                  <span>Sitemap</span>
+                </Link>
+                <div className="dropdown-divider" />
+                <button type="button" onClick={() => { setHelpMenuOpen(false); setAboutOpen(true); }}>
+                  <InfoOutlinedIcon fontSize="small" />
+                  <span>About</span>
+                </button>
+                <button type="button" onClick={() => { setHelpMenuOpen(false); setShowPrivacy(true); }}>
+                  <LockIcon fontSize="small" />
+                  <span>Privacy</span>
+                </button>
+                <div className="dropdown-divider" />
+                <span className="dropdown-hint">&copy; {year} Ontographia</span>
+              </div>
+            )}
+          </div>
+
+          {/* Settings & Account Menu */}
+          <div className="left-nav-menu-wrapper" ref={settingsRef}>
+            {showTooltips ? (
+              <Tooltip title={user ? `${user} - Settings` : 'Settings'} placement="right" arrow>
+                <button
+                  className={`left-nav-bottom-btn ${isActive('/settings', '/domains', '/admin') ? 'active' : ''}`}
+                  onClick={() => setSettingsOpen(o => !o)}
+                  aria-expanded={settingsOpen}
+                  aria-label="Settings"
+                >
+                  {user ? <AccountCircleIcon fontSize="small" /> : <SettingsIcon fontSize="small" />}
+                </button>
+              </Tooltip>
+            ) : (
+              <button
+                className={`left-nav-bottom-btn ${isActive('/settings', '/domains', '/admin') ? 'active' : ''}`}
                 onClick={() => setSettingsOpen(o => !o)}
                 aria-expanded={settingsOpen}
                 aria-label="Settings"
               >
-                <SettingsIcon fontSize="small" />
-                {isExpanded && <span>Settings</span>}
+                {user ? <AccountCircleIcon fontSize="small" /> : <SettingsIcon fontSize="small" />}
+                {isExpanded && <span>{user || 'Settings'}</span>}
               </button>
             )}
             {settingsOpen && (
               <div className="left-nav-dropdown left-nav-dropdown--up">
-                {/* Theme toggle at top of settings */}
+                {user && (
+                  <>
+                    <div className="dropdown-header">
+                      <strong>{user}</strong>
+                      <span className="dropdown-role">{role}</span>
+                    </div>
+                    <div className="dropdown-divider" />
+                  </>
+                )}
+                {/* Theme toggle */}
                 <button
                   type="button"
                   className="dropdown-theme-toggle"
@@ -499,11 +822,11 @@ export default function LeftNav({ theme, onThemeChange }) {
                   {theme === 'light' ? <DarkModeIcon fontSize="small" /> : <LightModeIcon fontSize="small" />}
                   <span>{theme === 'light' ? 'Dark mode' : 'Light mode'}</span>
                 </button>
-                <div className="dropdown-divider" />
                 {user && (
                   <>
+                    <div className="dropdown-divider" />
                     <Link href="/settings" className={isActive('/settings') ? 'active' : ''} onClick={() => setSettingsOpen(false)}>
-                      General
+                      General Settings
                     </Link>
                     {role !== 'viewer' && (
                       <Link href="/domains" className={isActive('/domains') ? 'active' : ''} onClick={() => setSettingsOpen(false)}>
@@ -511,76 +834,38 @@ export default function LeftNav({ theme, onThemeChange }) {
                       </Link>
                     )}
                     {role === 'admin' && (
-                      <Link href="/admin/users" className={isActive('/admin/users') ? 'active' : ''} onClick={() => setSettingsOpen(false)}>
-                        Users
-                      </Link>
+                      <>
+                        <div className="dropdown-divider" />
+                        <span className="dropdown-hint">Admin</span>
+                        <Link href="/admin/users" className={isActive('/admin/users') ? 'active' : ''} onClick={() => setSettingsOpen(false)}>
+                          Users
+                        </Link>
+                        <Link href="/admin/style-guide" className={isActive('/admin/style-guide') ? 'active' : ''} onClick={() => setSettingsOpen(false)}>
+                          Style Guide
+                        </Link>
+                        <Link href="/admin/menu-config" className={isActive('/admin/menu-config') ? 'active' : ''} onClick={() => setSettingsOpen(false)}>
+                          Menu Config
+                        </Link>
+                      </>
                     )}
+                    <div className="dropdown-divider" />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSettingsOpen(false);
+                        logout();
+                      }}
+                    >
+                      Logout
+                    </button>
                   </>
                 )}
                 {!user && (
-                  <span className="dropdown-hint">Login for more settings</span>
+                  <span className="dropdown-hint">Login for more options</span>
                 )}
               </div>
             )}
           </div>
-
-          {/* User Menu (logged in users) */}
-          {user && (
-            <div className="left-nav-menu-wrapper" ref={userMenuRef}>
-              {showTooltips ? (
-                <Tooltip title={`${user} (${role})`} placement="right" arrow>
-                  <button
-                    className="left-nav-bottom-btn"
-                    onClick={() => setUserMenuOpen(o => !o)}
-                    aria-expanded={userMenuOpen}
-                    aria-label="User menu"
-                  >
-                    <AccountCircleIcon fontSize="small" />
-                  </button>
-                </Tooltip>
-              ) : (
-                <button
-                  className="left-nav-bottom-btn"
-                  onClick={() => setUserMenuOpen(o => !o)}
-                  aria-expanded={userMenuOpen}
-                  aria-label="User menu"
-                >
-                  <AccountCircleIcon fontSize="small" />
-                  {isExpanded && <span>{user}</span>}
-                </button>
-              )}
-              {userMenuOpen && (
-                <div className="left-nav-dropdown left-nav-dropdown--up">
-                  <div className="dropdown-header">
-                    Logged in as <strong>{user}</strong>
-                    <span className="dropdown-role">{role}</span>
-                  </div>
-                  <div className="dropdown-divider" />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setUserMenuOpen(false);
-                      logout();
-                    }}
-                  >
-                    Logout
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Privacy - compact */}
-          {isExpanded && (
-            <button
-              type="button"
-              className="left-nav-privacy-compact"
-              onClick={() => setShowPrivacy(true)}
-              title={`© ${year} Ontographia`}
-            >
-              Privacy
-            </button>
-          )}
         </div>
 
         {/* Resize handle */}
@@ -615,6 +900,9 @@ export default function LeftNav({ theme, onThemeChange }) {
           </div>
         </div>
       )}
+
+      {/* About Modal */}
+      <AboutModal open={aboutOpen} onClose={() => setAboutOpen(false)} />
     </>
   );
 }

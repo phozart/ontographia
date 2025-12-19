@@ -138,6 +138,78 @@ export default async function handler(req, res) {
       adjustmentsByStatus[row.status || 'proposed'] = parseInt(row.count, 10);
     });
 
+    // ========== Effectiveness Metrics ==========
+    // Calculate adjustment effectiveness
+    const adoptedCount = adjustmentsByStatus['adopted'] || 0;
+    const revertedCount = adjustmentsByStatus['reverted'] || 0;
+    const tryingCount = adjustmentsByStatus['trying'] || 0;
+    const completedAdjustments = adoptedCount + revertedCount;
+    const totalAdjustments = countsByType['dwd_adjustment'] || 0;
+    const totalLearnings = countsByType['dwd_learning'] || 0;
+
+    // Adoption rate (adopted / (adopted + reverted))
+    const adoptionRate = completedAdjustments > 0
+      ? adoptedCount / completedAdjustments
+      : 0;
+
+    // Revert rate (reverted / completed)
+    const revertRate = completedAdjustments > 0
+      ? revertedCount / completedAdjustments
+      : 0;
+
+    // Learning capture rate (learnings / completed adjustments)
+    const learningCaptureRate = completedAdjustments > 0
+      ? Math.min(totalLearnings / completedAdjustments, 1)
+      : 0;
+
+    // Calculate average time from proposed to adopted
+    const avgTimeResult = await query(
+      `SELECT AVG(
+        EXTRACT(EPOCH FROM (
+          COALESCE(
+            (custom_fields->>'adopted_at')::timestamp,
+            updated_at
+          ) - created_at
+        )) / 86400
+       ) as avg_days
+       FROM artefacts
+       WHERE ${baseCondition}
+         AND artefact_type = 'dwd_adjustment'
+         AND custom_fields->>'adjustment_status' = 'adopted'`,
+      baseParams
+    );
+    const avgDaysToAdoption = avgTimeResult.rows[0]?.avg_days
+      ? parseFloat(avgTimeResult.rows[0].avg_days).toFixed(1)
+      : null;
+
+    // Calculate signal trend (comparing recent signals to older ones)
+    const signalTrendResult = await query(
+      `SELECT
+        COUNT(*) FILTER (WHERE created_at > NOW() - INTERVAL '30 days') as recent,
+        COUNT(*) FILTER (WHERE created_at <= NOW() - INTERVAL '30 days' AND created_at > NOW() - INTERVAL '60 days') as previous
+       FROM artefacts
+       WHERE ${baseCondition} AND artefact_type = 'dwd_signal'`,
+      baseParams
+    );
+
+    const recentSignals = parseInt(signalTrendResult.rows[0]?.recent || 0, 10);
+    const previousSignals = parseInt(signalTrendResult.rows[0]?.previous || 0, 10);
+    const signalTrend = previousSignals > 0
+      ? ((recentSignals - previousSignals) / previousSignals)
+      : 0;
+
+    // Adjustments currently being tried (experiments in progress)
+    const experimentsInProgress = tryingCount;
+
+    // Calculate principle alignment distribution
+    const principleStats = {
+      solve_right_problem: 0,
+      structure_for_discovery: 0,
+      connect_human_chain: 0,
+      regulate_for_flow: 0,
+      visualize_work: 0,
+    };
+
     // ========== Recent activity ==========
     const recentResult = await query(
       `SELECT id, name, artefact_type, updated_at, created_at
@@ -201,9 +273,20 @@ export default async function handler(req, res) {
       },
       observations,
       recentActivity: recentResult.rows,
+      // Effectiveness metrics
+      effectiveness: {
+        adoptionRate: parseFloat(adoptionRate.toFixed(2)),
+        revertRate: parseFloat(revertRate.toFixed(2)),
+        learningCaptureRate: parseFloat(learningCaptureRate.toFixed(2)),
+        avgDaysToAdoption: avgDaysToAdoption ? parseFloat(avgDaysToAdoption) : null,
+        signalTrend: parseFloat(signalTrend.toFixed(2)),
+        experimentsInProgress,
+        completedAdjustments,
+        principleStats,
+      },
     });
   } catch (err) {
     console.error('Error fetching DWD stats:', err);
-    return res.status(500).json({ error: 'Failed to fetch statistics' });
+    return res.status(500).json({ error: 'Failed to fetch statistics', details: err.message });
   }
 }

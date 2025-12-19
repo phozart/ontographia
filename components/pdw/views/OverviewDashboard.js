@@ -1,10 +1,19 @@
 // components/pdw/views/OverviewDashboard.js
 // Overview dashboard showing stage progress, stats, and recent activity
 
-import { useMemo } from 'react';
+import { useMemo, useCallback } from 'react';
 import { usePDW } from '../PDWContext';
 
+// Shared UI Components
+import {
+  ViewHeader,
+  Card,
+  SummaryBar,
+  SummaryItem,
+} from '../../ui';
+
 // MUI Icons
+import DashboardIcon from '@mui/icons-material/Dashboard';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import ReportProblemIcon from '@mui/icons-material/ReportProblem';
 import LightbulbIcon from '@mui/icons-material/Lightbulb';
@@ -22,6 +31,8 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import PendingIcon from '@mui/icons-material/Pending';
 import PlayCircleIcon from '@mui/icons-material/PlayCircle';
 import AddIcon from '@mui/icons-material/Add';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import ExploreIcon from '@mui/icons-material/Explore';
 
 // Icon mapping for types
 const TYPE_ICONS = {
@@ -39,112 +50,6 @@ const TYPE_ICONS = {
   pdw_decision: GavelIcon,
 };
 
-// Stage progress component
-function StageProgress({ stage, health, onNavigate }) {
-  const statusColors = {
-    empty: '#94a3b8',
-    started: '#f59e0b',
-    partial: '#3b82f6',
-    progressing: '#22c55e',
-    complete: '#10b981',
-  };
-
-  const percentage = Math.round(health.score * 100);
-
-  return (
-    <div
-      className="pdw-dashboard__stage"
-      onClick={() => onNavigate(stage.id)}
-    >
-      <div className="pdw-dashboard__stage-header">
-        <span
-          className="pdw-dashboard__stage-indicator"
-          style={{ backgroundColor: stage.color }}
-        />
-        <h4>{stage.name}</h4>
-        <span className="pdw-dashboard__stage-count">
-          {health.total || 0} items
-        </span>
-      </div>
-      <p className="pdw-dashboard__stage-desc">{stage.description}</p>
-      <div className="pdw-dashboard__stage-progress">
-        <div className="pdw-dashboard__progress-bar">
-          <div
-            className="pdw-dashboard__progress-fill"
-            style={{
-              width: `${percentage}%`,
-              backgroundColor: statusColors[health.status] || stage.color
-            }}
-          />
-        </div>
-        <span className="pdw-dashboard__progress-text">
-          {health.validated || 0}/{health.total || 0} validated
-        </span>
-      </div>
-    </div>
-  );
-}
-
-// Type count card
-function TypeCountCard({ type, typeDef, count, onNavigate }) {
-  const Icon = TYPE_ICONS[type] || CategoryIcon;
-
-  return (
-    <div
-      className="pdw-dashboard__type-card"
-      onClick={() => onNavigate(type)}
-      style={{ borderLeftColor: typeDef?.color || '#64748b' }}
-    >
-      <Icon
-        className="pdw-dashboard__type-icon"
-        style={{ color: typeDef?.color || '#64748b' }}
-      />
-      <div className="pdw-dashboard__type-info">
-        <span className="pdw-dashboard__type-count">{count}</span>
-        <span className="pdw-dashboard__type-name">{typeDef?.name || type}</span>
-      </div>
-    </div>
-  );
-}
-
-// Recent activity item
-function ActivityItem({ artefact, typeDef, onClick }) {
-  const Icon = TYPE_ICONS[artefact.artefact_type] || CategoryIcon;
-  const timeAgo = getTimeAgo(artefact.updated_at);
-
-  return (
-    <div className="pdw-dashboard__activity-item" onClick={() => onClick(artefact)}>
-      <Icon
-        className="pdw-dashboard__activity-icon"
-        style={{ color: typeDef?.color || '#64748b' }}
-        fontSize="small"
-      />
-      <div className="pdw-dashboard__activity-content">
-        <span className="pdw-dashboard__activity-name">{artefact.name}</span>
-        <span className="pdw-dashboard__activity-meta">
-          {typeDef?.name} • {timeAgo}
-        </span>
-      </div>
-    </div>
-  );
-}
-
-// Stats card
-function StatsCard({ title, value, icon: Icon, color, subtitle }) {
-  return (
-    <div className="pdw-dashboard__stats-card">
-      <div className="pdw-dashboard__stats-icon" style={{ backgroundColor: `${color}20` }}>
-        <Icon style={{ color }} />
-      </div>
-      <div className="pdw-dashboard__stats-content">
-        <span className="pdw-dashboard__stats-value">{value}</span>
-        <span className="pdw-dashboard__stats-title">{title}</span>
-        {subtitle && <span className="pdw-dashboard__stats-subtitle">{subtitle}</span>}
-      </div>
-    </div>
-  );
-}
-
 // Helper to get time ago string
 function getTimeAgo(dateStr) {
   const date = new Date(dateStr);
@@ -161,6 +66,274 @@ function getTimeAgo(dateStr) {
   return date.toLocaleDateString();
 }
 
+// Stats card component
+function StatsCard({ title, value, icon: Icon, color, subtitle, onClick }) {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 16,
+        padding: 20,
+        backgroundColor: 'var(--bg-primary)',
+        borderRadius: 12,
+        border: '1px solid var(--border)',
+        cursor: onClick ? 'pointer' : 'default',
+        transition: 'all 0.2s ease',
+      }}
+      onClick={onClick}
+      onMouseEnter={(e) => onClick && (e.currentTarget.style.borderColor = color)}
+      onMouseLeave={(e) => onClick && (e.currentTarget.style.borderColor = 'var(--border)')}
+    >
+      <div style={{
+        width: 48,
+        height: 48,
+        borderRadius: 12,
+        backgroundColor: `${color}15`,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}>
+        <Icon style={{ color, fontSize: 24 }} />
+      </div>
+      <div>
+        <div style={{ fontSize: '1.75rem', fontWeight: 700, lineHeight: 1 }}>{value}</div>
+        <div style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', marginTop: 4 }}>{title}</div>
+        {subtitle && (
+          <div style={{ fontSize: '0.75rem', color, marginTop: 2 }}>{subtitle}</div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Stage progress card
+function StageCard({ stage, health, onNavigate }) {
+  const percentage = Math.round(health.score * 100);
+  const statusColors = {
+    empty: '#94a3b8',
+    started: '#f59e0b',
+    partial: '#3b82f6',
+    progressing: '#22c55e',
+    complete: '#10b981',
+  };
+
+  return (
+    <div
+      style={{
+        padding: 16,
+        backgroundColor: 'var(--bg-primary)',
+        borderRadius: 12,
+        border: '1px solid var(--border)',
+        borderLeft: `4px solid ${stage.color}`,
+        cursor: 'pointer',
+        transition: 'all 0.2s ease',
+      }}
+      onClick={() => onNavigate(stage.id)}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+        <h4 style={{ margin: 0, fontSize: '0.9375rem', fontWeight: 600 }}>{stage.name}</h4>
+        <span style={{
+          fontSize: '0.75rem',
+          color: 'var(--text-muted)',
+          backgroundColor: 'var(--bg-secondary)',
+          padding: '2px 8px',
+          borderRadius: 12,
+        }}>
+          {health.total || 0} items
+        </span>
+      </div>
+      <p style={{ margin: '0 0 12px', fontSize: '0.8125rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>
+        {stage.description}
+      </p>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{
+          flex: 1,
+          height: 6,
+          borderRadius: 3,
+          backgroundColor: 'var(--bg-secondary)',
+          overflow: 'hidden',
+        }}>
+          <div style={{
+            width: `${percentage}%`,
+            height: '100%',
+            borderRadius: 3,
+            backgroundColor: statusColors[health.status] || stage.color,
+            transition: 'width 0.3s ease',
+          }} />
+        </div>
+        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', minWidth: 65, textAlign: 'right' }}>
+          {health.validated || 0}/{health.total || 0} done
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// Type count card for the types grid
+function TypeCard({ type, typeDef, count, onNavigate }) {
+  const Icon = TYPE_ICONS[type] || CategoryIcon;
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 12,
+        padding: '12px 16px',
+        backgroundColor: 'var(--bg-primary)',
+        borderRadius: 8,
+        border: '1px solid var(--border)',
+        borderLeft: `3px solid ${typeDef?.color || '#64748b'}`,
+        cursor: 'pointer',
+        transition: 'all 0.2s ease',
+      }}
+      onClick={() => onNavigate('type', type)}
+    >
+      <Icon style={{ color: typeDef?.color || '#64748b' }} fontSize="small" />
+      <span style={{ fontWeight: 500, fontSize: '0.875rem' }}>{typeDef?.name || type}</span>
+      <span style={{
+        marginLeft: 'auto',
+        fontWeight: 700,
+        fontSize: '1rem',
+        color: count > 0 ? 'var(--text-primary)' : 'var(--text-muted)',
+      }}>
+        {count}
+      </span>
+    </div>
+  );
+}
+
+// Recent activity item
+function ActivityItem({ artefact, typeDef, onClick }) {
+  const Icon = TYPE_ICONS[artefact.artefact_type] || CategoryIcon;
+  const timeAgo = getTimeAgo(artefact.updated_at);
+  const status = artefact.custom_fields?.pdw_status || 'draft';
+
+  const statusColors = {
+    draft: '#64748b',
+    in_progress: '#3b82f6',
+    in_review: '#f59e0b',
+    validated: '#22c55e',
+  };
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 12,
+        padding: '10px 12px',
+        borderRadius: 8,
+        cursor: 'pointer',
+        transition: 'background-color 0.15s ease',
+      }}
+      onClick={() => onClick(artefact)}
+      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-secondary)'}
+      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+    >
+      <div style={{
+        width: 32,
+        height: 32,
+        borderRadius: 8,
+        backgroundColor: `${typeDef?.color || '#64748b'}15`,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}>
+        <Icon style={{ color: typeDef?.color || '#64748b', fontSize: 16 }} />
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{
+          fontWeight: 500,
+          fontSize: '0.875rem',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+        }}>
+          {artefact.name}
+        </div>
+        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+          {typeDef?.name} • {timeAgo}
+        </div>
+      </div>
+      <span style={{
+        width: 6,
+        height: 6,
+        borderRadius: '50%',
+        backgroundColor: statusColors[status] || '#64748b',
+      }} />
+    </div>
+  );
+}
+
+// Quick action button
+function QuickActionButton({ icon: Icon, label, color, onClick }) {
+  return (
+    <button
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+        padding: '10px 16px',
+        backgroundColor: 'var(--bg-primary)',
+        border: '1px solid var(--border)',
+        borderRadius: 8,
+        cursor: 'pointer',
+        fontSize: '0.875rem',
+        fontWeight: 500,
+        transition: 'all 0.2s ease',
+      }}
+      onClick={onClick}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.borderColor = color;
+        e.currentTarget.style.backgroundColor = `${color}10`;
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.borderColor = 'var(--border)';
+        e.currentTarget.style.backgroundColor = 'var(--bg-primary)';
+      }}
+    >
+      <Icon style={{ color, fontSize: 18 }} />
+      {label}
+    </button>
+  );
+}
+
+// Experiment results widget
+function ExperimentResultsWidget({ results }) {
+  const total = results.validated + results.invalidated + results.running;
+  if (total === 0) return null;
+
+  return (
+    <div style={{
+      padding: 16,
+      backgroundColor: 'var(--bg-primary)',
+      borderRadius: 12,
+      border: '1px solid var(--border)',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+        <BiotechIcon style={{ color: '#10b981' }} />
+        <h4 style={{ margin: 0, fontSize: '0.9375rem', fontWeight: 600 }}>Experiment Results</h4>
+      </div>
+      <div style={{ display: 'flex', gap: 16 }}>
+        <div style={{ flex: 1, textAlign: 'center' }}>
+          <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#22c55e' }}>{results.validated}</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Validated</div>
+        </div>
+        <div style={{ flex: 1, textAlign: 'center' }}>
+          <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#ef4444' }}>{results.invalidated}</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Invalidated</div>
+        </div>
+        <div style={{ flex: 1, textAlign: 'center' }}>
+          <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#3b82f6' }}>{results.running}</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Running</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function OverviewDashboard({ onNavigate, onSelectArtefact, onCreateArtefact }) {
   const {
     artefacts,
@@ -170,7 +343,6 @@ export default function OverviewDashboard({ onNavigate, onSelectArtefact, onCrea
     getTypeDefinition,
     PDW_STAGES,
     PDW_TYPE_DEFS,
-    getArtefactsByStatus,
   } = usePDW();
 
   // Calculate stats
@@ -233,191 +405,216 @@ export default function OverviewDashboard({ onNavigate, onSelectArtefact, onCrea
   const recentArtefacts = useMemo(() => {
     return [...artefacts]
       .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at))
-      .slice(0, 8);
+      .slice(0, 6);
   }, [artefacts]);
 
-  // Get canvases
-  const canvasCount = useMemo(() => {
-    return artefacts.filter(a => a.artefact_type.includes('canvas') ||
-      ['pdw_empathy_map', 'pdw_customer_journey', 'pdw_persona', 'pdw_lean_canvas', 'pdw_bmc_canvas', 'pdw_vp_canvas', 'pdw_swot'].includes(a.artefact_type)
-    ).length;
-  }, [artefacts]);
+  // Build inline stats for header
+  const headerStats = useMemo(() => [
+    { value: dashboardStats.total, label: 'Total', icon: ViewModuleIcon, color: '#3b82f6' },
+    { value: dashboardStats.validated, label: 'Validated', icon: CheckCircleIcon, color: '#22c55e' },
+    { value: dashboardStats.inProgress, label: 'In Progress', icon: PlayCircleIcon, color: '#f59e0b' },
+  ], [dashboardStats]);
+
+  const handleNavigate = useCallback((target, param) => {
+    if (onNavigate) onNavigate(target, param);
+  }, [onNavigate]);
 
   if (loading) {
     return (
-      <div className="pdw-dashboard pdw-dashboard--loading">
-        <div className="pdw-loading-spinner" />
+      <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-muted)' }}>
         <p>Loading dashboard...</p>
       </div>
     );
   }
 
   return (
-    <div className="pdw-dashboard">
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* Header */}
-      <div className="pdw-dashboard__header">
-        <div>
-          <h2>Product Discovery Overview</h2>
-          <p>Track your product discovery and validation progress</p>
+      <ViewHeader
+        icon={DashboardIcon}
+        iconColor="#6366f1"
+        title="Product Discovery"
+        stats={dashboardStats.total > 0 ? headerStats : undefined}
+        createLabel="New Artefact"
+        onCreate={() => onCreateArtefact && onCreateArtefact()}
+      />
+
+      {/* Content */}
+      <div style={{ flex: 1, overflow: 'auto', padding: '0 16px 16px' }}>
+        {/* Stats Cards */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: 16,
+          marginBottom: 24,
+        }}>
+          <StatsCard
+            title="Total Artefacts"
+            value={dashboardStats.total}
+            icon={ViewModuleIcon}
+            color="#3b82f6"
+          />
+          <StatsCard
+            title="Validated"
+            value={dashboardStats.validated}
+            icon={CheckCircleIcon}
+            color="#22c55e"
+            subtitle={dashboardStats.total > 0 ?
+              `${Math.round((dashboardStats.validated / dashboardStats.total) * 100)}% complete` : undefined}
+          />
+          <StatsCard
+            title="In Progress"
+            value={dashboardStats.inProgress}
+            icon={PlayCircleIcon}
+            color="#f59e0b"
+          />
+          <StatsCard
+            title="High Risk"
+            value={dashboardStats.highRiskAssumptions}
+            icon={WarningIcon}
+            color="#ef4444"
+            subtitle={dashboardStats.highRiskAssumptions > 0 ? 'Need validation' : undefined}
+          />
         </div>
-        <button
-          className="btn btn--primary"
-          onClick={() => onCreateArtefact && onCreateArtefact()}
-        >
-          <AddIcon fontSize="small" />
-          New Artefact
-        </button>
-      </div>
 
-      {/* Top Stats */}
-      <div className="pdw-dashboard__stats-grid">
-        <StatsCard
-          title="Total Artefacts"
-          value={dashboardStats.total}
-          icon={ViewModuleIcon}
-          color="#3b82f6"
-        />
-        <StatsCard
-          title="Validated"
-          value={dashboardStats.validated}
-          icon={CheckCircleIcon}
-          color="#22c55e"
-          subtitle={dashboardStats.total > 0 ?
-            `${Math.round((dashboardStats.validated / dashboardStats.total) * 100)}%` : '0%'}
-        />
-        <StatsCard
-          title="In Progress"
-          value={dashboardStats.inProgress}
-          icon={PlayCircleIcon}
-          color="#f59e0b"
-        />
-        <StatsCard
-          title="High Risk Assumptions"
-          value={dashboardStats.highRiskAssumptions}
-          icon={WarningIcon}
-          color="#ef4444"
-          subtitle="Need validation"
-        />
-      </div>
-
-      {/* Stage Progress */}
-      <div className="pdw-dashboard__section">
-        <h3>Discovery Stages</h3>
-        <div className="pdw-dashboard__stages-grid">
-          {Object.values(PDW_STAGES).map(stage => (
-            <StageProgress
-              key={stage.id}
-              stage={stage}
-              health={stageHealthMap[stage.id]}
-              onNavigate={(stageId) => onNavigate && onNavigate(stageId)}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* Main Content Grid */}
-      <div className="pdw-dashboard__main-grid">
-        {/* Artefact Types */}
-        <div className="pdw-dashboard__section">
-          <h3>Artefacts by Type</h3>
-          <div className="pdw-dashboard__types-grid">
-            {Object.entries(PDW_TYPE_DEFS).map(([type, typeDef]) => (
-              <TypeCountCard
-                key={type}
-                type={type}
-                typeDef={typeDef}
-                count={typeCounts[type] || 0}
-                onNavigate={(t) => onNavigate && onNavigate('type', t)}
+        {/* Discovery Stages */}
+        <div style={{ marginBottom: 24 }}>
+          <h3 style={{ margin: '0 0 12px', fontSize: '1rem', fontWeight: 600 }}>Discovery Stages</h3>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+            gap: 12,
+          }}>
+            {Object.values(PDW_STAGES).map(stage => (
+              <StageCard
+                key={stage.id}
+                stage={stage}
+                health={stageHealthMap[stage.id]}
+                onNavigate={handleNavigate}
               />
             ))}
           </div>
         </div>
 
-        {/* Recent Activity */}
-        <div className="pdw-dashboard__section">
-          <h3>Recent Activity</h3>
-          <div className="pdw-dashboard__activity-list">
-            {recentArtefacts.length === 0 ? (
-              <div className="pdw-dashboard__empty">
-                <p>No artefacts yet. Start by creating your first one!</p>
-                <button
-                  className="btn btn--secondary"
-                  onClick={() => onCreateArtefact && onCreateArtefact()}
-                >
-                  <AddIcon fontSize="small" />
-                  Create Artefact
-                </button>
-              </div>
-            ) : (
-              recentArtefacts.map(artefact => (
-                <ActivityItem
-                  key={artefact.id}
-                  artefact={artefact}
-                  typeDef={getTypeDefinition(artefact.artefact_type)}
-                  onClick={(a) => onSelectArtefact && onSelectArtefact(a)}
-                />
-              ))
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Experiment Results */}
-      {dashboardStats.experimentResults && (
-        <div className="pdw-dashboard__section pdw-dashboard__section--experiments">
-          <h3>Experiment Results</h3>
-          <div className="pdw-dashboard__experiment-stats">
-            <div className="pdw-dashboard__experiment-stat pdw-dashboard__experiment-stat--validated">
-              <CheckCircleIcon />
-              <span className="value">{dashboardStats.experimentResults.validated}</span>
-              <span className="label">Validated</span>
-            </div>
-            <div className="pdw-dashboard__experiment-stat pdw-dashboard__experiment-stat--invalidated">
-              <ReportProblemIcon />
-              <span className="value">{dashboardStats.experimentResults.invalidated}</span>
-              <span className="label">Invalidated</span>
-            </div>
-            <div className="pdw-dashboard__experiment-stat pdw-dashboard__experiment-stat--running">
-              <PlayCircleIcon />
-              <span className="value">{dashboardStats.experimentResults.running}</span>
-              <span className="label">Running</span>
+        {/* Two column layout for types and activity */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: '2fr 1fr',
+          gap: 24,
+        }}>
+          {/* Artefacts by Type */}
+          <div>
+            <h3 style={{ margin: '0 0 12px', fontSize: '1rem', fontWeight: 600 }}>Artefacts by Type</h3>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+              gap: 8,
+            }}>
+              {Object.entries(PDW_TYPE_DEFS)
+                .filter(([type]) => !type.includes('canvas'))
+                .map(([type, typeDef]) => (
+                  <TypeCard
+                    key={type}
+                    type={type}
+                    typeDef={typeDef}
+                    count={typeCounts[type] || 0}
+                    onNavigate={handleNavigate}
+                  />
+                ))}
             </div>
           </div>
-        </div>
-      )}
 
-      {/* Quick Actions */}
-      <div className="pdw-dashboard__section pdw-dashboard__section--actions">
-        <h3>Quick Actions</h3>
-        <div className="pdw-dashboard__quick-actions">
-          <button
-            className="pdw-dashboard__action-btn"
-            onClick={() => onCreateArtefact && onCreateArtefact('pdw_opportunity')}
-          >
-            <TrendingUpIcon style={{ color: '#8b5cf6' }} />
-            <span>New Opportunity</span>
-          </button>
-          <button
-            className="pdw-dashboard__action-btn"
-            onClick={() => onCreateArtefact && onCreateArtefact('pdw_problem')}
-          >
-            <ReportProblemIcon style={{ color: '#ef4444' }} />
-            <span>New Problem</span>
-          </button>
-          <button
-            className="pdw-dashboard__action-btn"
-            onClick={() => onCreateArtefact && onCreateArtefact('pdw_hypothesis')}
-          >
-            <ScienceIcon style={{ color: '#f59e0b' }} />
-            <span>New Hypothesis</span>
-          </button>
-          <button
-            className="pdw-dashboard__action-btn"
-            onClick={() => onCreateArtefact && onCreateArtefact('pdw_experiment')}
-          >
-            <BiotechIcon style={{ color: '#10b981' }} />
-            <span>New Experiment</span>
-          </button>
+          {/* Right column: Activity + Experiments */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {/* Recent Activity */}
+            <div style={{
+              padding: 16,
+              backgroundColor: 'var(--bg-primary)',
+              borderRadius: 12,
+              border: '1px solid var(--border)',
+            }}>
+              <h4 style={{ margin: '0 0 8px', fontSize: '0.9375rem', fontWeight: 600 }}>Recent Activity</h4>
+              {recentArtefacts.length === 0 ? (
+                <div style={{
+                  padding: 24,
+                  textAlign: 'center',
+                  color: 'var(--text-muted)',
+                }}>
+                  <ExploreIcon style={{ fontSize: 32, opacity: 0.5, marginBottom: 8 }} />
+                  <p style={{ margin: '0 0 12px', fontSize: '0.875rem' }}>No artefacts yet</p>
+                  <button
+                    onClick={() => onCreateArtefact && onCreateArtefact()}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 4,
+                      padding: '6px 12px',
+                      backgroundColor: '#6366f1',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: 6,
+                      cursor: 'pointer',
+                      fontSize: '0.8125rem',
+                    }}
+                  >
+                    <AddIcon fontSize="small" />
+                    Create First Artefact
+                  </button>
+                </div>
+              ) : (
+                <div>
+                  {recentArtefacts.map(artefact => (
+                    <ActivityItem
+                      key={artefact.id}
+                      artefact={artefact}
+                      typeDef={getTypeDefinition(artefact.artefact_type)}
+                      onClick={(a) => onSelectArtefact && onSelectArtefact(a)}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Experiment Results */}
+            <ExperimentResultsWidget results={dashboardStats.experimentResults} />
+          </div>
+        </div>
+
+        {/* Quick Actions */}
+        <div style={{ marginTop: 24 }}>
+          <h3 style={{ margin: '0 0 12px', fontSize: '1rem', fontWeight: 600 }}>Quick Actions</h3>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            <QuickActionButton
+              icon={TrendingUpIcon}
+              label="New Opportunity"
+              color="#8b5cf6"
+              onClick={() => onCreateArtefact && onCreateArtefact('pdw_opportunity')}
+            />
+            <QuickActionButton
+              icon={ReportProblemIcon}
+              label="New Problem"
+              color="#ef4444"
+              onClick={() => onCreateArtefact && onCreateArtefact('pdw_problem')}
+            />
+            <QuickActionButton
+              icon={EmojiObjectsIcon}
+              label="New Idea"
+              color="#3b82f6"
+              onClick={() => onCreateArtefact && onCreateArtefact('pdw_idea')}
+            />
+            <QuickActionButton
+              icon={ScienceIcon}
+              label="New Hypothesis"
+              color="#f59e0b"
+              onClick={() => onCreateArtefact && onCreateArtefact('pdw_hypothesis')}
+            />
+            <QuickActionButton
+              icon={BiotechIcon}
+              label="New Experiment"
+              color="#10b981"
+              onClick={() => onCreateArtefact && onCreateArtefact('pdw_experiment')}
+            />
+          </div>
         </div>
       </div>
     </div>

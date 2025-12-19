@@ -3,7 +3,7 @@
 // Inline editing, children, documents, diagrams, traceability all visible
 // Renders fields dynamically based on artefact type definitions
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import {
   useArtefacts,
   ARTEFACT_TYPES,
@@ -30,6 +30,7 @@ import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import ListIcon from '@mui/icons-material/List';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import SearchIcon from '@mui/icons-material/Search';
 
 // Export utilities
 import { exportToRichHtml, exportToJiraTicket, exportToMarkdown } from '../../lib/exportUtils';
@@ -116,7 +117,7 @@ function ListField({ field, value, onChange, isEditing }) {
     return (
       <ul className="field-list-display">
         {items.filter(Boolean).map((item, i) => (
-          <li key={i}>{item}</li>
+          <li key={i}>{typeof item === 'object' ? (item.text || JSON.stringify(item)) : item}</li>
         ))}
       </ul>
     );
@@ -924,106 +925,310 @@ function DiagramsSection({ artefact, onOpenDiagram, onCreateDiagram }) {
   );
 }
 
-// ============ TRACEABILITY SECTION ============
-function TraceabilitySection({ artefact, onSelectArtefact }) {
-  const { artefacts, relationships } = useArtefacts();
+// ============ QUICK LINK INPUT FOR ARTEFACTS ============
+function ArtefactQuickLink({ artefact, existingLinks }) {
+  const { artefacts, createRelationship } = useArtefacts();
+  const [query, setQuery] = useState('');
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const inputRef = useRef(null);
+
+  // Get IDs of already-linked artefacts
+  const linkedIds = useMemo(() => {
+    const ids = new Set([artefact.id]);
+    existingLinks?.forEach((link) => {
+      ids.add(link.artefact?.id);
+    });
+    return ids;
+  }, [artefact.id, existingLinks]);
+
+  // Filter available artefacts based on search query
+  const filteredArtefacts = useMemo(() => {
+    if (!query.trim()) return [];
+    const term = query.toLowerCase();
+    return artefacts
+      .filter((a) => {
+        if (linkedIds.has(a.id)) return false;
+        const typeDef = ARTEFACT_TYPES[a.artefactType];
+        return (
+          a.name?.toLowerCase().includes(term) ||
+          a.requirementId?.toLowerCase().includes(term) ||
+          a.displayId?.toLowerCase().includes(term) ||
+          typeDef?.icon?.toLowerCase().includes(term) ||
+          typeDef?.name?.toLowerCase().includes(term)
+        );
+      })
+      .slice(0, 8);
+  }, [artefacts, query, linkedIds]);
+
+  // Handle creating the link
+  const handleCreateLink = (targetArtefact) => {
+    // Determine relationship direction based on type hierarchy
+    const sourceType = ARTEFACT_TYPES[artefact.artefactType];
+    const targetType = ARTEFACT_TYPES[targetArtefact.artefactType];
+
+    // Default to 'refines' relationship
+    // If target is higher level (lower hierarchyLevel), current refines target
+    // Otherwise, target refines current
+    let fromId, toId;
+    const sourceLevel = sourceType?.hierarchyLevel ?? 99;
+    const targetLevel = targetType?.hierarchyLevel ?? 99;
+
+    if (targetLevel < sourceLevel) {
+      // Current artefact refines (derives from) the target (target is parent)
+      fromId = targetArtefact.id;
+      toId = artefact.id;
+    } else {
+      // Target refines current (current is parent)
+      fromId = artefact.id;
+      toId = targetArtefact.id;
+    }
+
+    createRelationship('refines', fromId, toId);
+
+    setShowSuccess(true);
+    setTimeout(() => setShowSuccess(false), 2000);
+    setQuery('');
+    setIsOpen(false);
+    setSelectedIndex(0);
+  };
+
+  // Keyboard navigation
+  const handleKeyDown = (e) => {
+    if (!isOpen || filteredArtefacts.length === 0) {
+      if (e.key === 'ArrowDown' && query) setIsOpen(true);
+      return;
+    }
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setSelectedIndex((prev) => Math.min(prev + 1, filteredArtefacts.length - 1));
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setSelectedIndex((prev) => Math.max(prev - 1, 0));
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (filteredArtefacts[selectedIndex]) {
+          handleCreateLink(filteredArtefacts[selectedIndex]);
+        }
+        break;
+      case 'Escape':
+        setIsOpen(false);
+        setQuery('');
+        break;
+    }
+  };
+
+  // Open dropdown when typing
+  useEffect(() => {
+    if (query.trim() && filteredArtefacts.length > 0) {
+      setIsOpen(true);
+      setSelectedIndex(0);
+    } else {
+      setIsOpen(false);
+    }
+  }, [query, filteredArtefacts.length]);
+
+  return (
+    <div className="quick-link-artefact">
+      <div className="quick-link-input-wrapper">
+        <SearchIcon fontSize="small" className="quick-link-icon" />
+        <input
+          ref={inputRef}
+          type="text"
+          className="quick-link-input"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder="Link existing artefact..."
+        />
+        {showSuccess && (
+          <span className="quick-link-success">
+            <LinkIcon fontSize="small" /> Linked!
+          </span>
+        )}
+      </div>
+
+      {isOpen && filteredArtefacts.length > 0 && (
+        <div className="quick-link-dropdown">
+          {filteredArtefacts.map((a, index) => {
+            const typeDef = ARTEFACT_TYPES[a.artefactType];
+            const displayId = a.requirementId || a.displayId || `${typeDef?.icon || ''}${a.id?.slice(0, 6)}`;
+            return (
+              <button
+                key={a.id}
+                type="button"
+                className={`quick-link-item ${index === selectedIndex ? 'is-selected' : ''}`}
+                onClick={() => handleCreateLink(a)}
+                onMouseEnter={() => setSelectedIndex(index)}
+              >
+                <span
+                  className="quick-link-type-badge"
+                  style={{ backgroundColor: typeDef?.color }}
+                >
+                  {typeDef?.icon}
+                </span>
+                <span className="quick-link-item-id">{displayId}</span>
+                <span className="quick-link-item-title">{a.name}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {isOpen && filteredArtefacts.length === 0 && query && (
+        <div className="quick-link-dropdown quick-link-dropdown--empty">
+          <span>No matching artefacts</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ============ UNIFIED LINKS SECTION ============
+// Shows all relationships (upstream + downstream) in a single list
+function LinksSection({ artefact, onSelectArtefact, onCreateChild }) {
+  const { artefacts, relationships, deleteRelationship } = useArtefacts();
   const [collapsed, setCollapsed] = useState(false);
 
-  // Upstream: artefacts that point TO this one
+  // Upstream: artefacts that point TO this one (this derives from them)
   const upstream = useMemo(() => {
     return relationships
       .filter(r => r.to === artefact.id)
       .map(r => {
         const source = artefacts.find(a => a.id === r.from);
-        return source ? { artefact: source, type: r.type } : null;
+        return source ? { artefact: source, type: r.type, direction: 'from', relId: r.id } : null;
       })
       .filter(Boolean);
   }, [artefact.id, relationships, artefacts]);
 
-  // Downstream: artefacts this one points TO
+  // Downstream: artefacts this one points TO (they derive from this)
   const downstream = useMemo(() => {
     return relationships
       .filter(r => r.from === artefact.id)
       .map(r => {
         const target = artefacts.find(a => a.id === r.to);
-        return target ? { artefact: target, type: r.type } : null;
+        return target ? { artefact: target, type: r.type, direction: 'to', relId: r.id } : null;
       })
       .filter(Boolean);
   }, [artefact.id, relationships, artefacts]);
 
+  const allLinks = [...upstream, ...downstream];
+  const totalLinks = allLinks.length;
+
+  // Determine what child types can be created
+  const allowedChildTypes = useMemo(() => {
+    const typeMap = {
+      'Capability': ['Capability', 'Epic'],
+      'Epic': ['Feature'],
+      'Feature': ['UserStory'],
+      'UserStory': ['Ticket', 'SolutionRequirement'],
+      'BusinessNeed': ['BusinessRequirement'],
+      'BusinessRequirement': ['StakeholderRequirement', 'SolutionRequirement'],
+      'BusinessProcess': ['BusinessProcess'],
+    };
+    return typeMap[artefact.artefactType] || [];
+  }, [artefact.artefactType]);
+
+  // Handle removing a link
+  const handleRemoveLink = (relId, e) => {
+    e.stopPropagation();
+    if (deleteRelationship) {
+      deleteRelationship(relId);
+    }
+  };
+
+  // Render a single link item
+  const renderLinkItem = ({ artefact: a, type, direction, relId }) => {
+    const typeDef = ARTEFACT_TYPES[a.artefactType];
+    const relDef = RELATIONSHIP_TYPES[type];
+    const displayId = a.requirementId || a.displayId || `${typeDef?.icon || ''}${a.id?.slice(0, 6)}`;
+
+    return (
+      <button
+        key={`${direction}-${a.id}`}
+        className="link-item"
+        onClick={() => onSelectArtefact(a)}
+      >
+        <span className="link-direction">{direction === 'from' ? '↑' : '↓'}</span>
+        <span
+          className="link-type-badge"
+          style={{ backgroundColor: typeDef?.color }}
+        >
+          {typeDef?.icon}
+        </span>
+        <span className="link-id">{displayId}</span>
+        <span className="link-title">{a.name}</span>
+        <span className="link-rel-type">{relDef?.name || type}</span>
+        {relId && (
+          <span
+            className="link-remove"
+            onClick={(e) => handleRemoveLink(relId, e)}
+            title="Remove link"
+          >
+            <CloseIcon fontSize="small" />
+          </span>
+        )}
+      </button>
+    );
+  };
+
   return (
-    <div className="artefact-section traceability">
+    <div className="artefact-section links-section">
       <div className="section-header" onClick={() => setCollapsed(!collapsed)}>
         <div className="section-title">
-          <h3>Traceability</h3>
-          <span className="section-count">{upstream.length + downstream.length} links</span>
+          <LinkIcon fontSize="small" />
+          <h3>Links</h3>
+          <span className="section-count">{totalLinks}</span>
         </div>
         <div className="section-actions">
+          {allowedChildTypes.length > 0 && !collapsed && (
+            <div className="add-link-dropdown" onClick={(e) => e.stopPropagation()}>
+              {allowedChildTypes.slice(0, 2).map(type => (
+                <button
+                  key={type}
+                  className="add-link-btn"
+                  onClick={() => onCreateChild(type)}
+                  title={`Add ${ARTEFACT_TYPES[type]?.name}`}
+                >
+                  <AddIcon fontSize="small" />
+                  <span>{ARTEFACT_TYPES[type]?.icon}</span>
+                </button>
+              ))}
+            </div>
+          )}
           {collapsed ? <ExpandMoreIcon /> : <ExpandLessIcon />}
         </div>
       </div>
 
       {!collapsed && (
-        <div className="section-content traceability-content">
-          {/* Upstream */}
-          <div className="trace-column">
-            <h4>← Traces From ({upstream.length})</h4>
-            {upstream.length === 0 ? (
-              <p className="empty-hint">No upstream links</p>
-            ) : (
-              <div className="trace-list">
-                {upstream.map(({ artefact: a, type }) => {
-                  const typeDef = ARTEFACT_TYPES[a.artefactType];
-                  return (
-                    <button
-                      key={a.id}
-                      className="trace-item"
-                      onClick={() => onSelectArtefact(a)}
-                    >
-                      <span
-                        className="trace-badge"
-                        style={{ backgroundColor: typeDef?.color }}
-                      >
-                        {typeDef?.icon}
-                      </span>
-                      <span className="trace-name">{a.name}</span>
-                      <span className="trace-rel">{RELATIONSHIP_TYPES[type]?.name}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+        <div className="section-content links-content">
+          {/* Quick link search input */}
+          <ArtefactQuickLink artefact={artefact} existingLinks={allLinks} />
 
-          {/* Downstream */}
-          <div className="trace-column">
-            <h4>Traces To → ({downstream.length})</h4>
-            {downstream.length === 0 ? (
-              <p className="empty-hint">No downstream links</p>
-            ) : (
-              <div className="trace-list">
-                {downstream.map(({ artefact: a, type }) => {
-                  const typeDef = ARTEFACT_TYPES[a.artefactType];
-                  return (
-                    <button
-                      key={a.id}
-                      className="trace-item"
-                      onClick={() => onSelectArtefact(a)}
-                    >
-                      <span
-                        className="trace-badge"
-                        style={{ backgroundColor: typeDef?.color }}
-                      >
-                        {typeDef?.icon}
-                      </span>
-                      <span className="trace-name">{a.name}</span>
-                      <span className="trace-rel">{RELATIONSHIP_TYPES[type]?.name}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+          {totalLinks === 0 ? (
+            <p className="empty-hint">No links yet. Search above to link an existing artefact.</p>
+          ) : (
+            <div className="links-list">
+              {/* Upstream links (derives from) */}
+              {upstream.length > 0 && (
+                <div className="links-group">
+                  <span className="links-group-label">Derives From ({upstream.length})</span>
+                  {upstream.map(renderLinkItem)}
+                </div>
+              )}
+              {/* Downstream links (parent of) */}
+              {downstream.length > 0 && (
+                <div className="links-group">
+                  <span className="links-group-label">Parent Of ({downstream.length})</span>
+                  {downstream.map(renderLinkItem)}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -1166,25 +1371,19 @@ export default function ArtefactView({
   };
 
   return (
-    <div className="artefact-view">
-      {/* Header */}
-      <div className="artefact-view-header">
-        <button className="back-btn" onClick={onBack}>
-          <ArrowBackIcon fontSize="small" />
-          <span>Back to List</span>
-        </button>
-
-        <div className="header-main">
-          <div className="header-type">
-            <span
-              className="type-badge-large"
-              style={{ backgroundColor: typeDef?.color }}
-            >
-              {typeDef?.icon}
-            </span>
-            <span className="type-name">{typeDef?.name}</span>
-          </div>
-
+    <div className="artefact-view artefact-view--two-col" style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      {/* Compact Header */}
+      <header className="artefact-view-header artefact-view-header--compact" style={{ flexShrink: 0 }}>
+        <div className="header-left">
+          <button className="back-btn" onClick={onBack} title="Back to list">
+            <ArrowBackIcon fontSize="small" />
+          </button>
+          <span
+            className="type-badge-large"
+            style={{ backgroundColor: typeDef?.color }}
+          >
+            {typeDef?.icon}
+          </span>
           {isEditing ? (
             <input
               type="text"
@@ -1196,14 +1395,17 @@ export default function ArtefactView({
           ) : (
             <h1 className="artefact-title">{artefact.name}</h1>
           )}
+        </div>
 
-          <div className="header-meta">
+        <div className="header-right">
+          {/* Inline Status/Priority */}
+          <div className="header-meta-inline">
             {isEditing ? (
               <>
                 <select
                   value={editData.status}
                   onChange={(e) => setEditData({ ...editData, status: e.target.value })}
-                  className="status-select"
+                  className="status-select-inline"
                 >
                   {Object.values(ARTEFACT_STATUS).map(s => (
                     <option key={s.id} value={s.id}>{s.name}</option>
@@ -1212,7 +1414,7 @@ export default function ArtefactView({
                 <select
                   value={editData.priority}
                   onChange={(e) => setEditData({ ...editData, priority: e.target.value })}
-                  className="priority-select"
+                  className="priority-select-inline"
                 >
                   {Object.values(PRIORITY).map(p => (
                     <option key={p.id} value={p.id}>{p.name}</option>
@@ -1222,156 +1424,138 @@ export default function ArtefactView({
             ) : (
               <>
                 <span
-                  className="status-badge"
+                  className="status-badge-inline"
                   style={{ backgroundColor: statusDef?.color }}
                 >
                   {statusDef?.name}
                 </span>
                 <span
-                  className="priority-badge"
+                  className="priority-badge-inline"
                   style={{ color: PRIORITY[artefact.priority]?.color }}
                 >
-                  {PRIORITY[artefact.priority]?.name} Priority
+                  {PRIORITY[artefact.priority]?.name}
                 </span>
               </>
             )}
           </div>
-        </div>
 
-        <div className="header-actions">
-          {isEditing ? (
-            <>
-              <button className="btn-primary" onClick={handleSave}>
-                <SaveIcon fontSize="small" />
-                <span>Save</span>
-              </button>
-              <button className="btn-secondary" onClick={handleCancel}>
-                <CloseIcon fontSize="small" />
-                <span>Cancel</span>
-              </button>
-            </>
-          ) : (
-            <>
-              <button className="btn-primary" onClick={handleStartEdit}>
-                <EditIcon fontSize="small" />
-                <span>Edit</span>
-              </button>
-              {onCopyLink && (
-                <button
-                  className="btn-secondary"
-                  onClick={onCopyLink}
-                  title="Copy shareable link"
-                >
-                  <ContentCopyIcon fontSize="small" />
-                  <span>Copy Link</span>
+          {/* Actions */}
+          <div className="header-actions-inline">
+            {isEditing ? (
+              <>
+                <button className="btn-icon btn-primary" onClick={handleSave} title="Save">
+                  <SaveIcon fontSize="small" />
                 </button>
-              )}
-              <div className="export-dropdown">
-                <button
-                  className="btn-secondary"
-                  onClick={() => setShowExportMenu(!showExportMenu)}
-                >
-                  <FileDownloadIcon fontSize="small" />
-                  <span>Export</span>
+                <button className="btn-icon btn-secondary" onClick={handleCancel} title="Cancel">
+                  <CloseIcon fontSize="small" />
                 </button>
-                {showExportMenu && (
-                  <div className="export-menu">
-                    <div className="export-menu-header">Download</div>
-                    <button onClick={() => handleExport('html')}>
-                      HTML File
-                    </button>
-                    <button onClick={() => handleExport('jira')}>
-                      Jira Ticket (JSON)
-                    </button>
-                    <button onClick={() => handleExport('markdown')}>
-                      Markdown
-                    </button>
-                    <div className="export-menu-divider" />
-                    <div className="export-menu-header">Copy to Clipboard</div>
-                    <button onClick={() => handleCopyToClipboard('richHtml')}>
-                      Copy for Confluence/Word
-                    </button>
-                    <button onClick={() => handleCopyToClipboard('markdown')}>
-                      Copy as Markdown
-                    </button>
-                  </div>
+              </>
+            ) : (
+              <>
+                <button className="btn-icon" onClick={handleStartEdit} title="Edit">
+                  <EditIcon fontSize="small" />
+                </button>
+                {onCopyLink && (
+                  <button className="btn-icon" onClick={onCopyLink} title="Copy link">
+                    <ContentCopyIcon fontSize="small" />
+                  </button>
                 )}
+                <div className="export-dropdown">
+                  <button
+                    className="btn-icon"
+                    onClick={() => setShowExportMenu(!showExportMenu)}
+                    title="Export"
+                  >
+                    <FileDownloadIcon fontSize="small" />
+                  </button>
+                  {showExportMenu && (
+                    <div className="export-menu">
+                      <div className="export-menu-header">Download</div>
+                      <button onClick={() => handleExport('html')}>HTML File</button>
+                      <button onClick={() => handleExport('jira')}>Jira Ticket (JSON)</button>
+                      <button onClick={() => handleExport('markdown')}>Markdown</button>
+                      <div className="export-menu-divider" />
+                      <div className="export-menu-header">Copy to Clipboard</div>
+                      <button onClick={() => handleCopyToClipboard('richHtml')}>Copy for Confluence/Word</button>
+                      <button onClick={() => handleCopyToClipboard('markdown')}>Copy as Markdown</button>
+                    </div>
+                  )}
+                </div>
+                <button
+                  className="btn-icon btn-danger"
+                  onClick={handleDelete}
+                  disabled={artefact.status === 'Approved'}
+                  title={artefact.status === 'Approved' ? 'Cannot delete approved artefacts' : 'Delete'}
+                >
+                  <DeleteIcon fontSize="small" />
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      </header>
+
+      {/* Two-Column Body */}
+      <div className="artefact-view-body" style={{ display: 'flex', flex: 1, minHeight: 0, overflow: 'hidden' }}>
+        {/* Left Column - Main Content */}
+        <main className="artefact-main" style={{ flex: 1, minWidth: 0, overflowY: 'auto', padding: '16px 20px' }}>
+          {/* Description */}
+          <div className="artefact-field">
+            <label className="artefact-field-label">Description</label>
+            {isEditing ? (
+              <textarea
+                className="description-input"
+                value={editData.description}
+                onChange={(e) => setEditData({ ...editData, description: e.target.value })}
+                placeholder="Add a description..."
+                rows={3}
+              />
+            ) : (
+              <div className="artefact-description">
+                {artefact.description || <span className="empty-text">Click edit to add a description</span>}
               </div>
-              <button
-                className="btn-danger"
-                onClick={handleDelete}
-                disabled={artefact.status === 'Approved'}
-                title={artefact.status === 'Approved' ? 'Cannot delete approved artefacts' : ''}
-              >
-                <DeleteIcon fontSize="small" />
-              </button>
-            </>
-          )}
-        </div>
-      </div>
+            )}
+          </div>
 
-      {/* Content */}
-      <div className="artefact-view-content">
-        {/* Description */}
-        <div className="artefact-section description-section">
-          <h3>Description</h3>
-          {isEditing ? (
-            <textarea
-              className="description-input"
-              value={editData.description}
-              onChange={(e) => setEditData({ ...editData, description: e.target.value })}
-              placeholder="Add a description..."
-              rows={4}
-            />
-          ) : (
-            <p className="description-text">
-              {artefact.description || 'No description provided.'}
-            </p>
-          )}
-        </div>
+          {/* Dynamic Fields based on artefact type */}
+          <FieldsSection
+            artefact={artefact}
+            editData={editData}
+            setEditData={setEditData}
+            isEditing={isEditing}
+          />
 
-        {/* Dynamic Fields based on artefact type */}
-        <FieldsSection
-          artefact={artefact}
-          editData={editData}
-          setEditData={setEditData}
-          isEditing={isEditing}
-        />
+          {/* Metadata footer */}
+          <div className="artefact-metadata">
+            <span>Created: {new Date(artefact.createdAt).toLocaleDateString()}</span>
+            <span>Updated: {new Date(artefact.updatedAt).toLocaleDateString()}</span>
+            <span>v{artefact.version}</span>
+          </div>
+        </main>
 
-        {/* Children */}
-        <ChildrenSection
-          artefact={artefact}
-          onSelectArtefact={onSelectArtefact}
-          onCreateChild={onCreateChild}
-        />
+        {/* Right Column - Sidebar */}
+        <aside className="artefact-sidebar" style={{ width: '320px', minWidth: '320px', overflowY: 'auto', padding: '12px' }}>
+          {/* Links - unified section for all relationships */}
+          <LinksSection
+            artefact={artefact}
+            onSelectArtefact={onSelectArtefact}
+            onCreateChild={onCreateChild}
+          />
 
-        {/* Attachments & Diagrams (dynamic based on artefact type) */}
-        <AttachmentsSection
-          artefact={artefact}
-          onOpenDiagram={onOpenDiagram}
-          onCreateDiagram={onCreateDiagram}
-        />
+          {/* Documents */}
+          <DocumentsSection
+            artefact={artefact}
+            onOpenDocument={onOpenDocument}
+            onCreateDocument={onCreateDocument}
+          />
 
-        {/* Documents */}
-        <DocumentsSection
-          artefact={artefact}
-          onOpenDocument={onOpenDocument}
-          onCreateDocument={onCreateDocument}
-        />
-
-        {/* Traceability */}
-        <TraceabilitySection
-          artefact={artefact}
-          onSelectArtefact={onSelectArtefact}
-        />
-
-        {/* Metadata footer */}
-        <div className="artefact-metadata">
-          <span>Created: {new Date(artefact.createdAt).toLocaleString()}</span>
-          <span>Updated: {new Date(artefact.updatedAt).toLocaleString()}</span>
-          <span>Version: {artefact.version}</span>
-          <span className="artefact-id">ID: {artefact.id}</span>
-        </div>
+          {/* Attachments & Diagrams */}
+          <AttachmentsSection
+            artefact={artefact}
+            onOpenDiagram={onOpenDiagram}
+            onCreateDiagram={onCreateDiagram}
+          />
+        </aside>
       </div>
     </div>
   );

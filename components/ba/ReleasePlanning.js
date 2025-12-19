@@ -473,9 +473,8 @@ export default function ReleasePlanning({ projectId }) {
     if (editingRelease) {
       updateArtefact(editingRelease.id, releaseData);
     } else {
-      createArtefact({
+      createArtefact('Release', {
         ...releaseData,
-        type: 'Release',
         projectId
       });
     }
