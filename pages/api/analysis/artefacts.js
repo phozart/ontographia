@@ -5,6 +5,7 @@ import { query } from '../../../lib/pg';
 import { errorResponse } from '../../../lib/api/errorResponse';
 import { getUserFromRequest } from '../../../lib/projectAccess';
 import { ARTEFACT_PREFIX_MAP, ANALYSIS_ARTEFACT_TYPES } from '../../../lib/analysis-types';
+import { getPipelineStage } from '../../../lib/pipeline-types';
 import { ANALYSIS_EVENT_TYPES } from '../../../lib/services/analysisEvents';
 import { enqueueOutboxEvents, OUTBOX_ACTIONS } from '../../../lib/services/outboxService';
 
@@ -23,7 +24,7 @@ export default async function handler(req, res) {
 
 async function handleGet(req, res) {
   const user = getUserFromRequest(req);
-  const { project_id, artefact_type, domain_id } = req.query;
+  const { project_id, artefact_type, domain_id, pipeline_stage } = req.query;
 
   try {
     let sql = 'SELECT * FROM analysis_artefacts WHERE 1=1';
@@ -48,7 +49,13 @@ async function handleGet(req, res) {
       paramIndex++;
     }
 
-    sql += ' ORDER BY created_at DESC';
+    if (pipeline_stage) {
+      sql += ` AND pipeline_stage = $${paramIndex}`;
+      params.push(pipeline_stage);
+      paramIndex++;
+    }
+
+    sql += ' ORDER BY pipeline_order ASC NULLS LAST, created_at DESC';
 
     const result = await query(sql, params);
     return res.status(200).json(result.rows);
@@ -96,12 +103,15 @@ async function handlePost(req, res) {
     );
     const number = numberResult.rows[0].next_number;
 
+    // Auto-assign pipeline stage from artefact type
+    const pipelineStage = getPipelineStage(artefact_type);
+
     const result = await query(
       `INSERT INTO analysis_artefacts
-        (name, description, artefact_type, status, priority, project_id, domain_id, metadata, number, prefix, parent_id, module, created_by)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+        (name, description, artefact_type, status, priority, project_id, domain_id, metadata, number, prefix, parent_id, module, created_by, pipeline_stage, display_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
        RETURNING *`,
-      [name, description, artefact_type, status, priority, project_id, domain_id, JSON.stringify(metadata), number, prefix, parent_id || null, module, user?.user || null]
+      [name, description, artefact_type, status, priority, project_id, domain_id, JSON.stringify(metadata), number, prefix, parent_id || null, module, user?.user || null, pipelineStage, `${prefix}-${String(number).padStart(3, '0')}`]
     );
 
     // Enqueue side effects via outbox
@@ -125,6 +135,12 @@ async function handlePost(req, res) {
         entityType: 'artefact',
         entityId: result.rows[0].id,
         payload: result.rows[0],
+      },
+      {
+        action: OUTBOX_ACTIONS.MATERIALISE_ARTEFACT,
+        entityType: 'artefact',
+        entityId: result.rows[0].id,
+        payload: { ...result.rows[0], metadata },
       },
     ]).catch(err => console.error('[Outbox] Failed to enqueue:', err.message));
 

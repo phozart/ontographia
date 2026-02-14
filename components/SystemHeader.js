@@ -5,6 +5,7 @@ import { useAuth } from './AuthContext';
 import { useDomains } from './DomainContext';
 import { SPACES, getSpacesByCategory } from '@/lib/spaceRegistry';
 import NotificationBell from './shared/NotificationBell';
+import PipelineNav from './PipelineNav';
 
 // Search icon component
 const SearchIcon = () => (
@@ -408,6 +409,10 @@ export default function SystemHeader({ theme, onThemeChange }) {
             </div>
           )}
         </div>
+
+        {/* Pipeline Navigation */}
+        <span className="system-header-divider" />
+        <PipelineNav compact />
 
         {/* Domain Selector */}
         <span className="system-header-divider" />

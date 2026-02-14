@@ -49,8 +49,8 @@ const nextConfig = {
       { source: '/app/spaces/ea/:path*', destination: '/app/spaces/enterprise/dashboard', permanent: true },
       // System Dynamics
       { source: '/system-dynamics', destination: '/app/spaces/sd/canvas', permanent: true },
-      // Business Analysis
-      { source: '/requirements-studio', destination: '/app/spaces/ba/repository', permanent: true },
+      // Business Analysis (merged into Analysis Studio)
+      { source: '/requirements-studio', destination: '/app/spaces/analysis/repository', permanent: true },
       // Capability Studio (now in Enterprise)
       { source: '/capability-studio', destination: '/app/spaces/enterprise/capabilities', permanent: true },
       // Product Design
@@ -84,7 +84,7 @@ const nextConfig = {
       { source: '/organisation-studio', destination: '/app/spaces/enterprise/organisation', permanent: true },
       // Old hierarchical paths
       { source: '/app/workspaces/enterprise-architecture', destination: '/app/spaces/enterprise/dashboard', permanent: true },
-      { source: '/app/workspaces/requirements', destination: '/app/spaces/ba/repository', permanent: true },
+      { source: '/app/workspaces/requirements', destination: '/app/spaces/analysis/repository', permanent: true },
       { source: '/app/workspaces/product-design', destination: '/app/spaces/pdw/discovery', permanent: true },
       { source: '/app/workspaces/diagram', destination: '/app/spaces/diagram/canvas', permanent: true },
       { source: '/app/reasoning/system-dynamics', destination: '/app/spaces/sd/canvas', permanent: true },

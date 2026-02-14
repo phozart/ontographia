@@ -22,6 +22,10 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import FolderIcon from '@mui/icons-material/Folder';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import WarningIcon from '@mui/icons-material/Warning';
+import ViewListIcon from '@mui/icons-material/ViewList';
+import ViewKanbanIcon from '@mui/icons-material/ViewKanban';
+import ArticleIcon from '@mui/icons-material/Article';
+import MapIcon from '@mui/icons-material/Map';
 
 // Module icon mapping
 const MODULE_ICONS = {
@@ -270,6 +274,40 @@ export default function AnalysisNavigator({ onCreateArtefact, onCreateProject })
             onCreateArtefact={onCreateArtefact}
           />
         ))}
+      </div>
+
+      {/* BA Views (merged from Business Analysis studio) */}
+      <div className="nav-modules">
+        <div className="nav-section-title">Views</div>
+
+        <button
+          className={`nav-main-item ${activeModule === 'repository' ? 'active' : ''}`}
+          onClick={() => setActiveModule('repository')}
+        >
+          <ViewListIcon fontSize="small" />
+          <span>Repository</span>
+        </button>
+        <button
+          className={`nav-main-item ${activeModule === 'kanban' ? 'active' : ''}`}
+          onClick={() => setActiveModule('kanban')}
+        >
+          <ViewKanbanIcon fontSize="small" />
+          <span>Kanban Board</span>
+        </button>
+        <button
+          className={`nav-main-item ${activeModule === 'documents' ? 'active' : ''}`}
+          onClick={() => setActiveModule('documents')}
+        >
+          <ArticleIcon fontSize="small" />
+          <span>Documents</span>
+        </button>
+        <button
+          className={`nav-main-item ${activeModule === 'story-map' ? 'active' : ''}`}
+          onClick={() => setActiveModule('story-map')}
+        >
+          <MapIcon fontSize="small" />
+          <span>Story Map</span>
+        </button>
       </div>
 
       {/* Completeness */}

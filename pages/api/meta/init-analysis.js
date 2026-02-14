@@ -50,10 +50,18 @@ export default async function handler(req, res) {
         project_id UUID REFERENCES analysis_projects(id) ON DELETE CASCADE,
         domain_id UUID,
         metadata JSONB DEFAULT '{}'::jsonb,
+        pipeline_stage VARCHAR(50),
+        pipeline_order INTEGER,
+        display_id VARCHAR(50),
         created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
       )
     `);
+
+    // Migration: add pipeline columns to existing tables
+    await query(`ALTER TABLE analysis_artefacts ADD COLUMN IF NOT EXISTS pipeline_stage VARCHAR(50)`);
+    await query(`ALTER TABLE analysis_artefacts ADD COLUMN IF NOT EXISTS pipeline_order INTEGER`);
+    await query(`ALTER TABLE analysis_artefacts ADD COLUMN IF NOT EXISTS display_id VARCHAR(50)`);
 
     // Create indexes for artefacts
     await query(`
@@ -69,6 +77,11 @@ export default async function handler(req, res) {
     await query(`
       CREATE INDEX IF NOT EXISTS idx_analysis_artefacts_domain
       ON analysis_artefacts(domain_id)
+    `);
+
+    await query(`
+      CREATE INDEX IF NOT EXISTS idx_analysis_artefacts_pipeline
+      ON analysis_artefacts(pipeline_stage, pipeline_order)
     `);
 
     // Create analysis_relationships table

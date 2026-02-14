@@ -55,7 +55,7 @@ const studioCategories = [
       {
         title: 'Requirements Studio',
         subtitle: 'Capture and trace requirements end-to-end',
-        href: '/app/spaces/ba/repository',
+        href: '/app/spaces/analysis/repository',
         icon: <AssignmentIcon sx={{ fontSize: 28 }} />,
         color: '#475569',
       },

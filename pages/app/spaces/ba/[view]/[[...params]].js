@@ -1,23 +1,41 @@
-import dynamic from 'next/dynamic';
-import { createSpacePage } from '@/components/spaces/SpacePageFactory';
+// pages/app/spaces/ba/[view]/[[...params]].js
+// BA is now merged into Analysis Studio — redirect preserving view and params
+import { useEffect } from 'react';
+import { useRouter } from 'next/router';
+import { buildSpaceUrl } from '@/lib/urlUtils';
 
-const Workspace = dynamic(
-  () => import('@/components/spaces/ba/BAWorkspace'),
-  { ssr: false }
-);
+// Map BA views to Analysis views
+const VIEW_MAP = {
+  repository: 'repository',
+  kanban: 'kanban',
+  documents: 'documents',
+  trace: 'trace',
+  'story-map': 'story-map',
+};
 
-const Provider = dynamic(
-  () => import('@/components/spaces/ba/BAContext').then(mod => {
-    const { BAProvider } = mod;
-    return {
-      default: ({ children }) => <BAProvider>{children}</BAProvider>,
-    };
-  }),
-  { ssr: false }
-);
+export default function BARedirect() {
+  const router = useRouter();
 
-export default createSpacePage({
-  spaceCode: 'ba',
-  WorkspaceComponent: Workspace,
-  ProviderComponent: Provider,
-});
+  useEffect(() => {
+    if (!router.isReady) return;
+
+    const { view, params = [] } = router.query;
+    const mappedView = VIEW_MAP[view] || 'repository';
+
+    // Build the Analysis URL preserving domain/project params
+    const analysisUrl = buildSpaceUrl('analysis', mappedView, ...params);
+    router.replace(analysisUrl);
+  }, [router, router.isReady]);
+
+  return (
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: '60vh',
+      color: 'var(--text-muted)',
+    }}>
+      Redirecting to Analysis Studio...
+    </div>
+  );
+}

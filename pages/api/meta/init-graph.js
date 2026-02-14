@@ -40,9 +40,13 @@ export default async function handler(req, res) {
     `);
     results.tables.push('graph_node_types');
 
+    // Add studio_source column (metamodel tracking — added Feb 2026)
+    await query(`ALTER TABLE graph_node_types ADD COLUMN IF NOT EXISTS studio_source TEXT`).catch(() => {});
+
     await query(`CREATE INDEX IF NOT EXISTS idx_graph_node_types_domain ON graph_node_types(domain)`);
     await query(`CREATE INDEX IF NOT EXISTS idx_graph_node_types_layer ON graph_node_types(layer)`);
-    results.indexes.push('idx_graph_node_types_domain', 'idx_graph_node_types_layer');
+    await query(`CREATE INDEX IF NOT EXISTS idx_graph_node_types_studio ON graph_node_types(studio_source)`).catch(() => {});
+    results.indexes.push('idx_graph_node_types_domain', 'idx_graph_node_types_layer', 'idx_graph_node_types_studio');
 
     // Relationship Types table (was Neo4j RelationshipType)
     await query(`
@@ -60,8 +64,12 @@ export default async function handler(req, res) {
     `);
     results.tables.push('graph_relationship_types');
 
+    // Add studio_source column (metamodel tracking — added Feb 2026)
+    await query(`ALTER TABLE graph_relationship_types ADD COLUMN IF NOT EXISTS studio_source TEXT`).catch(() => {});
+
     await query(`CREATE INDEX IF NOT EXISTS idx_graph_rel_types_domain ON graph_relationship_types(domain)`);
-    results.indexes.push('idx_graph_rel_types_domain');
+    await query(`CREATE INDEX IF NOT EXISTS idx_graph_rel_types_studio ON graph_relationship_types(studio_source)`).catch(() => {});
+    results.indexes.push('idx_graph_rel_types_domain', 'idx_graph_rel_types_studio');
 
     // Domain Nodes table (was Neo4j DomainNode)
     await query(`

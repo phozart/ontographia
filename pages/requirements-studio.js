@@ -1,8 +1,8 @@
-// Legacy redirect: /requirements-studio -> /app/spaces/ba/repository
+// Legacy redirect: /requirements-studio -> /app/spaces/analysis/repository
 export async function getServerSideProps() {
   return {
     redirect: {
-      destination: '/app/spaces/ba/repository',
+      destination: '/app/spaces/analysis/repository',
       permanent: true,
     },
   };

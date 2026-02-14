@@ -3,13 +3,7 @@
    ============================================ */
 
 /* ============ PDW PAGE LAYOUT ============ */
-.pdw-workspace {
-  display: flex;
-  height: calc(100vh - 0px);
-  width: 100%;
-  background: var(--bg);
-  overflow: hidden;
-}
+/* Note: .pdw-workspace is defined in the Navigator Pattern section below (line ~1012) */
 
 .pdw-sidebar {
   width: 240px;

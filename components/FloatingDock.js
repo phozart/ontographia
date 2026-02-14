@@ -12,10 +12,10 @@ import ArchitectureIcon from '@mui/icons-material/Architecture';
 import LightbulbIcon from '@mui/icons-material/Lightbulb';
 import BuildIcon from '@mui/icons-material/Build';
 import SchoolIcon from '@mui/icons-material/School';
-import ChangeCircleIcon from '@mui/icons-material/ChangeCircle';
 import GridViewIcon from '@mui/icons-material/GridView';
 import BusinessIcon from '@mui/icons-material/Business';
-import BusinessCenterIcon from '@mui/icons-material/BusinessCenter';
+import SpeedIcon from '@mui/icons-material/Speed';
+import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
 import SettingsIcon from '@mui/icons-material/Settings';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import LightModeIcon from '@mui/icons-material/LightMode';
@@ -70,21 +70,21 @@ export default function FloatingDock({ theme, onThemeChange }) {
   // Primary dock items (most used)
   const primaryItems = [
     { href: '/', icon: HomeIcon, label: 'Home', active: isActive('/') && !isActive('/app') },
-    { href: '/app/spaces/ks/navigator', icon: HubIcon, label: 'Knowledge', active: isActive('/app/spaces/ks', '/knowledge-studio', '/graphnavigator') },
-    { href: '/app/spaces/ba/repository', icon: AssignmentIcon, label: 'Requirements', active: isActive('/app/spaces/ba', '/requirements-studio') },
-    { href: '/app/spaces/ea/elements', icon: ArchitectureIcon, label: 'Architecture', active: isActive('/app/spaces/ea', '/ea-studio') },
-    { href: '/app/spaces/pds/overview', icon: AccountTreeIcon, label: 'Projects', active: isActive('/app/spaces/pds', '/project-design') },
-    { href: '/app/spaces/cap/map', icon: BusinessIcon, label: 'Organisation', active: isActive('/app/spaces/cap', '/organisation-studio') },
+    { href: '/app/spaces/blueprint/overview', icon: LightbulbIcon, label: 'Blueprint', active: isActive('/app/spaces/blueprint') },
+    { href: '/app/spaces/analysis/projects', icon: AssignmentIcon, label: 'Analysis', active: isActive('/app/spaces/analysis', '/app/spaces/ba') },
+    { href: '/app/spaces/enterprise/dashboard', icon: BusinessIcon, label: 'Enterprise', active: isActive('/app/spaces/enterprise') },
+    { href: '/app/spaces/ks/navigator', icon: HubIcon, label: 'Knowledge', active: isActive('/app/spaces/ks') },
+    { href: '/app/spaces/pds/overview', icon: AccountTreeIcon, label: 'Projects', active: isActive('/app/spaces/pds') },
   ];
 
   // Secondary items (in "more" menu)
   const secondaryItems = [
-    { href: '/app/spaces/pdw/discovery', icon: LightbulbIcon, label: 'Product Design', active: isActive('/app/spaces/pdw') },
-    { href: '/app/spaces/portfolio/matrix', icon: BusinessCenterIcon, label: 'Portfolio', active: isActive('/app/spaces/portfolio') },
+    { href: '/app/spaces/pdw/discovery', icon: ArchitectureIcon, label: 'Product Design', active: isActive('/app/spaces/pdw') },
+    { href: '/app/spaces/perf/dashboard', icon: SpeedIcon, label: 'Performance', active: isActive('/app/spaces/perf') },
+    { href: '/app/spaces/gtm/overview', icon: RocketLaunchIcon, label: 'GTM', active: isActive('/app/spaces/gtm') },
     { href: '/app/spaces/diagram/canvas', icon: GridViewIcon, label: 'Diagrams', active: isActive('/app/spaces/diagram') },
-    { href: '/app/spaces/cm/impacts', icon: ChangeCircleIcon, label: 'Change', active: isActive('/app/spaces/cm') },
     { type: 'divider' },
-    { href: '/app/spaces/sd/canvas', icon: LoopIcon, label: 'System Dynamics', active: isActive('/app/spaces/sd', '/system-dynamics') },
+    { href: '/app/spaces/sd/canvas', icon: LoopIcon, label: 'System Dynamics', active: isActive('/app/spaces/sd') },
     { href: '/app/spaces/dwd/landscape', icon: BuildIcon, label: 'Work Design', active: isActive('/app/spaces/dwd') },
     { href: '/app/spaces/als/sessions', icon: SchoolIcon, label: 'Learning', active: isActive('/app/spaces/als') },
   ];

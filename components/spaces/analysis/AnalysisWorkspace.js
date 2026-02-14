@@ -20,6 +20,10 @@ import { useAuth } from '../../AuthContext';
 import StakeholderRegister from '../ba/StakeholderRegister';
 import TraceabilityPanel from '../ba/TraceabilityPanel';
 import KanbanBoard from '../ba/KanbanBoard';
+import RepositoryTree from '../ba/RepositoryTree';
+import DocumentList from '../ba/DocumentList';
+import StoryMapView from '../ba/StoryMapView';
+import ArtefactDetailPanel from '../ba/ArtefactDetailPanel';
 import { BAProvider } from '../ba/BAContext';
 
 // Re-use existing EA ADR components
@@ -416,9 +420,60 @@ function TraceabilityModule({ selectedArtefact, onSelectArtefact }) {
   );
 }
 
+// ============ BA VIEW MODULES (merged from Business Analysis studio) ============
+
+// Repository view - wraps BA's tree-based repository navigation
+function RepositoryModule({ onSelectArtefact }) {
+  const [selectedItem, setSelectedItem] = useState(null);
+
+  const handleSelect = useCallback((artefact) => {
+    setSelectedItem(artefact);
+    if (onSelectArtefact) onSelectArtefact(artefact);
+  }, [onSelectArtefact]);
+
+  return (
+    <div className="analysis-module repository-module">
+      <BAProvider>
+        <div style={{ display: 'flex', height: '100%', gap: 0 }}>
+          <div style={{ flex: '1 1 60%', minWidth: 0, overflow: 'auto' }}>
+            <RepositoryTree onSelect={handleSelect} selectedId={selectedItem?.id} />
+          </div>
+          {selectedItem && (
+            <div style={{ flex: '0 0 40%', minWidth: 300, borderLeft: '1px solid var(--border)', overflow: 'auto' }}>
+              <ArtefactDetailPanel artefact={selectedItem} onClose={() => setSelectedItem(null)} />
+            </div>
+          )}
+        </div>
+      </BAProvider>
+    </div>
+  );
+}
+
+// Documents view - wraps BA's document editor/list
+function DocumentsModule() {
+  return (
+    <div className="analysis-module documents-module">
+      <BAProvider>
+        <DocumentList />
+      </BAProvider>
+    </div>
+  );
+}
+
+// Story Map view - wraps BA's story mapping component
+function StoryMapModule({ onSelectArtefact }) {
+  return (
+    <div className="analysis-module story-map-module">
+      <BAProvider>
+        <StoryMapView onSelectArtefact={onSelectArtefact} />
+      </BAProvider>
+    </div>
+  );
+}
+
 // ============ MAIN WORKSPACE CONTENT ============
 
-function AnalysisWorkspaceContent() {
+function AnalysisWorkspaceContent({ view }) {
   const {
     activeModule,
     setActiveModule,
@@ -430,6 +485,30 @@ function AnalysisWorkspaceContent() {
 
   const { activeDomain } = useDomains();
   const { user, role } = useAuth();
+
+  // Sync URL view param to activeModule on mount and URL changes
+  useEffect(() => {
+    if (!view || view === 'projects') return; // 'projects' is handled by default/overview
+    // Map view names to module names
+    const viewToModule = {
+      requirements: 'requirements',
+      stories: 'stories',
+      architecture: 'architecture',
+      data: 'data',
+      design: 'design',
+      testing: 'testing',
+      stakeholders: 'stakeholders',
+      trace: 'traceability',
+      repository: 'repository',
+      kanban: 'kanban',
+      documents: 'documents',
+      'story-map': 'story-map',
+    };
+    const mapped = viewToModule[view];
+    if (mapped && mapped !== activeModule) {
+      setActiveModule(mapped);
+    }
+  }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auth headers for API calls
   const authHeaders = useMemo(() => ({
@@ -586,12 +665,22 @@ function AnalysisWorkspaceContent() {
       case 'stakeholders':
         return <StakeholdersModule onSelectArtefact={handleSelectArtefact} />;
       case 'traceability':
+      case 'trace':
         return (
           <TraceabilityModule
             selectedArtefact={selectedArtefact}
             onSelectArtefact={handleSelectArtefact}
           />
         );
+      // BA views (merged from Business Analysis studio)
+      case 'repository':
+        return <RepositoryModule onSelectArtefact={handleSelectArtefact} />;
+      case 'kanban':
+        return <StoriesModule onSelectArtefact={handleSelectArtefact} />;
+      case 'documents':
+        return <DocumentsModule />;
+      case 'story-map':
+        return <StoryMapModule onSelectArtefact={handleSelectArtefact} />;
       case 'dashboard':
         // Full metrics dashboard available when explicitly requested
         return <OverviewDashboard onNavigate={(module) => setActiveModule(module)} />;
@@ -711,10 +800,10 @@ function AnalysisWorkspaceContent() {
 
 // ============ MAIN EXPORT (WITH PROVIDER) ============
 
-export default function AnalysisWorkspace() {
+export default function AnalysisWorkspace({ view }) {
   return (
     <AnalysisProvider>
-      <AnalysisWorkspaceContent />
+      <AnalysisWorkspaceContent view={view} />
     </AnalysisProvider>
   );
 }

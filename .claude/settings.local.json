@@ -129,7 +129,8 @@
       "Bash(docker compose restart:*)",
       "Bash(docker compose logs:*)",
       "Bash(npx esbuild:*)",
-      "Bash(git stash drop:*)"
+      "Bash(git stash drop:*)",
+      "Bash(for file in TopBar.js SideBar.js)"
     ]
   },
   "hooks": {
