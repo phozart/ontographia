@@ -14,10 +14,10 @@ export function MindLabProvider({ children }) {
   const [isLoading, setIsLoading] = useState(false);
 
   const thinkingSpaces = [
-    { id: 'reasoning', name: 'Strategic Reasoning', description: 'Explore problems through structured reasoning frameworks', icon: 'Psychology', color: '#8b5cf6' },
-    { id: 'sensemaking', name: 'Sensemaking', description: 'Make sense of complex situations through multiple lenses', icon: 'Visibility', color: '#06b6d4' },
-    { id: 'philosophy', name: 'Philosophy', description: 'Apply philosophical inquiry to challenge assumptions', icon: 'AutoStories', color: '#ec4899' },
-    { id: 'negotiation', name: 'Negotiation', description: 'Prepare for and reflect on negotiations', icon: 'Handshake', color: '#f59e0b' },
+    { id: 'reasoning', name: 'Strategic Reasoning', description: 'Explore problems through structured reasoning frameworks', icon: 'Psychology', color: '#47453F' },
+    { id: 'sensemaking', name: 'Sensemaking', description: 'Make sense of complex situations through multiple lenses', icon: 'Visibility', color: '#5C5A54' },
+    { id: 'philosophy', name: 'Philosophy', description: 'Apply philosophical inquiry to challenge assumptions', icon: 'AutoStories', color: '#9C9A94' },
+    { id: 'negotiation', name: 'Negotiation', description: 'Prepare for and reflect on negotiations', icon: 'Handshake', color: '#C9A227' },
   ];
 
   const getHeaders = useCallback(() => ({ 'Content-Type': 'application/json', 'x-user': user || '', 'x-role': 'admin' }), [user]);

@@ -40,7 +40,7 @@ export default function KSNavigator({ activeView, onNavigate, domainId }) {
     <Navigator
       title="Knowledge Studio"
       icon={HubIcon}
-      iconColor="#6366f1"
+      iconColor="#47453F"
       showHome={true}
       homeLabel="Overview"
       homeIcon={DashboardIcon}

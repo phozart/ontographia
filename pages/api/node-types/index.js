@@ -4,34 +4,6 @@
 import { query } from '../../../lib/pg';
 import { getUserFromRequest } from '../../../lib/projectAccess';
 
-// Auto-create table if it doesn't exist
-async function ensureTableExists() {
-  try {
-    await query(`
-      CREATE TABLE IF NOT EXISTS graph_node_types (
-        id TEXT PRIMARY KEY,
-        name TEXT NOT NULL,
-        label TEXT,
-        description TEXT,
-        layer TEXT,
-        color TEXT DEFAULT '#6b7280',
-        icon TEXT,
-        shape TEXT DEFAULT 'ellipse',
-        domain TEXT DEFAULT 'core',
-        properties JSONB DEFAULT '{}',
-        created_at TIMESTAMPTZ DEFAULT NOW(),
-        updated_at TIMESTAMPTZ DEFAULT NOW()
-      )
-    `);
-    await query(`CREATE INDEX IF NOT EXISTS idx_graph_node_types_domain ON graph_node_types(domain)`);
-    await query(`CREATE INDEX IF NOT EXISTS idx_graph_node_types_layer ON graph_node_types(layer)`);
-  } catch (err) {
-    if (!err.message.includes('already exists')) {
-      console.error('[node-types] Error ensuring table:', err.message);
-    }
-  }
-}
-
 export default async function handler(req, res) {
   // Authentication required for write operations
   const { user, role } = getUserFromRequest(req);
@@ -42,9 +14,6 @@ export default async function handler(req, res) {
   try {
     if (req.method === 'GET') {
       const { domain, domainName } = req.query;
-
-      // Ensure table exists
-      await ensureTableExists();
 
       let sql = 'SELECT * FROM graph_node_types WHERE 1=1';
       const params = [];
@@ -86,9 +55,6 @@ export default async function handler(req, res) {
       }
 
       const id = `nt_${Date.now()}`;
-
-      // Ensure table exists
-      await ensureTableExists();
 
       await query(`
         INSERT INTO graph_node_types (id, name, label, description, layer, color, icon, domain, shape)

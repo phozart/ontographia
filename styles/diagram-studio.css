@@ -97,7 +97,7 @@
 }
 
 .ds-save-status.saving {
-  color: #f59e0b;
+  color: #C9A227;
 }
 
 .ds-save-status-dot {
@@ -982,9 +982,9 @@
   height: 16px;
 }
 
-.ds-validation-icon.error { color: #ef4444; }
-.ds-validation-icon.warn { color: #f59e0b; }
-.ds-validation-icon.info { color: #3b82f6; }
+.ds-validation-icon.error { color: #A54D4D; }
+.ds-validation-icon.warn { color: #C9A227; }
+.ds-validation-icon.info { color: #47453F; }
 
 .ds-validation-message {
   flex: 1;
@@ -1058,7 +1058,7 @@
 }
 
 .ds-context-menu-item.danger {
-  color: #ef4444;
+  color: #A54D4D;
 }
 
 .ds-context-menu-divider {
@@ -1134,8 +1134,8 @@
 
 .ds-conn-toolbar-btn--danger:hover {
   background: rgba(239, 68, 68, 0.1);
-  border-color: #ef4444;
-  color: #ef4444;
+  border-color: #A54D4D;
+  color: #A54D4D;
 }
 
 .ds-conn-toolbar-divider {
@@ -1946,9 +1946,9 @@
   letter-spacing: 0.3px;
 }
 
-.ds-canvas-category.discovery { background: #dbeafe; color: #1e40af; }
-.ds-canvas-category.strategy { background: #dcfce7; color: #166534; }
-.ds-canvas-category.prioritization { background: #fef3c7; color: #92400e; }
+.ds-canvas-category.discovery { background: rgba(71, 69, 63, 0.06); color: #35332F; }
+.ds-canvas-category.strategy { background: rgba(91, 138, 106, 0.08); color: #5B8A6A; }
+.ds-canvas-category.prioritization { background: rgba(201, 162, 39, 0.08); color: #8B7B2A; }
 .ds-canvas-category.validation { background: #fce7f3; color: #9d174d; }
 .ds-canvas-category.delivery { background: #e9d5ff; color: #6b21a8; }
 .ds-canvas-category.service-design { background: #ccfbf1; color: #0f766e; }
@@ -2115,10 +2115,10 @@
   border-radius: 2px;
 }
 
-.ds-tree-level-0 { background: #3b82f6; }
-.ds-tree-level-1 { background: #8b5cf6; }
-.ds-tree-level-2 { background: #10b981; }
-.ds-tree-level-3 { background: #f59e0b; }
+.ds-tree-level-0 { background: #47453F; }
+.ds-tree-level-1 { background: #5C5A54; }
+.ds-tree-level-2 { background: #5B8A6A; }
+.ds-tree-level-3 { background: #C9A227; }
 
 /* Add Node Button (for OST) */
 .ds-add-child-btn {
@@ -2220,7 +2220,7 @@
 
 /* Emotion Curve Path */
 .ds-emotion-curve {
-  stroke: #f59e0b;
+  stroke: #C9A227;
   stroke-width: 3;
   fill: none;
 }
@@ -2235,9 +2235,9 @@
   font-weight: 700;
 }
 
-.ds-moscow-column[data-zone="must"] .ds-zone-header { color: #166534; }
-.ds-moscow-column[data-zone="should"] .ds-zone-header { color: #1e40af; }
-.ds-moscow-column[data-zone="could"] .ds-zone-header { color: #92400e; }
+.ds-moscow-column[data-zone="must"] .ds-zone-header { color: #5B8A6A; }
+.ds-moscow-column[data-zone="should"] .ds-zone-header { color: #35332F; }
+.ds-moscow-column[data-zone="could"] .ds-zone-header { color: #8B7B2A; }
 .ds-moscow-column[data-zone="wont"] .ds-zone-header { color: #991b1b; }
 
 /* ============ CANVAS LIBRARY TABS ============ */
@@ -2790,8 +2790,8 @@
 }
 
 .canvas-wizard__tips-toggle.active {
-  background: #fef3c7;
-  border-color: #f59e0b;
+  background: rgba(201, 162, 39, 0.08);
+  border-color: #C9A227;
   color: #b45309;
 }
 
@@ -2816,7 +2816,7 @@
 .canvas-wizard__tips {
   padding: 14px 20px;
   background: #fffbeb;
-  border-bottom: 1px solid #fef3c7;
+  border-bottom: 1px solid rgba(201, 162, 39, 0.08);
 }
 
 .canvas-wizard__tips-header {
@@ -2834,7 +2834,7 @@
 .canvas-wizard__tips p {
   margin: 0 0 10px;
   font-size: 14px;
-  color: #92400e;
+  color: #8B7B2A;
 }
 
 .canvas-wizard__tips-inputs,
@@ -3098,12 +3098,12 @@
 .uml-note-node {
   width: 100%;
   height: 100%;
-  background: #fef3c7;
-  border: 1px solid #f59e0b;
+  background: rgba(201, 162, 39, 0.08);
+  border: 1px solid #C9A227;
   position: relative;
   padding: 10px;
   font-size: 11px;
-  color: #92400e;
+  color: #8B7B2A;
   line-height: 1.4;
 }
 
@@ -3114,8 +3114,8 @@
   width: 16px;
   height: 16px;
   background: linear-gradient(135deg, transparent 50%, #fcd34d 50%);
-  border-left: 1px solid #f59e0b;
-  border-bottom: 1px solid #f59e0b;
+  border-left: 1px solid #C9A227;
+  border-bottom: 1px solid #C9A227;
 }
 
 .uml-note-content {
@@ -3229,7 +3229,7 @@
 }
 
 .erd-field-notnull {
-  color: #ef4444;
+  color: #A54D4D;
   font-weight: bold;
   margin-left: 2px;
 }
@@ -3393,7 +3393,7 @@
 
 .ds-layer-btn.ds-layer-delete {
   opacity: 0;
-  color: #ef4444;
+  color: #A54D4D;
 }
 
 .ds-layer-item:hover .ds-layer-btn.ds-layer-delete {

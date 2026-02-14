@@ -59,6 +59,7 @@ export function WorkspaceLayout({
   noSelectionMessage = 'Select a project from the dropdown above, or create a new one to start working.',
   onCreateProject,
   modals,
+  rightPanel,
 }) {
   // Auto-dismiss error toast after 8 seconds
   const [dismissedError, setDismissedError] = useState(null);
@@ -152,6 +153,9 @@ export function WorkspaceLayout({
             {children}
           </div>
         </main>
+
+        {/* Right panel (e.g. BacklinksSidebar) */}
+        {rightPanel}
       </div>
 
       {/* Modals rendered at root level */}

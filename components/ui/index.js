@@ -44,6 +44,18 @@ export { KanbanBoard, KanbanCard, AssumptionBoard, IssueBoard } from './KanbanBo
 export { GanttTimeline, ProjectTimeline } from './GanttTimeline';
 export { ForceGraph, DependencyGraph, RelationshipGraph } from './ForceGraph';
 
+// Knowledge Graph Backlinks
+export { default as BacklinksSidebar, BacklinksButton } from './BacklinksSidebar';
+
+// Universal Search
+export { default as UniversalSearch } from './UniversalSearch';
+
+// Architecture Lens
+export { default as ArchitectureLens, ArchitectureLensToggle } from './ArchitectureLens';
+
+// Lifecycle
+export { default as LifecycleBar } from './LifecycleBar';
+
 // Re-export styles for components that need direct access
 export { default as uiStyles } from './ui.module.css';
 export { default as workspaceStyles } from './WorkspaceLayout.module.css';

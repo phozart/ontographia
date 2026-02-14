@@ -55,28 +55,6 @@ export default async function handler(req, res) {
     };
   }
 
-  // Neo4j check (if enabled)
-  if (process.env.NEO4J_ENABLED === 'true' && process.env.NEO4J_URI) {
-    try {
-      // Placeholder for Neo4j health check
-      checks.neo4j = {
-        status: 'configured',
-        latency_ms: null,
-      };
-    } catch (error) {
-      checks.neo4j = {
-        status: 'unhealthy',
-        error: error.message,
-      };
-      allHealthy = false;
-    }
-  } else {
-    checks.neo4j = {
-      status: 'disabled',
-      latency_ms: null,
-    };
-  }
-
   // Memory usage
   const memoryUsage = process.memoryUsage();
   checks.memory = {

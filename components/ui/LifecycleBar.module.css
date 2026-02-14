@@ -1,0 +1,132 @@
+/* components/ui/LifecycleBar.module.css */
+/* Lifecycle phase stepper — design system compliant */
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  background: #FDFCFA;
+  border: 1px solid #E2E0DB;
+  border-radius: 4px;
+}
+
+.bar.compact {
+  padding: 4px 10px;
+  gap: 8px;
+}
+
+.tierLabel {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #9C9A94;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+
+/* Steps container */
+.steps {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.stepWrapper {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Connector line */
+.connector {
+  flex: 1;
+  height: 2px;
+  background: #E2E0DB;
+  min-width: 8px;
+}
+
+.completedConnector {
+  background: #5B8A6A;
+}
+
+/* Step */
+.step {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.stepDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: all 150ms ease-out;
+}
+
+.step.current .stepDot {
+  width: 12px;
+  height: 12px;
+  box-shadow: 0 0 0 3px rgba(71, 69, 63, 0.15);
+}
+
+.stepLabel {
+  font-size: 0.6875rem;
+  color: #9C9A94;
+  white-space: nowrap;
+}
+
+.step.current .stepLabel {
+  color: #1F1E1B;
+  font-weight: 600;
+}
+
+.step.completed .stepLabel {
+  color: #5B8A6A;
+}
+
+.step.future .stepLabel {
+  color: #E2E0DB;
+}
+
+/* Compact mode hides labels */
+.compact .stepLabel {
+  display: none;
+}
+
+.compact .stepDot {
+  width: 8px;
+  height: 8px;
+}
+
+.compact .step.current .stepDot {
+  width: 10px;
+  height: 10px;
+}
+
+/* Advance button */
+.advanceButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: transparent;
+  border: 1px solid #E2E0DB;
+  border-radius: 4px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #5C5A54;
+  cursor: pointer;
+  transition: all 100ms ease-out;
+  flex-shrink: 0;
+}
+
+.advanceButton:hover {
+  background: #F0EFEC;
+  border-color: #47453F;
+  color: #1F1E1B;
+}

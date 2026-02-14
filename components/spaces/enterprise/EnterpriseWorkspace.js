@@ -20,6 +20,8 @@ import {
   Card,
   SummaryBar,
   SummaryItem,
+  BacklinksSidebar,
+  BacklinksButton,
 } from '@/components/ui';
 
 // MUI Icons
@@ -168,6 +170,7 @@ export default function EnterpriseWorkspace() {
   // Local UI state
   const [activeView, setActiveView] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showBacklinks, setShowBacklinks] = useState(false);
 
   // Navigation handler
   const handleNavigate = useCallback((module, view = null) => {
@@ -322,8 +325,21 @@ export default function EnterpriseWorkspace() {
           onCreateItem={handleCreateItem}
         />
       }
+      actions={
+        <BacklinksButton
+          entityId={selectedId ? `ea_${selectedId}` : null}
+          isOpen={showBacklinks}
+          onClick={() => setShowBacklinks(!showBacklinks)}
+        />
+      }
       error={error}
       modals={null}
+      rightPanel={showBacklinks && selectedId ? (
+        <BacklinksSidebar
+          entityId={`ea_${selectedId}`}
+          onClose={() => setShowBacklinks(false)}
+        />
+      ) : null}
     >
       <div className={styles.workspace}>
         {loading && (

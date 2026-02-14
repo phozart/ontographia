@@ -10,7 +10,7 @@ import { useAuth } from '../../AuthContext';
 import { buildSpaceUrl } from '../../../lib/urlUtils';
 
 // Shared UI components
-import { WorkspaceLayout, Breadcrumb, BreadcrumbSeparator, Breadcrumbs, ConfirmModal } from '@/components/ui';
+import { WorkspaceLayout, Breadcrumb, BreadcrumbSeparator, Breadcrumbs, ConfirmModal, BacklinksSidebar, BacklinksButton, LifecycleBar } from '@/components/ui';
 import { DomainDashboard } from '../../shared/DomainDashboard';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ViewKanbanIcon from '@mui/icons-material/ViewKanban';
@@ -232,6 +232,9 @@ export default function BlueprintWorkspace({ view: urlView, domainId: urlDomainI
 
   // Centralized modal state
   const modals = useBlueprintModals();
+
+  // Backlinks state
+  const [showBacklinks, setShowBacklinks] = useState(false);
 
   // Domain-level dashboard state
   const [domainInitiatives, setDomainInitiatives] = useState([]);
@@ -790,6 +793,11 @@ export default function BlueprintWorkspace({ view: urlView, domainId: urlDomainI
   // Toolbar actions
   const actionsContent = (
     <div style={{ display: 'flex', gap: 6 }}>
+      <BacklinksButton
+        entityId={activeInitiative ? `artefact_${activeInitiative.id}` : null}
+        isOpen={showBacklinks}
+        onClick={() => setShowBacklinks(!showBacklinks)}
+      />
       <button
         className="btn btn-sm btn-secondary"
         onClick={modals.exportManager.open}
@@ -914,7 +922,16 @@ export default function BlueprintWorkspace({ view: urlView, domainId: urlDomainI
       actions={actionsContent}
       error={error}
       modals={modalsContent}
+      rightPanel={showBacklinks && activeInitiative ? (
+        <BacklinksSidebar
+          entityId={`artefact_${activeInitiative.id}`}
+          onClose={() => setShowBacklinks(false)}
+        />
+      ) : null}
     >
+      {activeInitiative && (
+        <LifecycleBar artefactId={activeInitiative.id} compact={false} />
+      )}
       {renderView()}
 
       {/* Floating Action Button - only show on overview section views */}

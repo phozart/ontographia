@@ -28,9 +28,9 @@ const DOMAIN_ICONS = {
 };
 
 const DIFFICULTY_CONFIG = {
-  beginner: { label: 'Beginner', color: '#10b981' },
-  intermediate: { label: 'Intermediate', color: '#f59e0b' },
-  advanced: { label: 'Advanced', color: '#ef4444' },
+  beginner: { label: 'Beginner', color: '#5B8A6A' },
+  intermediate: { label: 'Intermediate', color: '#C9A227' },
+  advanced: { label: 'Advanced', color: '#A54D4D' },
 };
 
 /**
@@ -575,18 +575,18 @@ export default function SDExamplesLibrary({ onLoadExample, onNavigate }) {
         }
 
         .sd-detail-difficulty.beginner {
-          background: rgba(16, 185, 129, 0.1);
-          color: #10b981;
+          background: rgba(91, 138, 106, 0.1);
+          color: #5B8A6A;
         }
 
         .sd-detail-difficulty.intermediate {
-          background: rgba(245, 158, 11, 0.1);
-          color: #f59e0b;
+          background: rgba(201, 162, 39, 0.1);
+          color: #C9A227;
         }
 
         .sd-detail-difficulty.advanced {
-          background: rgba(239, 68, 68, 0.1);
-          color: #ef4444;
+          background: rgba(165, 77, 77, 0.1);
+          color: #A54D4D;
         }
 
         .sd-detail-section {
@@ -666,13 +666,13 @@ export default function SDExamplesLibrary({ onLoadExample, onNavigate }) {
         }
 
         .sd-loop-type.reinforcing {
-          background: rgba(99, 102, 241, 0.1);
-          color: #6366f1;
+          background: rgba(71, 69, 63, 0.08);
+          color: #47453F;
         }
 
         .sd-loop-type.balancing {
-          background: rgba(245, 158, 11, 0.1);
-          color: #f59e0b;
+          background: rgba(201, 162, 39, 0.1);
+          color: #C9A227;
         }
 
         .sd-detail-loop strong {
