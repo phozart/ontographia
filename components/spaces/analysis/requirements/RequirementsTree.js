@@ -22,7 +22,7 @@ import AccountTreeIcon from '@mui/icons-material/AccountTree';
  * @param {function} [props.onAddChild] - Called with (parentId, artefactType) to create a child
  * @param {string} [props.selectedId] - Currently selected artefact ID
  */
-export default function RequirementsTree({ onSelect, onAddChild, selectedId }) {
+export default function RequirementsTree({ onSelect, onAddChild, onCreateRequirement, selectedId }) {
   const { getArtefactsByModule, createArtefact } = useAnalysis();
 
   const allRequirements = useMemo(() => getArtefactsByModule('requirements'), [getArtefactsByModule]);
@@ -184,6 +184,12 @@ export default function RequirementsTree({ onSelect, onAddChild, selectedId }) {
         <button className="tree-toolbar-btn" onClick={collapseAll} title="Collapse all">
           <ChevronRightIcon fontSize="small" />
         </button>
+        {onCreateRequirement && (
+          <button className="tree-toolbar-btn tree-add-btn" onClick={onCreateRequirement} title="Add requirement">
+            <AddIcon fontSize="small" />
+            <span>Add</span>
+          </button>
+        )}
       </div>
 
       {/* Filter row */}
@@ -221,6 +227,12 @@ export default function RequirementsTree({ onSelect, onAddChild, selectedId }) {
                 ? 'No requirements match your filters. Try adjusting the search or filters.'
                 : 'Create your first business requirement to start building the hierarchy.'}
             </p>
+            {onCreateRequirement && !(searchQuery || statusFilter !== 'all' || typeFilter !== 'all') && (
+              <button className="btn-primary" onClick={onCreateRequirement} style={{ marginTop: 16 }}>
+                <AddIcon fontSize="small" style={{ marginRight: 4 }} />
+                Create Requirement
+              </button>
+            )}
           </div>
         ) : (
           <ul className="tree-root" role="tree">

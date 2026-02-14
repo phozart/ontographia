@@ -105,45 +105,34 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Stats Bar */}
-      {!loading && data && (
-        <div className={styles.statsBar}>
-          <div className={styles.statsBarInner}>
-            <StatCard
-              label="Active Projects"
-              value={data.stats.activeProjects}
-              subtext={`${data.stats.totalProjects} total`}
-            />
-            <StatCard
-              label="Initiatives"
-              value={data.stats.activeInitiatives}
-              subtext={`${data.stats.totalInitiatives} total`}
-            />
-            <StatCard
-              label="Analysis Projects"
-              value={data.stats.analysisProjects}
-            />
-            <StatCard
-              label="Graph Nodes"
-              value={data.stats.graphNodes}
-              subtext={`${data.stats.graphRelationships} relationships`}
-            />
-          </div>
+      {/* Stats Bar — always visible with fallback values */}
+      <div className={styles.statsBar}>
+        <div className={styles.statsBarInner}>
+          <StatCard
+            label="Active Projects"
+            value={loading ? '\u2014' : (data?.stats?.activeProjects ?? 0)}
+            subtext={loading ? null : `${data?.stats?.totalProjects ?? 0} total`}
+            loading={loading}
+          />
+          <StatCard
+            label="Initiatives"
+            value={loading ? '\u2014' : (data?.stats?.activeInitiatives ?? 0)}
+            subtext={loading ? null : `${data?.stats?.totalInitiatives ?? 0} total`}
+            loading={loading}
+          />
+          <StatCard
+            label="Analysis Projects"
+            value={loading ? '\u2014' : (data?.stats?.analysisProjects ?? 0)}
+            loading={loading}
+          />
+          <StatCard
+            label="Graph Nodes"
+            value={loading ? '\u2014' : (data?.stats?.graphNodes ?? 0)}
+            subtext={loading ? null : `${data?.stats?.graphRelationships ?? 0} relationships`}
+            loading={loading}
+          />
         </div>
-      )}
-
-      {loading && (
-        <div className={styles.statsBar}>
-          <div className={styles.statsBarInner}>
-            {[1, 2, 3, 4].map(i => (
-              <div key={i} className={styles.statCard}>
-                <div className={styles.statLabel}>Loading...</div>
-                <div className={styles.statValue}>-</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      </div>
 
       {/* Main Content */}
       <div className={styles.mainContent}>
@@ -302,11 +291,11 @@ export default function HomePage() {
 
 // Sub-components
 
-function StatCard({ label, value, subtext }) {
+function StatCard({ label, value, subtext, loading }) {
   return (
-    <div className={styles.statCard}>
+    <div className={`${styles.statCard} ${loading ? styles.statCardLoading : ''}`}>
       <div className={styles.statLabel}>{label}</div>
-      <div className={styles.statValue}>{value ?? '-'}</div>
+      <div className={styles.statValue}>{value ?? 0}</div>
       {subtext && <div className={styles.statSubtext}>{subtext}</div>}
     </div>
   );

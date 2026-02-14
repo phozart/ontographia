@@ -144,7 +144,7 @@ function LevelSelector({ maxLevel, selectedLevel, onChange }) {
 /**
  * Main CapabilityMap component
  */
-export default function CapabilityMap({ onSelectCapability, selectedId }) {
+export default function CapabilityMap({ onSelectCapability, selectedId, onCreateCapability }) {
   const { capabilities, loading } = useEnterprise();
   const [viewMode, setViewMode] = useState('tree'); // 'tree' | 'cards' | 'heatmap'
   const [showLevel, setShowLevel] = useState(2);
@@ -182,6 +182,11 @@ export default function CapabilityMap({ onSelectCapability, selectedId }) {
           Business capabilities describe what your organisation can do,
           independent of how it's done or who does it.
         </p>
+        {onCreateCapability && (
+          <button className="btn-primary" onClick={onCreateCapability} style={{ marginTop: 16 }}>
+            Add Capability
+          </button>
+        )}
       </div>
     );
   }

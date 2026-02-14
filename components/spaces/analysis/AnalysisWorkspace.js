@@ -104,6 +104,7 @@ function RequirementsModule({ onSelectArtefact, onOpenArtefactModal }) {
           <RequirementsTree
             onSelect={handleSelect}
             onAddChild={handleAddChild}
+            onCreateRequirement={() => onOpenArtefactModal && onOpenArtefactModal('BusinessRequirement')}
             selectedId={selectedRequirement?.id}
           />
         </div>

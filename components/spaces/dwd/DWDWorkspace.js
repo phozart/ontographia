@@ -35,6 +35,7 @@ import TraceMatrix from './views/TraceMatrix';
 
 // Artefact components
 import DWDArtefactModal from './artefacts/DWDArtefactModal';
+import CreateProjectModal from '../../shared/CreateProjectModal';
 
 // MUI Icons
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -443,7 +444,16 @@ export default function DWDWorkspace() {
       actions={actionsContent}
       error={error}
       noProject={!activeProject}
-      modals={modalsContent}
+      onCreateProject={modals.createProject.open}
+      modals={
+        <>
+          {modalsContent}
+          <CreateProjectModal
+            isOpen={modals.createProject.isOpen}
+            onClose={modals.createProject.close}
+          />
+        </>
+      }
     >
       {renderView()}
     </WorkspaceLayout>

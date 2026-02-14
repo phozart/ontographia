@@ -116,6 +116,14 @@ const nextConfig = {
       { source: '/flow-designer', destination: '/app/spaces/diagram/canvas', permanent: true },
       // Knowledge Studio
       { source: '/knowledge-studio', destination: '/app/spaces/ks/navigator', permanent: true },
+      // Semantic Model Browser (alias for user-view)
+      { source: '/semanticmodelbrowser', destination: '/user/user-view', permanent: true },
+      // Legacy pre-space paths (replaced by /app/spaces/{code}/{view})
+      { source: '/blueprint/initiative/:id', destination: '/app/spaces/blueprint/overview', permanent: true },
+      { source: '/blueprint/:view', destination: '/app/spaces/blueprint/:view', permanent: true },
+      { source: '/enterprise/:view', destination: '/app/spaces/enterprise/:view', permanent: true },
+      { source: '/gtm/:id(\\d+)', destination: '/app/spaces/gtm/overview', permanent: true },
+      { source: '/gtm/:view', destination: '/app/spaces/gtm/:view', permanent: true },
     ];
   },
 };

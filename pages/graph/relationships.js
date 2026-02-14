@@ -26,7 +26,7 @@ export default function RelationshipsPage() {
             Manage relationships between nodes
           </Typography>
         </Box>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={() => setFormOpen(true)}>
+        <Button variant="contained" startIcon={<AddIcon />} onClick={() => setFormOpen(true)} sx={{ flexShrink: 0, whiteSpace: 'nowrap' }}>
           New Connection
         </Button>
       </Box>

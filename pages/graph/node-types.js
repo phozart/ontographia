@@ -21,6 +21,11 @@ import CategoryIcon from '@mui/icons-material/Category';
 import { LogoSpinner } from '../../components/Logo';
 import { useDomains } from '../../components/DomainContext';
 
+// Utility to detect UUID strings (hide from UI)
+function isUUID(str) {
+  return typeof str === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+}
+
 // Utility to calculate contrasting text color
 function getContrastColor(hexColor) {
   if (!hexColor || !hexColor.startsWith('#')) return '#ffffff';
@@ -207,7 +212,7 @@ export default function NodeTypesPage() {
             {types.length} types defined
           </Typography>
         </Box>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate}>
+        <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate} sx={{ flexShrink: 0, whiteSpace: 'nowrap' }}>
           New Type
         </Button>
       </Box>
@@ -286,7 +291,7 @@ export default function NodeTypesPage() {
                 <Box sx={{ width: 16, height: 16, borderRadius: 1, bgcolor: t.color || '#888' }} />
                 <Typography variant="caption" color="text.secondary">{t.color || 'No color'}</Typography>
                 <Box sx={{ flex: 1 }} />
-                <Chip label={t.domain || 'core'} size="small" sx={{ height: 18, fontSize: 10 }} />
+                <Chip label={isUUID(t.domain) ? 'domain' : (t.domain || 'core')} size="small" sx={{ height: 18, fontSize: 10 }} />
               </Box>
             </Paper>
           ))}

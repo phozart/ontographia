@@ -140,6 +140,9 @@ export default function useDWDModals() {
     setShowReportGenerator(false);
   }, []);
 
+  // Create project modal
+  const [showCreateProject, setShowCreateProject] = useState(false);
+
   return {
     // Type selector
     typeSelector: {
@@ -207,6 +210,13 @@ export default function useDWDModals() {
       isOpen: showReportGenerator,
       open: openReportGenerator,
       close: closeReportGenerator,
+    },
+
+    // Create project
+    createProject: {
+      isOpen: showCreateProject,
+      open: () => setShowCreateProject(true),
+      close: () => setShowCreateProject(false),
     },
   };
 }

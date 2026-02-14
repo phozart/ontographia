@@ -22,6 +22,11 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { LogoSpinner } from '../../components/Logo';
 import { useDomains } from '../../components/DomainContext';
 
+// Utility to detect UUID strings (hide from UI)
+function isUUID(str) {
+  return typeof str === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+}
+
 export default function RelationshipTypesPage() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -156,7 +161,7 @@ export default function RelationshipTypesPage() {
             {rows.length} relationship types defined
           </Typography>
         </Box>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate}>
+        <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate} sx={{ flexShrink: 0, whiteSpace: 'nowrap' }}>
           New Type
         </Button>
       </Box>
@@ -242,7 +247,7 @@ export default function RelationshipTypesPage() {
                 <Box sx={{ width: 24, height: 4, borderRadius: 2, bgcolor: r.color || '#9ca3af' }} />
                 <Typography variant="caption" color="text.secondary">{r.color || '#9ca3af'}</Typography>
                 <Box sx={{ flex: 1 }} />
-                <Chip label={r.domain || 'core'} size="small" sx={{ height: 18, fontSize: 10 }} />
+                <Chip label={isUUID(r.domain) ? 'domain' : (r.domain || 'core')} size="small" sx={{ height: 18, fontSize: 10 }} />
               </Box>
             </Paper>
           ))}

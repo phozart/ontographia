@@ -131,7 +131,12 @@ export default function OverviewDashboard({
           <span className="dashboard-hero-value">{stageCounts.approved || 0}</span>
           <span className="dashboard-hero-label">Approved</span>
         </div>
-        <div className="dashboard-hero-stat dashboard-hero-stat--warning">
+        <div
+          className="dashboard-hero-stat dashboard-hero-stat--warning"
+          title="Initiatives exceeding stage SLA timelines"
+          style={{ cursor: 'pointer' }}
+          onClick={() => onNavigate?.('risk')}
+        >
           <WarningIcon fontSize="small" />
           <span className="dashboard-hero-value">{initiativesAtRisk?.length || 0}</span>
           <span className="dashboard-hero-label">At Risk</span>

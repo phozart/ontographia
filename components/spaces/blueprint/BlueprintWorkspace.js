@@ -561,21 +561,9 @@ export default function BlueprintWorkspace({ view: urlView, domainId: urlDomainI
   const viewRequiresInitiative = VIEW_INFO[activeView]?.requiresInitiative ?? false;
   const hasActiveInitiative = !!activeInitiative;
 
-  // Redirect to Ideas Board if initiative required but not selected
-  // Delayed slightly to allow batched state updates (initiative + view) to settle
-  useEffect(() => {
-    if (!viewRequiresInitiative || hasActiveInitiative || !router.isReady) return;
-
-    const timer = setTimeout(() => {
-      // Re-check after delay — initiative may have been set in the same batch
-      if (viewRequiresInitiative && !hasActiveInitiative) {
-        console.log(`View "${activeView}" requires initiative. Redirecting to Ideas Board.`);
-        handleViewChange('overview');
-      }
-    }, 100);
-
-    return () => clearTimeout(timer);
-  }, [activeView, viewRequiresInitiative, hasActiveInitiative, router.isReady, handleViewChange]);
+  // Note: When a view requires an initiative but none is selected,
+  // renderView() shows an inline "Select an Initiative" prompt instead of redirecting.
+  // This lets users stay on the tab they clicked and pick an initiative from there.
 
   // Render current view
   const renderView = () => {
@@ -873,7 +861,7 @@ export default function BlueprintWorkspace({ view: urlView, domainId: urlDomainI
     // Decision section (initiative-scoped): business case, approval
     if (['summary', 'case', 'approval'].includes(activeView)) return 'decision';
     // Governance section (initiative-scoped)
-    if (['gates', 'sla', 'risk'].includes(activeView)) return 'governance';
+    if (['gates', 'sla', 'risk', 'plr', 'killed', 'accounting', 'funnel', 'reviewers'].includes(activeView)) return 'governance';
     // Tools section (mixed scope)
     if (['tools', 'value-prop', 'lean', 'assumptions', 'swot', 'rice', 'matrix', 'weighted', 'compare', 'ai-design'].includes(activeView)) return 'tools';
     return 'overview';

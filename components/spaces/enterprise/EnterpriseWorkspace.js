@@ -253,7 +253,7 @@ export default function EnterpriseWorkspace() {
       case 'capabilities':
         if (activeView === 'heatmap') return <MaturityHeatmap />;
         if (activeView === 'gap-analysis') return <GapAnalysis />;
-        return <CapabilityMap />;
+        return <CapabilityMap onCreateCapability={handleCreateItem} />;
 
       case 'services':
         return <ServiceCatalog />;

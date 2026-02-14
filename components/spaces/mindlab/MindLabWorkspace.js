@@ -2,26 +2,24 @@
 // Mind Lab - Unified Personal Thinking Workspace
 // Serves as container for the 4 thinking studios: SRS, MMS, Philosophy, NP
 
-import { useState, useMemo, useEffect } from 'react';
+import { useMemo, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/router';
 import dynamic from 'next/dynamic';
 import { useMindLab } from './MindLabContext';
-import { WorkspaceLayout } from '@/components/ui';
 import PsychologyIcon from '@mui/icons-material/Psychology';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import AutoStoriesIcon from '@mui/icons-material/AutoStories';
 import HandshakeIcon from '@mui/icons-material/Handshake';
 
-// Dynamically import the workspace components
+// Dynamically import workspace components
+// MMS and Philosophy self-wrap with their own Provider
 const SRSWorkspace = dynamic(() => import('@/components/spaces/srs/SRSWorkspace'), { ssr: false });
-const SRSProvider = dynamic(() => import('@/components/spaces/srs/SRSContext').then(mod => ({ default: ({ children }) => <mod.SRSProvider>{children}</mod.SRSProvider> })), { ssr: false });
-
 const MMSWorkspace = dynamic(() => import('@/components/spaces/mms/MMSWorkspace'), { ssr: false });
-const MMSProvider = dynamic(() => import('@/components/spaces/mms/MMSContext').then(mod => ({ default: ({ children }) => <mod.MMSProvider>{children}</mod.MMSProvider> })), { ssr: false });
-
 const PhilosophyWorkspace = dynamic(() => import('@/components/spaces/philosophy/PhilosophyWorkspace'), { ssr: false });
-const PhilosophyProvider = dynamic(() => import('@/components/spaces/philosophy/PhilosophyContext').then(mod => ({ default: ({ children }) => <mod.PhilosophyProvider>{children}</mod.PhilosophyProvider> })), { ssr: false });
-
 const NPWorkspace = dynamic(() => import('@/components/spaces/np/NPWorkspace'), { ssr: false });
+
+// SRS and NP need external provider wrapping
+const SRSProvider = dynamic(() => import('@/components/spaces/srs/SRSContext').then(mod => ({ default: ({ children }) => <mod.SRSProvider>{children}</mod.SRSProvider> })), { ssr: false });
 const NPProvider = dynamic(() => import('@/components/spaces/np/NPContext').then(mod => ({ default: ({ children }) => <mod.NPProvider>{children}</mod.NPProvider> })), { ssr: false });
 
 const SPACE_ICONS = {
@@ -32,19 +30,20 @@ const SPACE_ICONS = {
 };
 
 // Workspace components mapped to space IDs
-const WORKSPACE_COMPONENTS = {
-  reasoning: { Workspace: SRSWorkspace, Provider: SRSProvider },
-  sensemaking: { Workspace: MMSWorkspace, Provider: MMSProvider },
-  philosophy: { Workspace: PhilosophyWorkspace, Provider: PhilosophyProvider },
-  negotiation: { Workspace: NPWorkspace, Provider: NPProvider }
+// needsProvider: true means the workspace uses useXxx() without wrapping itself
+const WORKSPACE_CONFIGS = {
+  reasoning: { Workspace: SRSWorkspace, Provider: SRSProvider, needsProvider: true },
+  sensemaking: { Workspace: MMSWorkspace, needsProvider: false },
+  philosophy: { Workspace: PhilosophyWorkspace, needsProvider: false },
+  negotiation: { Workspace: NPWorkspace, Provider: NPProvider, needsProvider: true }
 };
 
 export default function MindLabWorkspace({ view }) {
+  const router = useRouter();
   const { activeSpace, setActiveSpace, thinkingSpaces, getSpaceConfig } = useMindLab();
 
   // Use view param to set active space if provided
   const currentSpaceId = view || activeSpace;
-  const currentSpace = getSpaceConfig(currentSpaceId);
 
   // Sync activeSpace with view prop when it changes
   useEffect(() => {
@@ -66,14 +65,16 @@ export default function MindLabWorkspace({ view }) {
     [thinkingSpaces]
   );
 
-  const handleViewChange = (viewId) => {
-    setActiveSpace(viewId);
-  };
+  // Navigate via URL so the page component re-renders with the new view prop
+  const handleViewChange = useCallback((viewId) => {
+    if (viewId === currentSpaceId) return;
+    router.push(`/app/thinking/${viewId}`, undefined, { shallow: false });
+  }, [router, currentSpaceId]);
 
   // Get the workspace component for the current space
-  const workspaceConfig = WORKSPACE_COMPONENTS[currentSpaceId];
+  const config = WORKSPACE_CONFIGS[currentSpaceId];
 
-  if (!workspaceConfig) {
+  if (!config) {
     return (
       <div style={{
         display: 'flex',
@@ -87,10 +88,11 @@ export default function MindLabWorkspace({ view }) {
     );
   }
 
-  const { Workspace, Provider } = workspaceConfig;
+  const { Workspace, Provider, needsProvider } = config;
 
-  // The individual workspaces have their own layouts, so we render them directly
-  // with just a minimal wrapper for the horizontal tab navigation
+  // Render workspace, wrapping in Provider only if needed
+  const workspaceContent = <Workspace />;
+
   return (
     <div className="mindlab-workspace-container">
       {/* Horizontal Tab Bar for switching between thinking spaces */}
@@ -109,9 +111,11 @@ export default function MindLabWorkspace({ view }) {
 
       {/* Render the workspace for the active thinking space */}
       <div className="mindlab-workspace-content">
-        <Provider>
-          <Workspace />
-        </Provider>
+        {needsProvider && Provider ? (
+          <Provider>{workspaceContent}</Provider>
+        ) : (
+          workspaceContent
+        )}
       </div>
     </div>
   );

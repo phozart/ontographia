@@ -341,9 +341,16 @@ export default function SystemHeader({ theme, onThemeChange }) {
     }
   };
 
+  const getUserDisplayName = () => {
+    if (!user) return 'Guest';
+    if (typeof user === 'string') return user;
+    return user.name || user.email || 'Guest';
+  };
+
   const getUserInitials = () => {
-    if (!user?.name) return 'U';
-    const parts = user.name.split(' ');
+    const name = getUserDisplayName();
+    if (!name || name === 'Guest') return 'U';
+    const parts = name.split(' ');
     if (parts.length >= 2) {
       return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
     }
@@ -596,7 +603,7 @@ export default function SystemHeader({ theme, onThemeChange }) {
               <div className="user-menu-header">
                 <span className="user-avatar-medium">{getUserInitials()}</span>
                 <div className="user-menu-info">
-                  <span className="user-menu-name">{user?.name || 'Guest'}</span>
+                  <span className="user-menu-name">{getUserDisplayName()}</span>
                   <span className="user-menu-email">{user?.email || ''}</span>
                 </div>
               </div>
