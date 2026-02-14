@@ -5,8 +5,8 @@ import { query } from '../../../lib/pg';
 import { errorResponse } from '../../../lib/api/errorResponse';
 import { getUserFromRequest } from '../../../lib/projectAccess';
 import { validateMetamodelRelationship } from '../../../lib/analysis-types';
-import { emitAnalysisEvent, ANALYSIS_EVENT_TYPES } from '../../../lib/services/analysisEvents';
-import { syncAnalysisRelationship, removeAnalysisRelationshipFromGraph } from '../../../lib/services/analysisGraphSync';
+import { ANALYSIS_EVENT_TYPES } from '../../../lib/services/analysisEvents';
+import { enqueueOutboxEvents, OUTBOX_ACTIONS } from '../../../lib/services/outboxService';
 
 // Auto-initialize table if it doesn't exist
 let tableInitialized = false;
@@ -173,26 +173,35 @@ async function handlePost(req, res) {
       [from_artefact_id, to_artefact_id, relationship_type, project_id]
     );
 
-    // Fire-and-forget: emit event
-    emitAnalysisEvent({
-      domainId: null, // relationships don't have domain_id directly
-      eventType: ANALYSIS_EVENT_TYPES.RELATIONSHIP_CREATED,
-      entityId: result.rows[0].id,
-      entityType: 'relationship',
-      projectId: project_id,
-      payload: {
-        from_artefact_id,
-        to_artefact_id,
-        relationship_type,
-        fromType: fromArtefact.rows[0].artefact_type,
-        toType: toArtefact.rows[0].artefact_type,
+    // Enqueue side effects via outbox
+    enqueueOutboxEvents([
+      {
+        action: OUTBOX_ACTIONS.EMIT_ANALYSIS_EVENT,
+        entityType: 'relationship',
+        entityId: result.rows[0].id,
+        payload: {
+          domainId: null,
+          eventType: ANALYSIS_EVENT_TYPES.RELATIONSHIP_CREATED,
+          entityId: result.rows[0].id,
+          entityType: 'relationship',
+          projectId: project_id,
+          payload: {
+            from_artefact_id,
+            to_artefact_id,
+            relationship_type,
+            fromType: fromArtefact.rows[0].artefact_type,
+            toType: toArtefact.rows[0].artefact_type,
+          },
+          actor: user?.user || null,
+        },
       },
-      actor: user?.user || null,
-    }).catch(err => console.error('Failed to emit relationship created event:', err));
-
-    // Fire-and-forget: sync to knowledge graph
-    syncAnalysisRelationship(result.rows[0])
-      .catch(err => console.error('Failed to sync relationship to graph:', err));
+      {
+        action: OUTBOX_ACTIONS.SYNC_RELATIONSHIP_TO_GRAPH,
+        entityType: 'relationship',
+        entityId: result.rows[0].id,
+        payload: result.rows[0],
+      },
+    ]).catch(err => console.error('[Outbox] Failed to enqueue:', err.message));
 
     return res.status(201).json({
       id: result.rows[0].id,
@@ -231,25 +240,38 @@ async function handleDelete(req, res) {
       return res.status(404).json({ error: 'Relationship not found' });
     }
 
-    // Fire-and-forget: emit event
-    emitAnalysisEvent({
-      domainId: null,
-      eventType: ANALYSIS_EVENT_TYPES.RELATIONSHIP_DELETED,
-      entityId: id,
-      entityType: 'relationship',
-      projectId: rel.project_id,
-      payload: {
-        from_artefact_id: rel.from_artefact_id,
-        to_artefact_id: rel.to_artefact_id,
-        relationship_type: rel.relationship_type,
+    // Enqueue side effects via outbox
+    enqueueOutboxEvents([
+      {
+        action: OUTBOX_ACTIONS.EMIT_ANALYSIS_EVENT,
+        entityType: 'relationship',
+        entityId: id,
+        payload: {
+          domainId: null,
+          eventType: ANALYSIS_EVENT_TYPES.RELATIONSHIP_DELETED,
+          entityId: id,
+          entityType: 'relationship',
+          projectId: rel.project_id,
+          payload: {
+            from_artefact_id: rel.from_artefact_id,
+            to_artefact_id: rel.to_artefact_id,
+            relationship_type: rel.relationship_type,
+          },
+          previousState: rel,
+          actor: user?.user || null,
+        },
       },
-      previousState: rel,
-      actor: user?.user || null,
-    }).catch(err => console.error('Failed to emit relationship deleted event:', err));
-
-    // Fire-and-forget: remove from knowledge graph
-    removeAnalysisRelationshipFromGraph(id, rel.from_artefact_id, rel.to_artefact_id)
-      .catch(err => console.error('Failed to remove relationship from graph:', err));
+      {
+        action: OUTBOX_ACTIONS.REMOVE_GRAPH_RELATIONSHIP,
+        entityType: 'relationship',
+        entityId: id,
+        payload: {
+          relId: id,
+          fromId: rel.from_artefact_id,
+          toId: rel.to_artefact_id,
+        },
+      },
+    ]).catch(err => console.error('[Outbox] Failed to enqueue:', err.message));
 
     return res.status(200).json({ success: true, id });
   } catch (error) {

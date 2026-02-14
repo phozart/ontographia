@@ -3,8 +3,8 @@
 
 import { productIdeaRepository } from '../../../../../lib/repositories/ProductIdeaRepository';
 import { errorResponse } from '../../../../../lib/api/errorResponse';
-import { emitEvent, EVENT_TYPES } from '../../../../../lib/services/innovationEvents';
-import { syncProductIdeaToGraph } from '../../../../../lib/services/blueprintGraphSync';
+import { EVENT_TYPES } from '../../../../../lib/services/innovationEvents';
+import { enqueueOutboxEvents, OUTBOX_ACTIONS } from '../../../../../lib/services/outboxService';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -20,6 +20,7 @@ export default async function handler(req, res) {
   }
 
   try {
+    await productIdeaRepository.ensureTableExists();
     const productIdea = await productIdeaRepository.findById(id);
     if (!productIdea) {
       return res.status(404).json({ error: 'Product idea not found' });
@@ -32,29 +33,38 @@ export default async function handler(req, res) {
       conditions,
     });
 
-    // Emit event (fire-and-forget)
-    emitEvent({
-      domainId: productIdea.domain_id,
-      eventType: EVENT_TYPES.STAGE_ADVANCED,
-      entityId: id,
-      entityType: 'product_idea',
-      payload: {
-        product_idea_id: productIdea.product_idea_id,
-        name: productIdea.name,
-        from_stage: productIdea.stage,
-        to_stage: updated.stage,
-        decision: decision || 'approved',
-        notes: notes || null,
+    // Enqueue side effects via outbox
+    enqueueOutboxEvents([
+      {
+        action: OUTBOX_ACTIONS.EMIT_INNOVATION_EVENT,
+        entityType: 'product_idea',
+        entityId: id,
+        payload: {
+          domainId: productIdea.domain_id,
+          eventType: EVENT_TYPES.STAGE_ADVANCED,
+          entityId: id,
+          entityType: 'product_idea',
+          payload: {
+            product_idea_id: productIdea.product_idea_id,
+            name: productIdea.name,
+            from_stage: productIdea.stage,
+            to_stage: updated.stage,
+            decision: decision || 'approved',
+            notes: notes || null,
+          },
+          previousState: {
+            stage: productIdea.stage,
+          },
+          actor: decisionBy || 'system',
+        },
       },
-      previousState: {
-        stage: productIdea.stage,
+      {
+        action: OUTBOX_ACTIONS.SYNC_PRODUCT_IDEA_TO_GRAPH,
+        entityType: 'product_idea',
+        entityId: id,
+        payload: updated,
       },
-      actor: decisionBy || 'system',
-    }).catch(err => console.error('[Events] Failed to emit product idea StageAdvanced:', err.message));
-
-    // Sync updated stage to graph (fire-and-forget)
-    syncProductIdeaToGraph(updated)
-      .catch(err => console.error('[GraphSync] Failed to sync product idea:', err.message));
+    ]).catch(err => console.error('[Outbox] Failed to enqueue:', err.message));
 
     return res.status(200).json(updated);
   } catch (error) {

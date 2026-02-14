@@ -574,11 +574,12 @@ export function BlueprintProvider({ children }) {
         headers: { 'Content-Type': 'application/json', ...authHeaders },
         body: JSON.stringify({ decision, notes, conditions, targetStage, forceAdvance }),
       });
-      const data = await res.json();
       if (!res.ok) {
-        setError(data.error || 'Gate decision failed');
+        const errData = await res.json().catch(() => ({}));
+        setError(errData.error || 'Gate decision failed');
         return null;
       }
+      const data = await res.json();
       // Refresh initiatives to get updated state
       await fetchInitiatives();
       return data;

@@ -3,8 +3,8 @@
 
 import { productIdeaRepository } from '../../../../lib/repositories/ProductIdeaRepository';
 import { errorResponse } from '../../../../lib/api/errorResponse';
-import { emitEvent, EVENT_TYPES } from '../../../../lib/services/innovationEvents';
-import { syncProductIdeaToGraph, removeGraphNode } from '../../../../lib/services/blueprintGraphSync';
+import { EVENT_TYPES } from '../../../../lib/services/innovationEvents';
+import { enqueueOutboxEvents, OUTBOX_ACTIONS } from '../../../../lib/services/outboxService';
 
 export default async function handler(req, res) {
   const { method } = req;
@@ -15,6 +15,8 @@ export default async function handler(req, res) {
   }
 
   try {
+    await productIdeaRepository.ensureTableExists();
+
     switch (method) {
       case 'GET':
         return handleGet(req, res, id);
@@ -63,26 +65,35 @@ async function handlePut(req, res, id) {
 
   const updated = await productIdeaRepository.update(id, req.body);
 
-  // Emit event (fire-and-forget)
-  emitEvent({
-    domainId: productIdea.domain_id,
-    eventType: EVENT_TYPES.PRODUCT_IDEA_UPDATED,
-    entityId: id,
-    entityType: 'product_idea',
-    payload: {
-      product_idea_id: productIdea.product_idea_id,
-      fields_changed: Object.keys(req.body).filter(k => req.body[k] !== undefined),
-      name: updated.name,
+  // Enqueue side effects via outbox
+  enqueueOutboxEvents([
+    {
+      action: OUTBOX_ACTIONS.EMIT_INNOVATION_EVENT,
+      entityType: 'product_idea',
+      entityId: id,
+      payload: {
+        domainId: productIdea.domain_id,
+        eventType: EVENT_TYPES.PRODUCT_IDEA_UPDATED,
+        entityId: id,
+        entityType: 'product_idea',
+        payload: {
+          product_idea_id: productIdea.product_idea_id,
+          fields_changed: Object.keys(req.body).filter(k => req.body[k] !== undefined),
+          name: updated.name,
+        },
+        previousState: {
+          name: productIdea.name,
+          stage: productIdea.stage,
+        },
+      },
     },
-    previousState: {
-      name: productIdea.name,
-      stage: productIdea.stage,
+    {
+      action: OUTBOX_ACTIONS.SYNC_PRODUCT_IDEA_TO_GRAPH,
+      entityType: 'product_idea',
+      entityId: id,
+      payload: updated,
     },
-  }).catch(err => console.error('[Events] Failed to emit ProductIdeaUpdated:', err.message));
-
-  // Sync to knowledge graph (fire-and-forget)
-  syncProductIdeaToGraph(updated)
-    .catch(err => console.error('[GraphSync] Failed to sync product idea:', err.message));
+  ]).catch(err => console.error('[Outbox] Failed to enqueue:', err.message));
 
   return res.status(200).json(updated);
 }
@@ -99,22 +110,31 @@ async function handleDelete(req, res, id) {
 
   await productIdeaRepository.delete(id);
 
-  // Emit event (fire-and-forget)
-  emitEvent({
-    domainId: productIdea.domain_id,
-    eventType: EVENT_TYPES.PRODUCT_IDEA_UPDATED,
-    entityId: id,
-    entityType: 'product_idea',
-    payload: {
-      product_idea_id: productIdea.product_idea_id,
-      name: productIdea.name,
-      action: 'deleted',
+  // Enqueue side effects via outbox
+  enqueueOutboxEvents([
+    {
+      action: OUTBOX_ACTIONS.EMIT_INNOVATION_EVENT,
+      entityType: 'product_idea',
+      entityId: id,
+      payload: {
+        domainId: productIdea.domain_id,
+        eventType: EVENT_TYPES.PRODUCT_IDEA_UPDATED,
+        entityId: id,
+        entityType: 'product_idea',
+        payload: {
+          product_idea_id: productIdea.product_idea_id,
+          name: productIdea.name,
+          action: 'deleted',
+        },
+      },
     },
-  }).catch(err => console.error('[Events] Failed to emit ProductIdeaDeleted:', err.message));
-
-  // Remove from knowledge graph (fire-and-forget)
-  removeGraphNode(id)
-    .catch(err => console.error('[GraphSync] Failed to remove product idea graph node:', err.message));
+    {
+      action: OUTBOX_ACTIONS.REMOVE_GRAPH_NODE,
+      entityType: 'product_idea',
+      entityId: id,
+      payload: { nodeId: id },
+    },
+  ]).catch(err => console.error('[Outbox] Failed to enqueue:', err.message));
 
   return res.status(200).json({ success: true, id });
 }

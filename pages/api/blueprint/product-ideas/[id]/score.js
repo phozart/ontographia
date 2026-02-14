@@ -3,7 +3,8 @@
 
 import { productIdeaRepository } from '../../../../../lib/repositories/ProductIdeaRepository';
 import { errorResponse } from '../../../../../lib/api/errorResponse';
-import { emitEvent, EVENT_TYPES } from '../../../../../lib/services/innovationEvents';
+import { EVENT_TYPES } from '../../../../../lib/services/innovationEvents';
+import { enqueueOutboxEvent, OUTBOX_ACTIONS } from '../../../../../lib/services/outboxService';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -23,6 +24,7 @@ export default async function handler(req, res) {
   }
 
   try {
+    await productIdeaRepository.ensureTableExists();
     const productIdea = await productIdeaRepository.findById(id);
     if (!productIdea) {
       return res.status(404).json({ error: 'Product idea not found' });
@@ -30,23 +32,28 @@ export default async function handler(req, res) {
 
     const updated = await productIdeaRepository.updateScoring(id, scores);
 
-    // Emit event (fire-and-forget)
-    emitEvent({
-      domainId: productIdea.domain_id,
-      eventType: EVENT_TYPES.SCORE_UPDATED,
-      entityId: id,
+    // Enqueue side effect via outbox
+    enqueueOutboxEvent({
+      action: OUTBOX_ACTIONS.EMIT_INNOVATION_EVENT,
       entityType: 'product_idea',
+      entityId: id,
       payload: {
-        product_idea_id: productIdea.product_idea_id,
-        name: productIdea.name,
-        initiative_id: productIdea.initiative_id,
-        scores_updated: Object.keys(scores),
+        domainId: productIdea.domain_id,
+        eventType: EVENT_TYPES.SCORE_UPDATED,
+        entityId: id,
+        entityType: 'product_idea',
+        payload: {
+          product_idea_id: productIdea.product_idea_id,
+          name: productIdea.name,
+          initiative_id: productIdea.initiative_id,
+          scores_updated: Object.keys(scores),
+        },
+        previousState: {
+          assess_data: productIdea.assess_data,
+        },
+        actor: null,
       },
-      previousState: {
-        assess_data: productIdea.assess_data,
-      },
-      actor: null, // score API doesn't currently extract user
-    }).catch(err => console.error('[Events] Failed to emit ScoreUpdated:', err.message));
+    }).catch(err => console.error('[Outbox] Failed to enqueue:', err.message));
 
     return res.status(200).json(updated);
   } catch (error) {

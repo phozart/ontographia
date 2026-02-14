@@ -5,8 +5,8 @@ import { query } from '../../../lib/pg';
 import { errorResponse } from '../../../lib/api/errorResponse';
 import { getUserFromRequest } from '../../../lib/projectAccess';
 import { ARTEFACT_PREFIX_MAP, ANALYSIS_ARTEFACT_TYPES } from '../../../lib/analysis-types';
-import { emitAnalysisEvent, ANALYSIS_EVENT_TYPES } from '../../../lib/services/analysisEvents';
-import { syncArtefactToGraph } from '../../../lib/services/analysisGraphSync';
+import { ANALYSIS_EVENT_TYPES } from '../../../lib/services/analysisEvents';
+import { enqueueOutboxEvents, OUTBOX_ACTIONS } from '../../../lib/services/outboxService';
 
 // GET - List artefacts for a project (optionally filtered by type)
 // POST - Create a new artefact
@@ -104,20 +104,29 @@ async function handlePost(req, res) {
       [name, description, artefact_type, status, priority, project_id, domain_id, JSON.stringify(metadata), number, prefix, parent_id || null, module, user?.user || null]
     );
 
-    // Fire-and-forget: emit event
-    emitAnalysisEvent({
-      domainId: domain_id,
-      eventType: ANALYSIS_EVENT_TYPES.ARTEFACT_CREATED,
-      entityId: result.rows[0].id,
-      entityType: 'artefact',
-      projectId: project_id,
-      payload: { name, artefactType: artefact_type, status },
-      actor: user?.user || null,
-    }).catch(err => console.error('Failed to emit artefact created event:', err));
-
-    // Fire-and-forget: sync to knowledge graph
-    syncArtefactToGraph(result.rows[0])
-      .catch(err => console.error('Failed to sync artefact to graph:', err));
+    // Enqueue side effects via outbox
+    enqueueOutboxEvents([
+      {
+        action: OUTBOX_ACTIONS.EMIT_ANALYSIS_EVENT,
+        entityType: 'artefact',
+        entityId: result.rows[0].id,
+        payload: {
+          domainId: domain_id,
+          eventType: ANALYSIS_EVENT_TYPES.ARTEFACT_CREATED,
+          entityId: result.rows[0].id,
+          entityType: 'artefact',
+          projectId: project_id,
+          payload: { name, artefactType: artefact_type, status },
+          actor: user?.user || null,
+        },
+      },
+      {
+        action: OUTBOX_ACTIONS.SYNC_ARTEFACT_TO_GRAPH,
+        entityType: 'artefact',
+        entityId: result.rows[0].id,
+        payload: result.rows[0],
+      },
+    ]).catch(err => console.error('[Outbox] Failed to enqueue:', err.message));
 
     return res.status(201).json(result.rows[0]);
   } catch (error) {

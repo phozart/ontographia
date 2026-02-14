@@ -5,8 +5,8 @@ import { query } from '../../../../lib/pg';
 import { errorResponse } from '../../../../lib/api/errorResponse';
 import { getUserFromRequest } from '../../../../lib/projectAccess';
 import { isValidStatusTransition } from '../../../../lib/analysis-rules';
-import { emitAnalysisEvent, ANALYSIS_EVENT_TYPES } from '../../../../lib/services/analysisEvents';
-import { syncArtefactToGraph, removeArtefactFromGraph } from '../../../../lib/services/analysisGraphSync';
+import { ANALYSIS_EVENT_TYPES } from '../../../../lib/services/analysisEvents';
+import { enqueueOutboxEvents, OUTBOX_ACTIONS } from '../../../../lib/services/outboxService';
 
 // GET - Get single artefact
 // PUT - Update artefact
@@ -147,20 +147,29 @@ async function handlePut(req, res, id) {
       return res.status(404).json({ error: 'Artefact not found' });
     }
 
-    // Fire-and-forget: emit event
-    emitAnalysisEvent({
-      domainId: result.rows[0].domain_id,
-      eventType: ANALYSIS_EVENT_TYPES.ARTEFACT_UPDATED,
-      entityId: id,
-      entityType: 'artefact',
-      projectId: result.rows[0].project_id,
-      payload: { name, status, priority, parent_id, sort_order },
-      actor: user?.user || null,
-    }).catch(err => console.error('Failed to emit artefact updated event:', err));
-
-    // Fire-and-forget: sync to knowledge graph
-    syncArtefactToGraph(result.rows[0])
-      .catch(err => console.error('Failed to sync artefact to graph:', err));
+    // Enqueue side effects via outbox
+    enqueueOutboxEvents([
+      {
+        action: OUTBOX_ACTIONS.EMIT_ANALYSIS_EVENT,
+        entityType: 'artefact',
+        entityId: id,
+        payload: {
+          domainId: result.rows[0].domain_id,
+          eventType: ANALYSIS_EVENT_TYPES.ARTEFACT_UPDATED,
+          entityId: id,
+          entityType: 'artefact',
+          projectId: result.rows[0].project_id,
+          payload: { name, status, priority, parent_id, sort_order },
+          actor: user?.user || null,
+        },
+      },
+      {
+        action: OUTBOX_ACTIONS.SYNC_ARTEFACT_TO_GRAPH,
+        entityType: 'artefact',
+        entityId: id,
+        payload: result.rows[0],
+      },
+    ]).catch(err => console.error('[Outbox] Failed to enqueue:', err.message));
 
     return res.status(200).json(result.rows[0]);
   } catch (error) {
@@ -195,21 +204,30 @@ async function handleDelete(req, res, id) {
       return res.status(404).json({ error: 'Artefact not found' });
     }
 
-    // Fire-and-forget: emit event
-    emitAnalysisEvent({
-      domainId: artefact.domain_id,
-      eventType: ANALYSIS_EVENT_TYPES.ARTEFACT_DELETED,
-      entityId: id,
-      entityType: 'artefact',
-      projectId: artefact.project_id,
-      payload: { name: artefact.name, artefactType: artefact.artefact_type },
-      previousState: artefact,
-      actor: user?.user || null,
-    }).catch(err => console.error('Failed to emit artefact deleted event:', err));
-
-    // Fire-and-forget: remove from knowledge graph
-    removeArtefactFromGraph(id)
-      .catch(err => console.error('Failed to remove artefact from graph:', err));
+    // Enqueue side effects via outbox
+    enqueueOutboxEvents([
+      {
+        action: OUTBOX_ACTIONS.EMIT_ANALYSIS_EVENT,
+        entityType: 'artefact',
+        entityId: id,
+        payload: {
+          domainId: artefact.domain_id,
+          eventType: ANALYSIS_EVENT_TYPES.ARTEFACT_DELETED,
+          entityId: id,
+          entityType: 'artefact',
+          projectId: artefact.project_id,
+          payload: { name: artefact.name, artefactType: artefact.artefact_type },
+          previousState: artefact,
+          actor: user?.user || null,
+        },
+      },
+      {
+        action: OUTBOX_ACTIONS.REMOVE_GRAPH_NODE,
+        entityType: 'artefact',
+        entityId: id,
+        payload: { nodeId: id },
+      },
+    ]).catch(err => console.error('[Outbox] Failed to enqueue:', err.message));
 
     return res.status(200).json({ success: true, id });
   } catch (error) {

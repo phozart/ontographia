@@ -45,7 +45,7 @@ async function handleGet(req, res, id) {
 
     return res.status(200).json(normalizeDataProduct(result.rows[0]));
   } catch (err) {
-    return errorResponse(res, err, 'Failed to fetch data product');
+    return errorResponse(res, 500, 'Failed to fetch data product', err);
   }
 }
 
@@ -111,7 +111,7 @@ async function handlePut(req, res, id, user) {
 
     return res.status(200).json(normalizeDataProduct(result.rows[0]));
   } catch (err) {
-    return errorResponse(res, err, 'Failed to update data product');
+    return errorResponse(res, 500, 'Failed to update data product', err);
   }
 }
 
@@ -141,7 +141,7 @@ async function handleDelete(req, res, id) {
 
     return res.status(200).json({ success: true });
   } catch (err) {
-    return errorResponse(res, err, 'Failed to delete data product');
+    return errorResponse(res, 500, 'Failed to delete data product', err);
   }
 }
 

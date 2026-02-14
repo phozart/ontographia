@@ -3,7 +3,7 @@
 
 import { useAuth } from '../../../components/AuthContext';
 import { useDomains } from '../../../components/DomainContext';
-import { getAllSpaces, getSpacesByCategory } from '../../../lib/spaceRegistry';
+import { getSpacesByCategory } from '../../../lib/spaceRegistry';
 import { buildSpaceUrl } from '../../../lib/urlUtils';
 import Link from 'next/link';
 import LoginIcon from '@mui/icons-material/Login';
@@ -122,7 +122,6 @@ export default function SpacesOverview() {
   const { user } = useAuth();
   const { activeDomain, activeDomainObj } = useDomains();
   const categories = getSpacesByCategory();
-  const allSpaces = getAllSpaces();
 
   if (!user) {
     return (
@@ -164,8 +163,8 @@ export default function SpacesOverview() {
         </p>
       </header>
 
-      {Object.entries(categories).map(([category, spaceCodes]) => (
-        <section key={category} style={{ marginBottom: '32px' }}>
+      {categories.map(({ category, spaces }) => (
+        <section key={category.id} style={{ marginBottom: '32px' }}>
           <h2 style={{
             fontSize: '14px',
             fontWeight: 600,
@@ -176,17 +175,21 @@ export default function SpacesOverview() {
             paddingBottom: '8px',
             borderBottom: '1px solid var(--border)',
           }}>
-            {category}
+            {category.name}
           </h2>
+          {category.description && (
+            <p style={{ margin: '-8px 0 16px', fontSize: '13px', color: 'var(--text-muted)' }}>
+              {category.description}
+            </p>
+          )}
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
             gap: '16px',
           }}>
-            {spaceCodes.map(code => {
-              const space = allSpaces.find(s => s.code === code);
-              return space ? <SpaceCard key={code} space={space} /> : null;
-            })}
+            {spaces.map(space => (
+              <SpaceCard key={space.code} space={space} />
+            ))}
           </div>
         </section>
       ))}

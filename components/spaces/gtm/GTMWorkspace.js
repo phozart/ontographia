@@ -53,7 +53,7 @@ const GTM_DASHBOARD_CONFIG = {
   subtitle: 'Go-to-Market plans across this domain',
   projectLabel: 'GTM Plans',
   projectLabelSingular: 'GTM Plan',
-  emptyIcon: '&#128640;',
+  emptyIcon: '\u{1F680}',
   emptyTitle: 'No GTM Plans Yet',
   emptyMessage: 'Create a GTM Plan to start planning your go-to-market strategy.',
   displayIdField: 'plan_id',
@@ -476,18 +476,18 @@ function GTMWorkspaceContent({ view }) {
   const dashboardStats = useMemo(() => {
     if (!domainStats) {
       return [
-        { label: 'Plans', value: domainPlans.length, icon: '&#128640;' },
+        { label: 'Plans', value: domainPlans.length, icon: '\u{1F680}' },
       ];
     }
 
     const byStage = domainStats.byStage || {};
 
     return [
-      { label: 'Total Plans', value: domainStats.total || domainPlans.length, icon: '&#128640;' },
-      { label: 'Active', value: byStage.active || 0, icon: '&#9889;' },
-      { label: 'Planning', value: byStage.planning || 0, icon: '&#128221;' },
-      { label: 'Ready', value: byStage.ready || 0, icon: '&#9989;' },
-      { label: 'Complete', value: byStage.complete || 0, icon: '&#127942;' },
+      { label: 'Total Plans', value: domainStats.total || domainPlans.length, icon: '\u{1F680}' },
+      { label: 'Active', value: byStage.active || 0, icon: '\u26A1' },
+      { label: 'Planning', value: byStage.planning || 0, icon: '\u{1F4DD}' },
+      { label: 'Ready', value: byStage.ready || 0, icon: '\u2705' },
+      { label: 'Complete', value: byStage.complete || 0, icon: '\u{1F3C6}' },
     ];
   }, [domainStats, domainPlans.length]);
 
@@ -535,13 +535,13 @@ function GTMWorkspaceContent({ view }) {
 
   // View tabs for studio nav bar
   const views = [
-    { id: 'plan', name: 'Overview', icon: '&#128203;' },
-    { id: 'strategy', name: 'Strategy', icon: '&#127919;' },
-    { id: 'messaging', name: 'Messaging', icon: '&#128172;' },
-    { id: 'launch', name: 'Launch', icon: '&#128640;' },
-    { id: 'campaigns', name: 'Campaigns', icon: '&#128227;' },
-    { id: 'enablement', name: 'Enablement', icon: '&#128218;' },
-    { id: 'metrics', name: 'Metrics', icon: '&#128202;' }
+    { id: 'plan', name: 'Overview', icon: '\u{1F4CB}' },
+    { id: 'strategy', name: 'Strategy', icon: '\u{1F3AF}' },
+    { id: 'messaging', name: 'Messaging', icon: '\u{1F4AC}' },
+    { id: 'launch', name: 'Launch', icon: '\u{1F680}' },
+    { id: 'campaigns', name: 'Campaigns', icon: '\u{1F4E3}' },
+    { id: 'enablement', name: 'Enablement', icon: '\u{1F4DA}' },
+    { id: 'metrics', name: 'Metrics', icon: '\u{1F4CA}' }
   ];
 
   if (loading) {

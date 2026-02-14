@@ -437,7 +437,7 @@ export function EnterpriseProvider({ children }) {
       });
       if (res.ok) {
         const data = await res.json();
-        setGovernance(data.items || data || []);
+        setGovernance(data.governance || data.items || (Array.isArray(data) ? data : []));
       }
     } catch (err) {
       console.error('Error fetching governance:', err);
@@ -503,7 +503,7 @@ export function EnterpriseProvider({ children }) {
 
       if (unitsRes.ok) {
         const data = await unitsRes.json();
-        setOrgUnits(data.units || data || []);
+        setOrgUnits(data.orgUnits || data.units || (Array.isArray(data) ? data : []));
       }
 
       if (rolesRes.ok) {

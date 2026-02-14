@@ -378,21 +378,19 @@ export default function SystemHeader({ theme, onThemeChange }) {
 
           {studioOpen && (
             <div className="studio-dropdown" role="menu">
-              {Object.entries(categories).map(([category, codes]) => {
-                const validCodes = codes.filter(code => SPACES[code]);
-                if (validCodes.length === 0) return null;
+              {categories.map(({ category, spaces }) => {
+                if (spaces.length === 0) return null;
 
                 return (
-                  <div key={category} className="studio-category-column">
-                    <span className="studio-category-label">{category}</span>
-                    {validCodes.map(code => {
-                      const space = SPACES[code];
-                      const isActive = currentStudio?.code === code;
+                  <div key={category.id} className="studio-category-column">
+                    <span className="studio-category-label">{category.name}</span>
+                    {spaces.map(space => {
+                      const isActive = currentStudio?.code === space.code;
                       return (
                         <button
-                          key={code}
+                          key={space.code}
                           className={`studio-option ${isActive ? 'active' : ''}`}
-                          onClick={() => navigateToStudio(code)}
+                          onClick={() => navigateToStudio(space.code)}
                           role="menuitem"
                         >
                           <span>{space.name}</span>

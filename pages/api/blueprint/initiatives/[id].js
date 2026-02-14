@@ -5,8 +5,8 @@
 import { blueprintRepository } from '../../../../lib/repositories';
 import { getUserFromRequest, checkDomainAccess } from '../../../../lib/projectAccess';
 import { BPS_HORIZONS } from '../../../../lib/blueprint-types';
-import { emitEvent, EVENT_TYPES } from '../../../../lib/services/innovationEvents';
-import { syncInitiativeToGraph, removeGraphNode } from '../../../../lib/services/blueprintGraphSync';
+import { EVENT_TYPES } from '../../../../lib/services/innovationEvents';
+import { enqueueOutboxEvents, OUTBOX_ACTIONS } from '../../../../lib/services/outboxService';
 
 export default async function handler(req, res) {
   const { user } = getUserFromRequest(req);
@@ -102,28 +102,37 @@ export default async function handler(req, res) {
         return res.status(404).json({ error: 'Initiative not found' });
       }
 
-      // Emit event (fire-and-forget)
-      emitEvent({
-        domainId: existing.domain_id,
-        eventType: EVENT_TYPES.INITIATIVE_UPDATED,
-        entityId: id,
-        entityType: 'initiative',
-        payload: {
-          fields_changed: Object.keys(req.body).filter(k => req.body[k] !== undefined),
-          name: updated.name,
-          stage: updated.stage,
+      // Enqueue side effects via outbox
+      enqueueOutboxEvents([
+        {
+          action: OUTBOX_ACTIONS.EMIT_INNOVATION_EVENT,
+          entityType: 'initiative',
+          entityId: id,
+          payload: {
+            domainId: existing.domain_id,
+            eventType: EVENT_TYPES.INITIATIVE_UPDATED,
+            entityId: id,
+            entityType: 'initiative',
+            payload: {
+              fields_changed: Object.keys(req.body).filter(k => req.body[k] !== undefined),
+              name: updated.name,
+              stage: updated.stage,
+            },
+            previousState: {
+              name: existing.name,
+              horizon: existing.horizon,
+              stage: existing.stage,
+            },
+            actor: user,
+          },
         },
-        previousState: {
-          name: existing.name,
-          horizon: existing.horizon,
-          stage: existing.stage,
+        {
+          action: OUTBOX_ACTIONS.SYNC_INITIATIVE_TO_GRAPH,
+          entityType: 'initiative',
+          entityId: id,
+          payload: updated,
         },
-        actor: user,
-      }).catch(err => console.error('[Events] Failed to emit InitiativeUpdated:', err.message));
-
-      // Sync to knowledge graph (fire-and-forget)
-      syncInitiativeToGraph(updated)
-        .catch(err => console.error('[GraphSync] Failed to sync initiative:', err.message));
+      ]).catch(err => console.error('[Outbox] Failed to enqueue:', err.message));
 
       return res.status(200).json(updated);
     } catch (err) {
@@ -153,23 +162,32 @@ export default async function handler(req, res) {
         return res.status(404).json({ error: 'Initiative not found' });
       }
 
-      // Emit event (fire-and-forget)
-      emitEvent({
-        domainId: existing.domain_id,
-        eventType: EVENT_TYPES.INITIATIVE_DELETED,
-        entityId: id,
-        entityType: 'initiative',
-        payload: {
-          initiative_id: existing.initiative_id,
-          name: existing.name,
-          stage: existing.stage,
+      // Enqueue side effects via outbox
+      enqueueOutboxEvents([
+        {
+          action: OUTBOX_ACTIONS.EMIT_INNOVATION_EVENT,
+          entityType: 'initiative',
+          entityId: id,
+          payload: {
+            domainId: existing.domain_id,
+            eventType: EVENT_TYPES.INITIATIVE_DELETED,
+            entityId: id,
+            entityType: 'initiative',
+            payload: {
+              initiative_id: existing.initiative_id,
+              name: existing.name,
+              stage: existing.stage,
+            },
+            actor: user,
+          },
         },
-        actor: user,
-      }).catch(err => console.error('[Events] Failed to emit InitiativeDeleted:', err.message));
-
-      // Remove from knowledge graph (fire-and-forget)
-      removeGraphNode(id)
-        .catch(err => console.error('[GraphSync] Failed to remove graph node:', err.message));
+        {
+          action: OUTBOX_ACTIONS.REMOVE_GRAPH_NODE,
+          entityType: 'initiative',
+          entityId: id,
+          payload: { nodeId: id },
+        },
+      ]).catch(err => console.error('[Outbox] Failed to enqueue:', err.message));
 
       return res.status(204).end();
     } catch (err) {

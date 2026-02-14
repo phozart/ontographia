@@ -4,6 +4,44 @@
 import { query } from '../../../lib/pg';
 import { getUserFromRequest } from '../../../lib/projectAccess';
 
+async function ensureTablesExist() {
+  try {
+    await query(`
+      CREATE TABLE IF NOT EXISTS graph_relationship_types (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        label TEXT,
+        description TEXT,
+        color TEXT DEFAULT '#6b7280',
+        domain TEXT DEFAULT 'core',
+        properties JSONB DEFAULT '{}',
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      )
+    `);
+    await query(`
+      CREATE TABLE IF NOT EXISTS graph_relationships (
+        id TEXT PRIMARY KEY,
+        type_id TEXT REFERENCES graph_relationship_types(id) ON DELETE SET NULL,
+        source_id TEXT NOT NULL,
+        target_id TEXT NOT NULL,
+        name TEXT,
+        description TEXT,
+        weight REAL,
+        properties JSONB DEFAULT '{}',
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      )
+    `);
+    await query(`CREATE INDEX IF NOT EXISTS idx_graph_rels_source ON graph_relationships(source_id)`);
+    await query(`CREATE INDEX IF NOT EXISTS idx_graph_rels_target ON graph_relationships(target_id)`);
+  } catch (err) {
+    if (!err.message.includes('already exists')) {
+      console.error('[relationships] Error ensuring tables:', err.message);
+    }
+  }
+}
+
 export default async function handler(req, res) {
   // Authentication required for write operations
   const { user, role } = getUserFromRequest(req);
@@ -12,6 +50,8 @@ export default async function handler(req, res) {
   }
 
   try {
+    await ensureTablesExist();
+
     if (req.method === 'GET') {
       const { nodeId, domain, domainName } = req.query;
 

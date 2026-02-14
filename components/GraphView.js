@@ -501,9 +501,9 @@ export default function GraphView({
           'line-opacity': 1,
         },
       },
-      // Edges connected to selected nodes - subtle highlight
+      // Selected edges highlight
       {
-        selector: 'node:selected ~ edge',
+        selector: 'edge:selected',
         style: {
           'line-opacity': 1,
           'line-color': themeDark ? '#9ca3af' : '#94a3b8',

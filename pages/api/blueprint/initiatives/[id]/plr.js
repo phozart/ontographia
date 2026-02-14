@@ -193,7 +193,7 @@ export default async function handler(req, res) {
         plr: plrUpdate,
       });
     } catch (err) {
-      return errorResponse(res, err, 'Failed to save PLR data');
+      return errorResponse(res, 500, 'Failed to save PLR data', err);
     }
   }
 

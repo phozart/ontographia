@@ -4,13 +4,15 @@
 import { productIdeaRepository } from '../../../../lib/repositories/ProductIdeaRepository';
 import { blueprintRepository } from '../../../../lib/repositories/BlueprintRepository';
 import { errorResponse } from '../../../../lib/api/errorResponse';
-import { emitEvent, EVENT_TYPES } from '../../../../lib/services/innovationEvents';
-import { syncProductIdeaToGraph } from '../../../../lib/services/blueprintGraphSync';
+import { EVENT_TYPES } from '../../../../lib/services/innovationEvents';
+import { enqueueOutboxEvents, OUTBOX_ACTIONS } from '../../../../lib/services/outboxService';
 
 export default async function handler(req, res) {
   const { method } = req;
 
   try {
+    await productIdeaRepository.ensureTableExists();
+
     switch (method) {
       case 'GET':
         return handleGet(req, res);
@@ -143,25 +145,34 @@ async function handlePost(req, res) {
     createdBy: createdBy || 'system',
   });
 
-  // Emit event (fire-and-forget)
-  emitEvent({
-    domainId,
-    eventType: EVENT_TYPES.PRODUCT_IDEA_CREATED,
-    entityId: productIdea.id,
-    entityType: 'product_idea',
-    payload: {
-      product_idea_id: productIdea.product_idea_id,
-      initiative_id: initiativeId,
-      name: productIdea.name,
-      stage: productIdea.stage,
-      horizon: productIdea.horizon,
+  // Enqueue side effects via outbox
+  enqueueOutboxEvents([
+    {
+      action: OUTBOX_ACTIONS.EMIT_INNOVATION_EVENT,
+      entityType: 'product_idea',
+      entityId: productIdea.id,
+      payload: {
+        domainId,
+        eventType: EVENT_TYPES.PRODUCT_IDEA_CREATED,
+        entityId: productIdea.id,
+        entityType: 'product_idea',
+        payload: {
+          product_idea_id: productIdea.product_idea_id,
+          initiative_id: initiativeId,
+          name: productIdea.name,
+          stage: productIdea.stage,
+          horizon: productIdea.horizon,
+        },
+        actor: createdBy || 'system',
+      },
     },
-    actor: createdBy || 'system',
-  }).catch(err => console.error('[Events] Failed to emit ProductIdeaCreated:', err.message));
-
-  // Sync to knowledge graph (fire-and-forget)
-  syncProductIdeaToGraph(productIdea)
-    .catch(err => console.error('[GraphSync] Failed to sync product idea:', err.message));
+    {
+      action: OUTBOX_ACTIONS.SYNC_PRODUCT_IDEA_TO_GRAPH,
+      entityType: 'product_idea',
+      entityId: productIdea.id,
+      payload: productIdea,
+    },
+  ]).catch(err => console.error('[Outbox] Failed to enqueue:', err.message));
 
   return res.status(201).json(productIdea);
 }

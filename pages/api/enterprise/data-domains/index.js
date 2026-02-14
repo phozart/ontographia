@@ -113,7 +113,7 @@ async function handlePost(req, res, user) {
 
     return res.status(201).json(normalizeDomain(result.rows[0]));
   } catch (err) {
-    return errorResponse(res, err, 'Failed to create data domain');
+    return errorResponse(res, 500, 'Failed to create data domain', err);
   }
 }
 

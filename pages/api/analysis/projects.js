@@ -4,8 +4,8 @@
 import { query } from '../../../lib/pg';
 import { errorResponse } from '../../../lib/api/errorResponse';
 import { getUserFromRequest } from '../../../lib/projectAccess';
-import { emitAnalysisEvent, ANALYSIS_EVENT_TYPES } from '../../../lib/services/analysisEvents';
-import { syncAnalysisProjectToGraph } from '../../../lib/services/analysisGraphSync';
+import { ANALYSIS_EVENT_TYPES } from '../../../lib/services/analysisEvents';
+import { enqueueOutboxEvents, OUTBOX_ACTIONS } from '../../../lib/services/outboxService';
 
 // Auto-initialize tables if they don't exist
 let tablesInitialized = false;
@@ -170,20 +170,29 @@ async function handlePost(req, res) {
       ]
     );
 
-    // Fire-and-forget: emit event
-    emitAnalysisEvent({
-      domainId: domain_id,
-      eventType: ANALYSIS_EVENT_TYPES.PROJECT_CREATED,
-      entityId: result.rows[0].id,
-      entityType: 'project',
-      projectId: result.rows[0].id,
-      payload: { name, status, priority },
-      actor: user?.user || null,
-    }).catch(err => console.error('Failed to emit project created event:', err));
-
-    // Fire-and-forget: sync to knowledge graph
-    syncAnalysisProjectToGraph(result.rows[0])
-      .catch(err => console.error('Failed to sync project to graph:', err));
+    // Enqueue side effects via outbox
+    enqueueOutboxEvents([
+      {
+        action: OUTBOX_ACTIONS.EMIT_ANALYSIS_EVENT,
+        entityType: 'project',
+        entityId: result.rows[0].id,
+        payload: {
+          domainId: domain_id,
+          eventType: ANALYSIS_EVENT_TYPES.PROJECT_CREATED,
+          entityId: result.rows[0].id,
+          entityType: 'project',
+          projectId: result.rows[0].id,
+          payload: { name, status, priority },
+          actor: user?.user || null,
+        },
+      },
+      {
+        action: OUTBOX_ACTIONS.SYNC_PROJECT_TO_GRAPH,
+        entityType: 'project',
+        entityId: result.rows[0].id,
+        payload: result.rows[0],
+      },
+    ]).catch(err => console.error('[Outbox] Failed to enqueue:', err.message));
 
     return res.status(201).json(result.rows[0]);
   } catch (error) {

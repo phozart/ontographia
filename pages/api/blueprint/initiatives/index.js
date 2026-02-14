@@ -5,8 +5,8 @@
 import { blueprintRepository } from '../../../../lib/repositories';
 import { getUserFromRequest, checkDomainAccess } from '../../../../lib/projectAccess';
 import { BPS_STAGES, BPS_HORIZONS } from '../../../../lib/blueprint-types';
-import { emitEvent, EVENT_TYPES } from '../../../../lib/services/innovationEvents';
-import { syncInitiativeToGraph } from '../../../../lib/services/blueprintGraphSync';
+import { EVENT_TYPES } from '../../../../lib/services/innovationEvents';
+import { enqueueOutboxEvents, OUTBOX_ACTIONS } from '../../../../lib/services/outboxService';
 
 export default async function handler(req, res) {
   const { user } = getUserFromRequest(req);
@@ -156,24 +156,33 @@ export default async function handler(req, res) {
         createdBy: user,
       });
 
-      // Emit event (fire-and-forget — don't block the response)
-      emitEvent({
-        domainId,
-        eventType: EVENT_TYPES.INITIATIVE_CREATED,
-        entityId: initiative.id,
-        entityType: 'initiative',
-        payload: {
-          initiative_id: initiative.initiative_id,
-          name: initiative.name,
-          stage: initiative.stage,
-          horizon: initiative.horizon,
+      // Enqueue side effects via outbox (retryable, monitored)
+      enqueueOutboxEvents([
+        {
+          action: OUTBOX_ACTIONS.EMIT_INNOVATION_EVENT,
+          entityType: 'initiative',
+          entityId: initiative.id,
+          payload: {
+            domainId,
+            eventType: EVENT_TYPES.INITIATIVE_CREATED,
+            entityId: initiative.id,
+            entityType: 'initiative',
+            payload: {
+              initiative_id: initiative.initiative_id,
+              name: initiative.name,
+              stage: initiative.stage,
+              horizon: initiative.horizon,
+            },
+            actor: user,
+          },
         },
-        actor: user,
-      }).catch(err => console.error('[Events] Failed to emit InitiativeCreated:', err.message));
-
-      // Sync to knowledge graph (fire-and-forget)
-      syncInitiativeToGraph(initiative)
-        .catch(err => console.error('[GraphSync] Failed to sync initiative:', err.message));
+        {
+          action: OUTBOX_ACTIONS.SYNC_INITIATIVE_TO_GRAPH,
+          entityType: 'initiative',
+          entityId: initiative.id,
+          payload: initiative,
+        },
+      ]).catch(err => console.error('[Outbox] Failed to enqueue:', err.message));
 
       return res.status(201).json(initiative);
     } catch (err) {

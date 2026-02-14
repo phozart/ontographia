@@ -51,6 +51,7 @@ import AboutModal from './AboutModal';
 import { useDomains } from './DomainContext';
 import { LogoMark } from './Logo';
 import { useMenuConfig } from './MenuConfigContext';
+import { STUDIO_CATEGORIES, getSpacesByCategory } from '@/lib/spaceRegistry';
 
 // Icon mapping - convert string names from DB to actual components
 const ICON_MAP = {
@@ -99,9 +100,9 @@ export default function LeftNav({ theme, onThemeChange }) {
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(208);
   const [isResizing, setIsResizing] = useState(false);
-  const [expandedSections, setExpandedSections] = useState(['navigation', 'main-flow', 'thinking-tools', 'infrastructure']);
-  // Section order - default: new consolidated structure (fallback when no config)
-  const [sectionOrder, setSectionOrder] = useState(['navigation', 'main-flow', 'thinking-tools', 'infrastructure']);
+  const [expandedSections, setExpandedSections] = useState(['navigation', 'strategy', 'analysis', 'modeling', 'delivery']);
+  // Section order - default: matches STUDIO_CATEGORIES + navigation (fallback when no config)
+  const [sectionOrder, setSectionOrder] = useState(['navigation', 'strategy', 'analysis', 'modeling', 'delivery', 'personal']);
   const [draggedSection, setDraggedSection] = useState(null);
   const [helpMenuOpen, setHelpMenuOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -296,114 +297,36 @@ export default function LeftNav({ theme, onThemeChange }) {
     },
   ];
 
-  // Knowledge section items (only when logged in)
-  const knowledgeNavItems = [
-    {
-      href: '/app/spaces/ks/navigator',
-      label: 'Knowledge Studio',
-      icon: HubIcon,
-      active: isActive('/app/spaces/ks', '/knowledge-studio', '/graphnavigator', '/semanticmodelbrowser'),
-      roles: ['admin', 'editor', 'viewer'],
-      bypassPagePermissions: true,
-    },
-  ];
+  // Icon mapping for space codes → MUI icons (used by category-driven nav)
+  const SPACE_ICON_MAP = {
+    blueprint: LightbulbIcon,
+    analysis: AssignmentIcon,
+    enterprise: ArchitectureIcon,
+    gtm: RocketLaunchIcon,
+    ba: AssignmentIcon,
+    pdw: LightbulbIcon,
+    pds: AccountTreeIcon,
+    dwd: BuildIcon,
+    als: SchoolIcon,
+    sd: LoopIcon,
+    mindlab: PsychologyIcon,
+    ks: HubIcon,
+    diagram: GridViewIcon,
+  };
 
-  // Reasoning section items (only when logged in)
-  const reasoningNavItems = [
-    {
-      href: '/app/spaces/sd/canvas',
-      label: 'System Dynamics',
-      icon: LoopIcon,
-      active: isActive('/app/spaces/sd', '/app/reasoning/system-dynamics', '/system-dynamics'),
-      roles: ['admin', 'editor', 'viewer'],
-    },
-    {
-      href: '/app/spaces/dwd/landscape',
-      label: 'Work Design',
-      icon: BuildIcon,
-      active: isActive('/app/spaces/dwd', '/app/reasoning/dynamic-work-design', '/dynamic-work-design'),
-      roles: ['admin', 'editor', 'viewer'],
-    },
-    {
-      href: '/app/spaces/als/sessions',
-      label: 'Learning Studio',
-      icon: SchoolIcon,
-      active: isActive('/app/spaces/als', '/learning-studio'),
-      roles: ['admin', 'editor', 'viewer'],
-    },
-  ];
-
-  // Workspace navigation items - Main Flow Studios (only when logged in)
-  const workspaceNavItems = [
-    // Main Flow Studios (new consolidated structure)
-    {
-      href: '/app/spaces/blueprint/funnel',
-      label: 'Blueprint Studio',
-      icon: LightbulbIcon,
-      active: isActive('/app/spaces/blueprint'),
+  // Build nav items from space registry categories
+  const spaceCategories = getSpacesByCategory();
+  const categoryNavItems = {};
+  for (const { category, spaces } of spaceCategories) {
+    categoryNavItems[category.id] = spaces.map(space => ({
+      href: space.customUrl || `/app/spaces/${space.code}/${space.defaultView}`,
+      label: space.name,
+      icon: SPACE_ICON_MAP[space.code] || CategoryIcon,
+      active: isActive(`/app/spaces/${space.code}`),
       roles: ['admin', 'editor', 'viewer'],
       bypassPagePermissions: true,
-    },
-    {
-      href: '/app/spaces/analysis/projects',
-      label: 'Analysis Studio',
-      icon: AssignmentIcon,
-      active: isActive('/app/spaces/analysis'),
-      roles: ['admin', 'editor', 'viewer'],
-      bypassPagePermissions: true,
-    },
-    {
-      href: '/app/spaces/pds/overview',
-      label: 'Project Studio',
-      icon: AccountTreeIcon,
-      active: isActive('/app/spaces/pds', '/app/workspaces/project-design', '/project-design'),
-      roles: ['admin', 'editor', 'viewer'],
-      bypassPagePermissions: true,
-    },
-    {
-      href: '/app/spaces/enterprise/dashboard',
-      label: 'Enterprise Studio',
-      icon: ArchitectureIcon,
-      active: isActive('/app/spaces/enterprise'),
-      roles: ['admin', 'editor', 'viewer'],
-      bypassPagePermissions: true,
-    },
-    {
-      href: '/app/spaces/gtm/plans',
-      label: 'GTM Studio',
-      icon: RocketLaunchIcon,
-      active: isActive('/app/spaces/gtm'),
-      roles: ['admin', 'editor', 'viewer'],
-      bypassPagePermissions: true,
-    },
-    // Legacy studios (accessible but not primary navigation)
-    {
-      href: '/app/spaces/pdw/discovery',
-      label: 'Product Design',
-      icon: LightbulbIcon,
-      active: isActive('/app/spaces/pdw', '/app/workspaces/product-design', '/product-design-workspace'),
-      roles: ['admin', 'editor', 'viewer'],
-    },
-    {
-      href: '/app/spaces/ba/repository',
-      label: 'Requirements Studio',
-      icon: AssignmentIcon,
-      active: isActive('/app/spaces/ba', '/app/workspaces/requirements', '/requirements-studio'),
-      roles: ['admin', 'editor', 'viewer'],
-    },
-  ];
-
-  // Infrastructure navigation items (only when logged in)
-  const infrastructureNavItems = [
-    {
-      href: '/app/spaces/diagram/canvas',
-      label: 'Diagram Studio',
-      icon: GridViewIcon,
-      active: isActive('/app/spaces/diagram', '/diagram-studio-standalone'),
-      roles: ['admin', 'editor', 'viewer'],
-      bypassPagePermissions: true,
-    },
-  ];
+    }));
+  }
 
   // Admin navigation items (Data Management now in Knowledge Studio)
   const adminNavItems = [];
@@ -594,23 +517,24 @@ export default function LeftNav({ theme, onThemeChange }) {
           {/* Dynamic sections rendered from config or fallback */}
           {(() => {
             // Use menuConfig sections if available, otherwise fallback
+            // Build label map from STUDIO_CATEGORIES
+            const categoryLabelMap = { navigation: 'Navigation' };
+            for (const [id, cat] of Object.entries(STUDIO_CATEGORIES)) {
+              categoryLabelMap[id] = cat.name;
+            }
             const sectionsToRender = menuConfig?.sections || sectionOrder.map(key => ({
               key,
-              label: { navigation: 'Navigation', knowledge: 'Knowledge', workspace: 'Workspaces', reasoning: 'Reasoning' }[key] || key,
+              label: categoryLabelMap[key] || key,
               expanded: true,
+              collapsed: STUDIO_CATEGORIES[key]?.collapsed || false,
               items: [],
             }));
 
             // Fallback items mapping for when config items are empty
-            // IMPORTANT: Each section maps to unique items - no duplicates
+            // Maps section keys to nav items — uses spaceRegistry categories + navigation
             const fallbackSectionItems = {
               navigation: mainNavItems,
-              'main-flow': workspaceNavItems.slice(0, 5), // Blueprint, Analysis, Project, Enterprise, GTM
-              'thinking-tools': reasoningNavItems,
-              infrastructure: [
-                ...infrastructureNavItems,
-                ...knowledgeNavItems,
-              ],
+              ...categoryNavItems,
             };
 
             // Build nav items from config with fallback

@@ -6,10 +6,10 @@ import { blueprintRepository } from '../../../../../lib/repositories';
 import { getUserFromRequest, checkDomainAccess } from '../../../../../lib/projectAccess';
 import { BPS_GATE_DECISIONS, canAdvanceStage, getNextStage, isTerminalStage, calculatePLRDate } from '../../../../../lib/blueprint-types';
 import { errorResponse } from '../../../../../lib/api/errorResponse';
-import { emitEvent, EVENT_TYPES } from '../../../../../lib/services/innovationEvents';
-import { updateGraphNodeProperties } from '../../../../../lib/services/blueprintGraphSync';
+import { EVENT_TYPES } from '../../../../../lib/services/innovationEvents';
 import { blueprintToAnalysis, getExistingHandoff } from '../../../../../lib/services/handoffService';
-import { createNotification, checkAndNotifySLA, NOTIFICATION_TYPES } from '../../../../../lib/services/notificationService';
+import { checkAndNotifySLA, NOTIFICATION_TYPES } from '../../../../../lib/services/notificationService';
+import { enqueueOutboxEvents, OUTBOX_ACTIONS } from '../../../../../lib/services/outboxService';
 
 export default async function handler(req, res) {
   const { user } = getUserFromRequest(req);
@@ -153,89 +153,83 @@ export default async function handler(req, res) {
         ? EVENT_TYPES.INITIATIVE_DECLINED
         : EVENT_TYPES.STAGE_ADVANCED;
 
-    emitEvent({
-      domainId: initiative.domain_id,
-      eventType,
-      entityId: id,
-      entityType: 'initiative',
-      payload: {
-        initiative_id: initiative.initiative_id,
-        name: initiative.name,
-        from_stage: initiative.stage,
-        to_stage: updated.stage,
-        decision,
-        notes: notes || null,
-        conditions: conditions || null,
-        force_advance: !!forceAdvance,
+    // Build outbox events for side effects
+    const outboxEvents = [
+      // Emit innovation event
+      {
+        action: OUTBOX_ACTIONS.EMIT_INNOVATION_EVENT,
+        entityType: 'initiative',
+        entityId: id,
+        payload: {
+          domainId: initiative.domain_id,
+          eventType,
+          entityId: id,
+          entityType: 'initiative',
+          payload: {
+            initiative_id: initiative.initiative_id,
+            name: initiative.name,
+            from_stage: initiative.stage,
+            to_stage: updated.stage,
+            decision,
+            notes: notes || null,
+            conditions: conditions || null,
+            force_advance: !!forceAdvance,
+          },
+          previousState: {
+            stage: initiative.stage,
+            governance_data: initiative.governance_data,
+          },
+          actor: user,
+        },
       },
-      previousState: {
-        stage: initiative.stage,
-        governance_data: initiative.governance_data,
+      // Update graph node with new stage
+      {
+        action: OUTBOX_ACTIONS.UPDATE_GRAPH_NODE_PROPS,
+        entityType: 'initiative',
+        entityId: id,
+        payload: { nodeId: id, updates: { stage: updated.stage } },
       },
-      actor: user,
-    }).catch(err => console.error('[Events] Failed to emit stage event:', err.message));
-
-    // Update graph node with new stage
-    updateGraphNodeProperties(id, { stage: updated.stage })
-      .catch(err => console.error('[GraphSync] Failed to update graph node:', err.message));
-
-    // --- Notification side effects (fire-and-forget) ---
+    ];
 
     // Notify initiative owner of stage change
     const ownerId = initiative.owner_id || initiative.submitter_id;
     if (ownerId) {
-      createNotification({
-        userId: ownerId,
-        type: isApproved
-          ? NOTIFICATION_TYPES.INITIATIVE_APPROVED
-          : isDeclined
-            ? NOTIFICATION_TYPES.INITIATIVE_DECLINED
-            : NOTIFICATION_TYPES.GATE_DECISION_MADE,
-        title: isApproved
-          ? `Initiative approved: ${initiative.name}`
-          : isDeclined
-            ? `Initiative declined: ${initiative.name}`
-            : `Stage advanced: ${initiative.name}`,
-        message: `${initiative.initiative_id} moved from ${initiative.stage} to ${updated.stage} (decision: ${decision})`,
-        link: `/app/spaces/blueprint/discovery?initiative=${id}`,
-        metadata: {
-          initiativeId: id,
-          initiativeDisplayId: initiative.initiative_id,
-          fromStage: initiative.stage,
-          toStage: updated.stage,
-          decision,
+      outboxEvents.push({
+        action: OUTBOX_ACTIONS.CREATE_NOTIFICATION,
+        entityType: 'initiative',
+        entityId: id,
+        payload: {
+          userId: ownerId,
+          type: isApproved
+            ? NOTIFICATION_TYPES.INITIATIVE_APPROVED
+            : isDeclined
+              ? NOTIFICATION_TYPES.INITIATIVE_DECLINED
+              : NOTIFICATION_TYPES.GATE_DECISION_MADE,
+          title: isApproved
+            ? `Initiative approved: ${initiative.name}`
+            : isDeclined
+              ? `Initiative declined: ${initiative.name}`
+              : `Stage advanced: ${initiative.name}`,
+          message: `${initiative.initiative_id} moved from ${initiative.stage} to ${updated.stage} (decision: ${decision})`,
+          link: `/app/spaces/blueprint/discovery?initiative=${id}`,
+          metadata: {
+            initiativeId: id,
+            initiativeDisplayId: initiative.initiative_id,
+            fromStage: initiative.stage,
+            toStage: updated.stage,
+            decision,
+          },
         },
-      }).catch(err => console.error('[Notifications] Failed to notify owner:', err.message));
+      });
 
-      // Check SLA status on the updated initiative and notify if at risk or breached
+      // Check SLA status (still fire-and-forget — complex async logic)
       checkAndNotifySLA(updated, ownerId)
         .catch(err => console.error('[Notifications] SLA check failed:', err.message));
     }
 
-    // When reaching approval stage, notify all reviewers (admins)
-    if (updated.stage === 'approval') {
-      import('../../../../../lib/pg').then(({ query: dbQuery }) => {
-        return dbQuery("SELECT id FROM users WHERE role = 'admin'");
-      }).then(result => {
-        const reviewers = result.rows || [];
-        reviewers.forEach(reviewer => {
-          if (reviewer.id !== user) {
-            createNotification({
-              userId: reviewer.id,
-              type: NOTIFICATION_TYPES.GATE_REVIEW_REQUESTED,
-              title: `Gate review requested: ${initiative.name}`,
-              message: `${initiative.initiative_id} is ready for approval review.`,
-              link: `/app/spaces/blueprint/discovery?initiative=${id}`,
-              metadata: {
-                initiativeId: id,
-                initiativeDisplayId: initiative.initiative_id,
-                stage: updated.stage,
-              },
-            }).catch(err => console.error('[Notifications] Failed to notify reviewer:', err.message));
-          }
-        });
-      }).catch(err => console.error('[Notifications] Failed to fetch reviewers:', err.message));
-    }
+    // Enqueue all outbox events
+    enqueueOutboxEvents(outboxEvents)
+      .catch(err => console.error('[Outbox] Failed to enqueue:', err.message));
 
     // Set PLR scheduled date on approval (12 months out)
     if (updated.stage === 'approved') {
@@ -244,7 +238,7 @@ export default async function handler(req, res) {
         .catch(err => console.error('[PLR] Failed to set PLR date:', err.message));
     }
 
-    // Auto-handoff to Analysis on approval (fire-and-forget)
+    // Auto-handoff to Analysis on approval (complex async — keep as direct call)
     if (updated.stage === 'approved') {
       getExistingHandoff(id).then(existing => {
         if (!existing) {

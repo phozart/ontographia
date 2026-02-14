@@ -15,8 +15,10 @@
 //     {renderView()}
 //   </WorkspaceLayout>
 
+import { useState, useEffect } from 'react';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import WarningIcon from '@mui/icons-material/Warning';
+import CloseIcon from '@mui/icons-material/Close';
 import AddIcon from '@mui/icons-material/Add';
 import styles from './WorkspaceLayout.module.css';
 
@@ -58,6 +60,19 @@ export function WorkspaceLayout({
   onCreateProject,
   modals,
 }) {
+  // Auto-dismiss error toast after 8 seconds
+  const [dismissedError, setDismissedError] = useState(null);
+
+  useEffect(() => {
+    if (error && error !== dismissedError) {
+      setDismissedError(null);
+      const timer = setTimeout(() => setDismissedError(error), 8000);
+      return () => clearTimeout(timer);
+    }
+  }, [error, dismissedError]);
+
+  const showError = error && error !== dismissedError;
+
   // No project/domain selected state
   if (noProject) {
     return (
@@ -142,11 +157,18 @@ export function WorkspaceLayout({
       {/* Modals rendered at root level */}
       {modals}
 
-      {/* Error toast */}
-      {error && (
+      {/* Error toast - auto-dismisses after 8s */}
+      {showError && (
         <div className={styles.toast}>
           <WarningIcon fontSize="small" />
           <span>{error}</span>
+          <button
+            className={styles.toastClose}
+            onClick={() => setDismissedError(error)}
+            aria-label="Dismiss"
+          >
+            <CloseIcon fontSize="small" />
+          </button>
         </div>
       )}
     </div>

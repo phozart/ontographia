@@ -105,7 +105,17 @@ export default async function handler(req, res) {
         shape || 'ellipse',
       ]);
 
-      return res.status(201).json({ id });
+      return res.status(201).json({
+        id,
+        name,
+        label: label || name,
+        description: description || '',
+        layer: layer || 'Unassigned',
+        color: color || '#888888',
+        icon: icon || 'dot',
+        domain: domain || 'core',
+        shape: shape || 'ellipse',
+      });
     }
 
     return res.status(405).json({ error: 'Method not allowed' });

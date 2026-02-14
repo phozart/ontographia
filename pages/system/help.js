@@ -527,7 +527,11 @@ export default function HelpPage() {
   }, [searchQuery]);
 
   if (!hydrated) {
-    return null;
+    return (
+      <main style={{ padding: 24, textAlign: 'center', color: '#9C9A94' }}>
+        <p>Loading...</p>
+      </main>
+    );
   }
 
   if (!user) {
