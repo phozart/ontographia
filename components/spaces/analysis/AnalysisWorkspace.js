@@ -11,7 +11,7 @@ import {
   ANALYSIS_STATUS
 } from './AnalysisContext';
 import AnalysisNavigator from './AnalysisNavigator';
-import { WorkspaceLayout } from '../../ui';
+import { WorkspaceLayout, BacklinksSidebar, BacklinksButton, ArchitectureLens, ArchitectureLensToggle } from '../../ui';
 import { DomainDashboard } from '../../shared/DomainDashboard';
 import { useDomains } from '../../DomainContext';
 import { useAuth } from '../../AuthContext';
@@ -440,6 +440,8 @@ function AnalysisWorkspaceContent() {
   const [selectedArtefact, setSelectedArtefact] = useState(null);
   const [showProjectModal, setShowProjectModal] = useState(false);
   const [showGuidance, setShowGuidance] = useState(false);
+  const [showBacklinks, setShowBacklinks] = useState(false);
+  const [showEALens, setShowEALens] = useState(false);
 
   // ArtefactModal state
   const [artefactModalType, setArtefactModalType] = useState(null);
@@ -630,6 +632,16 @@ function AnalysisWorkspaceContent() {
       icon="&#128203;"
       actions={
         <>
+          <BacklinksButton
+            entityId={selectedArtefact ? `artefact_${selectedArtefact.id}` : null}
+            isOpen={showBacklinks}
+            onClick={() => { setShowBacklinks(!showBacklinks); if (!showBacklinks) setShowEALens(false); }}
+          />
+          <ArchitectureLensToggle
+            entityId={selectedArtefact ? `artefact_${selectedArtefact.id}` : null}
+            isOpen={showEALens}
+            onClick={() => { setShowEALens(!showEALens); if (!showEALens) setShowBacklinks(false); }}
+          />
           <button
             className="workspace-action"
             onClick={() => setShowGuidance(!showGuidance)}
@@ -655,6 +667,19 @@ function AnalysisWorkspaceContent() {
         />
       }
       guidance={showGuidance ? <GuidancePanel module={activeModule} /> : null}
+      rightPanel={
+        showBacklinks && selectedArtefact ? (
+          <BacklinksSidebar
+            entityId={`artefact_${selectedArtefact.id}`}
+            onClose={() => setShowBacklinks(false)}
+          />
+        ) : showEALens && selectedArtefact ? (
+          <ArchitectureLens
+            entityId={`artefact_${selectedArtefact.id}`}
+            onClose={() => setShowEALens(false)}
+          />
+        ) : null
+      }
     >
       <div className="analysis-workspace-content">
         {renderModuleContent()}

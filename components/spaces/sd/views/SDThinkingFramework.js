@@ -208,7 +208,7 @@ export default function SDThinkingFramework({ initialPrinciple, onStartExercise 
                     >
                       <CheckCircleOutlineIcon
                         fontSize="small"
-                        style={{ color: '#10b981' }}
+                        style={{ color: '#5B8A6A' }}
                       />
                       <span>Good Examples</span>
                       {isSectionExpanded(principle.id, 'good') ?
@@ -239,7 +239,7 @@ export default function SDThinkingFramework({ initialPrinciple, onStartExercise 
                     >
                       <CancelOutlinedIcon
                         fontSize="small"
-                        style={{ color: '#ef4444' }}
+                        style={{ color: '#A54D4D' }}
                       />
                       <span>Common Mistakes</span>
                       {isSectionExpanded(principle.id, 'poor') ?
@@ -271,7 +271,7 @@ export default function SDThinkingFramework({ initialPrinciple, onStartExercise 
                       >
                         <FitnessCenterIcon
                           fontSize="small"
-                          style={{ color: '#8b5cf6' }}
+                          style={{ color: '#47453F' }}
                         />
                         <span>Exercises</span>
                         {isSectionExpanded(principle.id, 'exercises') ?
@@ -635,13 +635,13 @@ export default function SDThinkingFramework({ initialPrinciple, onStartExercise 
         }
 
         .sd-examples-list.good .sd-example-item {
-          background: rgba(16, 185, 129, 0.08);
-          border-left: 3px solid #10b981;
+          background: rgba(91, 138, 106, 0.08);
+          border-left: 3px solid #5B8A6A;
         }
 
         .sd-examples-list.poor .sd-example-item {
-          background: rgba(239, 68, 68, 0.08);
-          border-left: 3px solid #ef4444;
+          background: rgba(165, 77, 77, 0.08);
+          border-left: 3px solid #A54D4D;
         }
 
         .sd-example-item strong {
@@ -669,13 +669,13 @@ export default function SDThinkingFramework({ initialPrinciple, onStartExercise 
         }
 
         .sd-example-insight {
-          background: rgba(16, 185, 129, 0.15);
-          color: #059669;
+          background: rgba(91, 138, 106, 0.15);
+          color: #5B8A6A;
         }
 
         .sd-example-lesson {
-          background: rgba(239, 68, 68, 0.15);
-          color: #dc2626;
+          background: rgba(165, 77, 77, 0.15);
+          color: #A54D4D;
         }
 
         .sd-exercises-list {

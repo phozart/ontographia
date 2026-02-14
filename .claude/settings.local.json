@@ -128,7 +128,8 @@
       "Bash(docker compose exec:*)",
       "Bash(docker compose restart:*)",
       "Bash(docker compose logs:*)",
-      "Bash(npx esbuild:*)"
+      "Bash(npx esbuild:*)",
+      "Bash(git stash drop:*)"
     ]
   },
   "hooks": {

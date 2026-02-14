@@ -57,6 +57,7 @@ export function WorkspaceLayout({
   noSelectionMessage = 'Select a project from the dropdown above, or create a new one to start working.',
   onCreateProject,
   modals,
+  rightPanel,
 }) {
   // No project/domain selected state
   if (noProject) {
@@ -137,6 +138,9 @@ export function WorkspaceLayout({
             {children}
           </div>
         </main>
+
+        {/* Right panel (e.g. BacklinksSidebar) */}
+        {rightPanel}
       </div>
 
       {/* Modals rendered at root level */}

@@ -4,57 +4,6 @@
 import { query } from '../../../lib/pg';
 import { getUserFromRequest } from '../../../lib/projectAccess';
 
-// Auto-create tables if they don't exist
-async function ensureTablesExist() {
-  try {
-    await query(`
-      CREATE TABLE IF NOT EXISTS graph_node_types (
-        id TEXT PRIMARY KEY,
-        name TEXT NOT NULL,
-        label TEXT,
-        description TEXT,
-        layer TEXT,
-        color TEXT DEFAULT '#6b7280',
-        icon TEXT,
-        shape TEXT DEFAULT 'ellipse',
-        domain TEXT DEFAULT 'core',
-        properties JSONB DEFAULT '{}',
-        created_at TIMESTAMPTZ DEFAULT NOW(),
-        updated_at TIMESTAMPTZ DEFAULT NOW()
-      )
-    `);
-
-    await query(`
-      CREATE TABLE IF NOT EXISTS graph_nodes (
-        id TEXT PRIMARY KEY,
-        type_id TEXT REFERENCES graph_node_types(id) ON DELETE SET NULL,
-        name TEXT NOT NULL,
-        description TEXT,
-        layer TEXT,
-        tags TEXT[] DEFAULT '{}',
-        attributes JSONB DEFAULT '{}',
-        color TEXT,
-        icon TEXT,
-        weight REAL,
-        shape TEXT,
-        domain TEXT,
-        x REAL,
-        y REAL,
-        created_at TIMESTAMPTZ DEFAULT NOW(),
-        updated_at TIMESTAMPTZ DEFAULT NOW()
-      )
-    `);
-
-    await query(`CREATE INDEX IF NOT EXISTS idx_graph_nodes_type ON graph_nodes(type_id)`);
-    await query(`CREATE INDEX IF NOT EXISTS idx_graph_nodes_domain ON graph_nodes(domain)`);
-  } catch (err) {
-    // Tables might already exist with different constraints, ignore errors
-    if (!err.message.includes('already exists')) {
-      console.error('[nodes] Error ensuring tables:', err.message);
-    }
-  }
-}
-
 export default async function handler(req, res) {
   // Authentication required for write operations
   const { user, role } = getUserFromRequest(req);
@@ -65,9 +14,6 @@ export default async function handler(req, res) {
   try {
     if (req.method === 'GET') {
       const { typeId, typeIds, domain, domainName, count } = req.query;
-
-      // Ensure tables exist
-      await ensureTablesExist();
 
       // Build query
       let sql = `
@@ -149,9 +95,6 @@ export default async function handler(req, res) {
       if (!name) {
         return res.status(400).json({ error: 'name is required' });
       }
-
-      // Ensure tables exist
-      await ensureTablesExist();
 
       const id = `n_${Date.now()}`;
       const safeLayer = layer ?? null;

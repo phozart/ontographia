@@ -4099,7 +4099,7 @@
   transition: flex 0.3s ease;
 }
 
-.dwd-pipeline--proposed { background: #9ca3af; color: white; }
+.dwd-pipeline--proposed { background: #9C9A94; color: #FDFCFA; }
 .dwd-pipeline--trying { background: var(--warning, #C9A227); color: white; }
 .dwd-pipeline--adopted { background: var(--success, #5B8A6A); color: white; }
 .dwd-pipeline--reverted { background: var(--danger, #A54D4D); color: white; }
@@ -4694,7 +4694,7 @@
 }
 
 .dwd-trace-gap__action:hover {
-  background: #d97706;
+  background: #C9A227;
   transform: scale(1.1);
 }
 

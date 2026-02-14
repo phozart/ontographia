@@ -410,7 +410,7 @@ export default function SDGuidancePanel({
         }
 
         .sd-guidance-section-header .section-icon.questions {
-          color: #f59e0b;
+          color: #C9A227;
         }
 
         .sd-guidance-section-header > span:last-of-type {
@@ -445,7 +445,7 @@ export default function SDGuidancePanel({
           content: '?';
           position: absolute;
           left: -14px;
-          color: #f59e0b;
+          color: #C9A227;
           font-weight: 600;
         }
 
@@ -670,18 +670,18 @@ export default function SDGuidancePanel({
         }
 
         .sd-example-difficulty.beginner {
-          background: rgba(16, 185, 129, 0.1);
-          color: #10b981;
+          background: rgba(91, 138, 106, 0.1);
+          color: #5B8A6A;
         }
 
         .sd-example-difficulty.intermediate {
-          background: rgba(245, 158, 11, 0.1);
-          color: #f59e0b;
+          background: rgba(201, 162, 39, 0.1);
+          color: #C9A227;
         }
 
         .sd-example-difficulty.advanced {
-          background: rgba(239, 68, 68, 0.1);
-          color: #ef4444;
+          background: rgba(165, 77, 77, 0.1);
+          color: #A54D4D;
         }
 
         .sd-example-description {

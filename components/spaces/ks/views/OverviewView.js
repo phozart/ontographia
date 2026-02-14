@@ -15,42 +15,42 @@ const OVERVIEW_CARDS = [
     title: 'Graph Navigator',
     description: 'Visual exploration of knowledge graph relationships and connections',
     icon: AccountTreeIcon,
-    color: '#3b82f6',
+    color: '#47453F',
   },
   {
     id: 'browser',
     title: 'Model Browser',
     description: 'Browse and search the semantic model by node types',
     icon: SchoolIcon,
-    color: '#10b981',
+    color: '#5B8A6A',
   },
   {
     id: 'nodes',
     title: 'Nodes',
     description: 'Create, edit, and manage knowledge graph nodes',
     icon: SourceIcon,
-    color: '#6366f1',
+    color: '#5C5A54',
   },
   {
     id: 'node-types',
     title: 'Node Types',
     description: 'Define and configure node type schemas',
     icon: CategoryIcon,
-    color: '#f59e0b',
+    color: '#C9A227',
   },
   {
     id: 'relationships',
     title: 'Relationships',
     description: 'Manage connections between nodes',
     icon: CableIcon,
-    color: '#8b5cf6',
+    color: '#9C9A94',
   },
   {
     id: 'relationship-types',
     title: 'Relationship Types',
     description: 'Define relationship type schemas and constraints',
     icon: DeviceHubIcon,
-    color: '#ef4444',
+    color: '#A54D4D',
   },
 ];
 
@@ -58,7 +58,7 @@ export default function OverviewView({ domainId, onNavigate }) {
   return (
     <div className="ks-overview">
       <div className="ks-overview-header">
-        <HubIcon style={{ fontSize: 48, color: '#6366f1' }} />
+        <HubIcon style={{ fontSize: 48, color: '#47453F' }} />
         <div className="ks-overview-header-text">
           <h1>Knowledge Studio</h1>
           <p>Explore and manage your knowledge graph</p>

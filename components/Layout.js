@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import SystemHeader from './SystemHeader';
@@ -7,6 +7,7 @@ import FloatingDock from './FloatingDock';
 import AnimatedLogoBackground from './AnimatedLogoBackground';
 import { LogoSpinner } from './Logo';
 import { useAuth } from './AuthContext';
+import UniversalSearch from './ui/UniversalSearch';
 
 export default function Layout({ theme, onThemeChange, children }) {
 
@@ -15,8 +16,21 @@ export default function Layout({ theme, onThemeChange, children }) {
   const [isMobile, setIsMobile] = useState(false);
   const [isEmbedded, setIsEmbedded] = useState(false);
   const [navStyle, setNavStyle] = useState('header'); // 'sidebar', 'dock', or 'header'
+  const [searchOpen, setSearchOpen] = useState(false);
   const router = useRouter();
   const { user } = useAuth();
+
+  // Cmd+K / Ctrl+K to open universal search
+  useEffect(() => {
+    const handler = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setSearchOpen(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
 
   // Nav style: 'header' (new top header), 'sidebar' (floating island), or 'dock' (bottom dock)
   useEffect(() => {
@@ -172,6 +186,7 @@ export default function Layout({ theme, onThemeChange, children }) {
             </div>
           </div>
         )}
+        <UniversalSearch isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
       </div>
     </>
   );

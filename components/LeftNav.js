@@ -99,9 +99,9 @@ export default function LeftNav({ theme, onThemeChange }) {
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(208);
   const [isResizing, setIsResizing] = useState(false);
-  const [expandedSections, setExpandedSections] = useState(['navigation', 'main-flow', 'thinking-tools', 'infrastructure']);
+  const [expandedSections, setExpandedSections] = useState(['navigation', 'strategy', 'analysis-design', 'modeling', 'ways-of-working', 'personal']);
   // Section order - default: new consolidated structure (fallback when no config)
-  const [sectionOrder, setSectionOrder] = useState(['navigation', 'main-flow', 'thinking-tools', 'infrastructure']);
+  const [sectionOrder, setSectionOrder] = useState(['navigation', 'strategy', 'analysis-design', 'modeling', 'ways-of-working', 'personal']);
   const [draggedSection, setDraggedSection] = useState(null);
   const [helpMenuOpen, setHelpMenuOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -308,63 +308,13 @@ export default function LeftNav({ theme, onThemeChange }) {
     },
   ];
 
-  // Reasoning section items (only when logged in)
-  const reasoningNavItems = [
-    {
-      href: '/app/spaces/sd/canvas',
-      label: 'System Dynamics',
-      icon: LoopIcon,
-      active: isActive('/app/spaces/sd', '/app/reasoning/system-dynamics', '/system-dynamics'),
-      roles: ['admin', 'editor', 'viewer'],
-    },
-    {
-      href: '/app/spaces/dwd/landscape',
-      label: 'Work Design',
-      icon: BuildIcon,
-      active: isActive('/app/spaces/dwd', '/app/reasoning/dynamic-work-design', '/dynamic-work-design'),
-      roles: ['admin', 'editor', 'viewer'],
-    },
-    {
-      href: '/app/spaces/als/sessions',
-      label: 'Learning Studio',
-      icon: SchoolIcon,
-      active: isActive('/app/spaces/als', '/learning-studio'),
-      roles: ['admin', 'editor', 'viewer'],
-    },
-  ];
-
-  // Workspace navigation items - Main Flow Studios (only when logged in)
-  const workspaceNavItems = [
-    // Main Flow Studios (new consolidated structure)
+  // Strategy & Innovation
+  const strategyNavItems = [
     {
       href: '/app/spaces/blueprint/funnel',
       label: 'Blueprint Studio',
       icon: LightbulbIcon,
       active: isActive('/app/spaces/blueprint'),
-      roles: ['admin', 'editor', 'viewer'],
-      bypassPagePermissions: true,
-    },
-    {
-      href: '/app/spaces/analysis/projects',
-      label: 'Analysis Studio',
-      icon: AssignmentIcon,
-      active: isActive('/app/spaces/analysis'),
-      roles: ['admin', 'editor', 'viewer'],
-      bypassPagePermissions: true,
-    },
-    {
-      href: '/app/spaces/pds/overview',
-      label: 'Project Studio',
-      icon: AccountTreeIcon,
-      active: isActive('/app/spaces/pds', '/app/workspaces/project-design', '/project-design'),
-      roles: ['admin', 'editor', 'viewer'],
-      bypassPagePermissions: true,
-    },
-    {
-      href: '/app/spaces/enterprise/dashboard',
-      label: 'Enterprise Studio',
-      icon: ArchitectureIcon,
-      active: isActive('/app/spaces/enterprise'),
       roles: ['admin', 'editor', 'viewer'],
       bypassPagePermissions: true,
     },
@@ -376,25 +326,39 @@ export default function LeftNav({ theme, onThemeChange }) {
       roles: ['admin', 'editor', 'viewer'],
       bypassPagePermissions: true,
     },
-    // Legacy studios (accessible but not primary navigation)
+  ];
+
+  // Analysis & Design
+  const analysisDesignNavItems = [
+    {
+      href: '/app/spaces/analysis/projects',
+      label: 'Analysis Studio',
+      icon: AssignmentIcon,
+      active: isActive('/app/spaces/analysis'),
+      roles: ['admin', 'editor', 'viewer'],
+      bypassPagePermissions: true,
+    },
     {
       href: '/app/spaces/pdw/discovery',
       label: 'Product Design',
-      icon: LightbulbIcon,
+      icon: PsychologyIcon,
       active: isActive('/app/spaces/pdw', '/app/workspaces/product-design', '/product-design-workspace'),
       roles: ['admin', 'editor', 'viewer'],
-    },
-    {
-      href: '/app/spaces/ba/repository',
-      label: 'Requirements Studio',
-      icon: AssignmentIcon,
-      active: isActive('/app/spaces/ba', '/app/workspaces/requirements', '/requirements-studio'),
-      roles: ['admin', 'editor', 'viewer'],
+      bypassPagePermissions: true,
     },
   ];
 
-  // Infrastructure navigation items (only when logged in)
-  const infrastructureNavItems = [
+  // Modeling & Architecture
+  const modelingNavItems = [
+    {
+      href: '/app/spaces/enterprise/dashboard',
+      label: 'Enterprise Studio',
+      icon: ArchitectureIcon,
+      active: isActive('/app/spaces/enterprise'),
+      roles: ['admin', 'editor', 'viewer'],
+      bypassPagePermissions: true,
+    },
+    ...knowledgeNavItems,
     {
       href: '/app/spaces/diagram/canvas',
       label: 'Diagram Studio',
@@ -402,6 +366,50 @@ export default function LeftNav({ theme, onThemeChange }) {
       active: isActive('/app/spaces/diagram', '/diagram-studio-standalone'),
       roles: ['admin', 'editor', 'viewer'],
       bypassPagePermissions: true,
+    },
+    {
+      href: '/app/spaces/sd/canvas',
+      label: 'System Dynamics',
+      icon: LoopIcon,
+      active: isActive('/app/spaces/sd', '/app/reasoning/system-dynamics', '/system-dynamics'),
+      roles: ['admin', 'editor', 'viewer'],
+    },
+  ];
+
+  // Ways of Working
+  const waysOfWorkingNavItems = [
+    {
+      href: '/app/spaces/pds/overview',
+      label: 'Project Studio',
+      icon: AccountTreeIcon,
+      active: isActive('/app/spaces/pds', '/app/workspaces/project-design', '/project-design'),
+      roles: ['admin', 'editor', 'viewer'],
+      bypassPagePermissions: true,
+    },
+    {
+      href: '/app/spaces/dwd/landscape',
+      label: 'Work Design',
+      icon: BuildIcon,
+      active: isActive('/app/spaces/dwd', '/app/reasoning/dynamic-work-design', '/dynamic-work-design'),
+      roles: ['admin', 'editor', 'viewer'],
+    },
+  ];
+
+  // Personal Tools
+  const personalNavItems = [
+    {
+      href: '/app/spaces/als/sessions',
+      label: 'Learning Studio',
+      icon: SchoolIcon,
+      active: isActive('/app/spaces/als', '/learning-studio'),
+      roles: ['admin', 'editor', 'viewer'],
+    },
+    {
+      href: '/app/spaces/mindlab/reasoning',
+      label: 'Mind Lab',
+      icon: PsychologyIcon,
+      active: isActive('/app/spaces/mindlab', '/app/thinking'),
+      roles: ['admin', 'editor', 'viewer'],
     },
   ];
 
@@ -596,7 +604,14 @@ export default function LeftNav({ theme, onThemeChange }) {
             // Use menuConfig sections if available, otherwise fallback
             const sectionsToRender = menuConfig?.sections || sectionOrder.map(key => ({
               key,
-              label: { navigation: 'Navigation', knowledge: 'Knowledge', workspace: 'Workspaces', reasoning: 'Reasoning' }[key] || key,
+              label: {
+                navigation: 'Navigation',
+                strategy: 'Strategy & Innovation',
+                'analysis-design': 'Analysis & Design',
+                modeling: 'Modeling & Architecture',
+                'ways-of-working': 'Ways of Working',
+                personal: 'Personal Tools',
+              }[key] || key,
               expanded: true,
               items: [],
             }));
@@ -605,12 +620,11 @@ export default function LeftNav({ theme, onThemeChange }) {
             // IMPORTANT: Each section maps to unique items - no duplicates
             const fallbackSectionItems = {
               navigation: mainNavItems,
-              'main-flow': workspaceNavItems.slice(0, 5), // Blueprint, Analysis, Project, Enterprise, GTM
-              'thinking-tools': reasoningNavItems,
-              infrastructure: [
-                ...infrastructureNavItems,
-                ...knowledgeNavItems,
-              ],
+              strategy: strategyNavItems,
+              'analysis-design': analysisDesignNavItems,
+              modeling: modelingNavItems,
+              'ways-of-working': waysOfWorkingNavItems,
+              personal: personalNavItems,
             };
 
             // Build nav items from config with fallback
