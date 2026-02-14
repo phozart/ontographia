@@ -1,18 +1,13 @@
-// pages/learning-studio.js - Academic Learning Studio main page
-import Head from 'next/head';
-import { ALSProvider } from '../components/als/ALSContext';
-import ALSWorkspace from '../components/als/ALSWorkspace';
+// Legacy redirect: /learning-studio -> /app/spaces/als/sessions
+export async function getServerSideProps() {
+  return {
+    redirect: {
+      destination: '/app/spaces/als/sessions',
+      permanent: true,
+    },
+  };
+}
 
-export default function LearningStudioPage() {
-  return (
-    <>
-      <Head>
-        <title>Learning Studio | Ontographia</title>
-        <meta name="description" content="Academic learning and meta-cognition studio" />
-      </Head>
-      <ALSProvider>
-        <ALSWorkspace />
-      </ALSProvider>
-    </>
-  );
+export default function Redirect() {
+  return null;
 }

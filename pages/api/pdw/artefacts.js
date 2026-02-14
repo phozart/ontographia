@@ -53,8 +53,8 @@ export default async function handler(req, res) {
           (SELECT COUNT(*) FROM artefact_relationships WHERE from_artefact_id = a.id) as outgoing_count,
           (SELECT COUNT(*) FROM artefact_relationships WHERE to_artefact_id = a.id) as incoming_count
         FROM artefacts a
-        LEFT JOIN users u ON u.id = a.owner_id
-        LEFT JOIN users cb ON cb.id = a.created_by
+        LEFT JOIN users u ON u.username = a.owner_id
+        LEFT JOIN users cb ON cb.username = a.created_by
         WHERE a.domain_id = $1
           AND a.artefact_type LIKE 'pdw_%'
       `;

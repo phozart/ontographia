@@ -1,0 +1,18 @@
+{
+  "name": "@ontographia/diagram-studio-server",
+  "version": "0.1.0",
+  "description": "Collaboration server for Diagram Studio",
+  "main": "collab-server.js",
+  "scripts": {
+    "start": "node collab-server.js",
+    "dev": "node --watch collab-server.js"
+  },
+  "dependencies": {
+    "ws": "^8.14.2",
+    "yjs": "^13.6.10",
+    "y-websocket": "^2.0.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

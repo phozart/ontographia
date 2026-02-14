@@ -1,0 +1,138 @@
+/**
+ * Design Tokens: Shadows & Elevation
+ * Ontographia V2 Design System - Phozart System
+ *
+ * Elevation system using warm-tinted shadows to create depth hierarchy.
+ * Uses #1F1E1B (warm graphite) as base for all shadows.
+ */
+
+:root {
+  /* ========================================
+   * Elevation Shadows (Warm tinted)
+   * Higher numbers = more elevation from surface
+   * ======================================== */
+
+  /* Level 0: Flat on surface (no shadow) */
+  --shadow-none: none;
+
+  /* Level 1: Slightly raised (buttons, cards at rest) */
+  --shadow-xs: 0 1px 2px 0 rgba(31, 30, 27, 0.05);
+
+  /* Level 2: Raised (cards, panels) */
+  --shadow-sm: 0 1px 3px 0 rgba(31, 30, 27, 0.08),
+               0 1px 2px -1px rgba(31, 30, 27, 0.06);
+
+  /* Level 3: Floating (dropdowns, popovers) */
+  --shadow-md: 0 4px 6px -1px rgba(31, 30, 27, 0.08),
+               0 2px 4px -2px rgba(31, 30, 27, 0.06);
+
+  /* Level 4: Elevated (modals, dialogs) */
+  --shadow-lg: 0 10px 15px -3px rgba(31, 30, 27, 0.1),
+               0 4px 6px -4px rgba(31, 30, 27, 0.08);
+
+  /* Level 5: High elevation (notifications, toasts) */
+  --shadow-xl: 0 20px 25px -5px rgba(31, 30, 27, 0.1),
+               0 8px 10px -6px rgba(31, 30, 27, 0.08);
+
+  /* Level 6: Maximum elevation */
+  --shadow-2xl: 0 25px 50px -12px rgba(31, 30, 27, 0.2);
+
+  /* ========================================
+   * Semantic Shadow Aliases
+   * ======================================== */
+
+  /* Components */
+  --shadow-button: var(--shadow-xs);
+  --shadow-button-hover: 0 2px 8px rgba(31, 30, 27, 0.15);
+  --shadow-card: var(--shadow-sm);
+  --shadow-card-hover: 0 4px 12px rgba(31, 30, 27, 0.08);
+  --shadow-dropdown: var(--shadow-lg);
+  --shadow-modal: 0 20px 60px rgba(31, 30, 27, 0.2);
+  --shadow-toast: var(--shadow-xl);
+  --shadow-tooltip: var(--shadow-md);
+  --shadow-popover: var(--shadow-lg);
+  --shadow-drawer: var(--shadow-xl);
+
+  /* Layout */
+  --shadow-sidebar: 1px 0 3px 0 rgba(31, 30, 27, 0.06);
+  --shadow-topbar: 0 1px 3px 0 rgba(31, 30, 27, 0.06);
+  --shadow-panel: var(--shadow-sm);
+
+  /* ========================================
+   * Inset Shadows (for depth)
+   * ======================================== */
+  --shadow-inset-xs: inset 0 1px 2px rgba(31, 30, 27, 0.05);
+  --shadow-inset-sm: inset 0 2px 4px rgba(31, 30, 27, 0.06);
+  --shadow-inset-md: inset 0 4px 6px rgba(31, 30, 27, 0.08);
+
+  /* Input focus ring (warm graphite) */
+  --shadow-input: var(--shadow-xs);
+  --shadow-input-focus: 0 0 0 3px rgba(71, 69, 63, 0.12);
+
+  /* ========================================
+   * Colored Shadows (muted warm palette)
+   * ======================================== */
+  --shadow-primary: 0 4px 14px -3px rgba(71, 69, 63, 0.25);
+  --shadow-success: 0 4px 14px -3px rgba(91, 138, 106, 0.25);
+  --shadow-warning: 0 4px 14px -3px rgba(201, 162, 39, 0.25);
+  --shadow-error: 0 4px 14px -3px rgba(165, 77, 77, 0.25);
+
+  /* ========================================
+   * Focus Ring (warm graphite)
+   * ======================================== */
+  --ring-width: 3px;
+  --ring-offset: 2px;
+  --ring-color: rgba(71, 69, 63, 0.4);
+  --ring-offset-color: var(--color-bg, #FDFCFA);
+
+  /* Focus ring as box-shadow */
+  --focus-ring: 0 0 0 var(--ring-offset) var(--ring-offset-color),
+                0 0 0 calc(var(--ring-offset) + var(--ring-width)) var(--ring-color);
+}
+
+/* ========================================
+ * Dark Mode Overrides
+ * Shadows are more subtle in dark mode
+ * ======================================== */
+:root[data-theme='dark'] {
+  /* Elevation Shadows - darker */
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.25),
+               0 1px 2px -1px rgba(0, 0, 0, 0.2);
+
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.25),
+               0 2px 4px -2px rgba(0, 0, 0, 0.2);
+
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3),
+               0 4px 6px -4px rgba(0, 0, 0, 0.25);
+
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.35),
+               0 8px 10px -6px rgba(0, 0, 0, 0.3);
+
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+
+  /* Component shadows */
+  --shadow-button-hover: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.2);
+  --shadow-modal: 0 20px 60px rgba(0, 0, 0, 0.4);
+
+  /* Inset shadows */
+  --shadow-inset-xs: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-inset-sm: inset 0 2px 4px rgba(0, 0, 0, 0.25);
+  --shadow-inset-md: inset 0 4px 6px rgba(0, 0, 0, 0.3);
+
+  /* Layout shadows */
+  --shadow-sidebar: 1px 0 3px 0 rgba(0, 0, 0, 0.3);
+  --shadow-topbar: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
+
+  /* Focus ring adjusted for dark mode */
+  --ring-color: rgba(156, 152, 144, 0.5);
+  --shadow-input-focus: 0 0 0 3px rgba(156, 152, 144, 0.15);
+
+  /* Colored shadows - slightly more opaque */
+  --shadow-primary: 0 4px 14px -3px rgba(156, 152, 144, 0.3);
+  --shadow-success: 0 4px 14px -3px rgba(122, 170, 138, 0.3);
+  --shadow-warning: 0 4px 14px -3px rgba(217, 178, 71, 0.3);
+  --shadow-error: 0 4px 14px -3px rgba(197, 112, 112, 0.3);
+}

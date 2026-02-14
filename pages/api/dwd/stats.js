@@ -3,6 +3,7 @@
 
 import { query } from '../../../lib/pg';
 import { getUserFromRequest, checkProjectAccess } from '../../../lib/projectAccess';
+import { errorResponse } from '../../../lib/api/errorResponse';
 import { DWD_TYPE_DEFS, DWD_STAGES, generateObservations } from '../../../lib/dwd-types';
 
 export default async function handler(req, res) {
@@ -287,6 +288,6 @@ export default async function handler(req, res) {
     });
   } catch (err) {
     console.error('Error fetching DWD stats:', err);
-    return res.status(500).json({ error: 'Failed to fetch statistics', details: err.message });
+    return errorResponse(res, 500, 'Failed to fetch statistics', err);
   }
 }

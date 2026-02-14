@@ -1,0 +1,81 @@
+/**
+ * Design Tokens Index
+ * Ontographia V2 Design System
+ *
+ * This file imports all design token categories.
+ * Import this single file to get all tokens.
+ *
+ * Token Categories:
+ * - colors.css     : Color palette (semantic, space colors, node colors)
+ * - spacing.css    : Spacing scale, layout dimensions, border radius, z-index
+ * - typography.css : Font families, sizes, weights, line heights, text styles
+ * - shadows.css    : Elevation shadows, focus rings, colored shadows
+ *
+ * Usage in CSS:
+ *   background: var(--color-bg);
+ *   padding: var(--spacing-md);
+ *   font: var(--text-body-md);
+ *   box-shadow: var(--shadow-card);
+ *
+ * Usage in CSS Modules:
+ *   .card {
+ *     background: var(--color-surface);
+ *     padding: var(--spacing-lg);
+ *     border-radius: var(--radius-md);
+ *     box-shadow: var(--shadow-card);
+ *   }
+ */
+
+@import './colors.css';
+@import './spacing.css';
+@import './typography.css';
+@import './shadows.css';
+
+/* ========================================
+ * Transition Tokens
+ * (Included here for convenience)
+ * ======================================== */
+:root {
+  /* Duration */
+  --duration-instant: 0ms;
+  --duration-fast: 100ms;
+  --duration-normal: 200ms;
+  --duration-slow: 300ms;
+  --duration-slower: 500ms;
+
+  /* Easing */
+  --ease-linear: linear;
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-bounce: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+  /* Composite Transitions */
+  --transition-fast: var(--duration-fast) var(--ease-out);
+  --transition-normal: var(--duration-normal) var(--ease-out);
+  --transition-slow: var(--duration-slow) var(--ease-out);
+
+  /* Property-specific transitions */
+  --transition-colors: color var(--transition-fast),
+                       background-color var(--transition-fast),
+                       border-color var(--transition-fast);
+  --transition-opacity: opacity var(--transition-normal);
+  --transition-transform: transform var(--transition-normal);
+  --transition-shadow: box-shadow var(--transition-fast);
+  --transition-all: all var(--transition-normal);
+}
+
+/* ========================================
+ * Legacy Token Aliases
+ * These are now defined in variables.css for direct control.
+ * The --color-* tokens above are the source of truth.
+ * Variables like --bg, --text etc. are set in variables.css
+ * to allow direct overrides without var() indirection.
+ * ======================================== */
+
+/* Layout aliases - these don't conflict */
+:root {
+  --footer-height: var(--layout-footer-height);
+  --topbar-height: var(--layout-topbar-height);
+  --sidebar-width: var(--layout-sidebar-width);
+}

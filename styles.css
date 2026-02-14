@@ -698,6 +698,7 @@ button {
   min-height: var(--footer-height);
 }
 
+/* REMOVED: Legacy .btn - now centralized in styles/components.css
 .btn {
   border: 1px solid var(--border);
   background: var(--bg-alt);
@@ -713,6 +714,7 @@ button {
   background: var(--accent-soft);
   color: var(--text);
 }
+*/
 
 /* basic table */
 .table {
@@ -871,7 +873,7 @@ button {
   margin: 4px 0;
 }
 
-/* --- modern overrides --- */
+/* REMOVED: Legacy "modern overrides" .btn - now centralized in styles/components.css
 .btn {
   border: 1px solid var(--btn-2);
   background: linear-gradient(135deg, var(--btn), var(--btn-2));
@@ -891,6 +893,7 @@ button {
   background: linear-gradient(135deg, var(--btn-2), var(--btn));
   color: var(--btn-text);
 }
+*/
 .btn-secondary {
   padding: 6px 12px;
   font-size: 13px;
@@ -3256,19 +3259,47 @@ button {
 .left-nav {
   width: 52px;
   min-width: 52px;
-  height: 100vh;
+  height: calc(100vh - 32px);
   position: fixed;
-  left: 0;
-  top: 0;
-  background: var(--panel);
-  border-right: 1px solid var(--border);
+  left: 16px;
+  top: 16px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 16px;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.1),
+    0 2px 8px rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
-  padding: 0 0 8px 0;
+  padding: 8px 0;
   gap: 2px;
   overflow: visible;
   z-index: 100;
-  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1), min-width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              min-width 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.25s ease;
+}
+
+:root[data-theme='dark'] .left-nav {
+  background: rgba(30, 36, 48, 0.9);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.left-nav:hover {
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.15),
+    0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+:root[data-theme='dark'] .left-nav:hover {
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.4),
+    0 4px 12px rgba(0, 0, 0, 0.25);
 }
 
 /* Inner scrollable content wrapper */
@@ -3290,8 +3321,9 @@ button {
 /* Fixed header wrapper - doesn't scroll */
 .left-nav-fixed-header {
   flex-shrink: 0;
-  background: var(--panel);
+  background: transparent;
   border-bottom: 1px solid var(--border);
+  border-radius: 16px 16px 0 0;
 }
 
 /* Header with integrated pin */
@@ -3363,6 +3395,7 @@ button {
   align-items: center;
   gap: 12px;
   padding: 10px 14px;
+  margin: 2px 8px;
   color: var(--text-muted);
   text-decoration: none;
   transition: all 0.2s ease;
@@ -3370,18 +3403,23 @@ button {
   border: none;
   background: transparent;
   cursor: pointer;
-  width: 100%;
+  width: calc(100% - 16px);
   font-size: 13px;
+  border-radius: 10px;
 }
 
 .left-nav-item:hover {
   color: var(--text);
-  background: var(--bg);
+  background: rgba(0, 0, 0, 0.06);
+}
+
+:root[data-theme='dark'] .left-nav-item:hover {
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .left-nav-item.active {
-  color: var(--menu-selected-text);
-  background: var(--menu-selected-bg);
+  color: var(--accent);
+  background: var(--accent-soft);
   font-weight: 500;
 }
 
@@ -3442,13 +3480,33 @@ button {
 }
 
 .app-main.has-left-nav {
-  margin-left: 60px; /* Account for collapsed left nav width */
+  margin-left: 84px; /* 16px gap + 52px nav + 16px gap */
   transition: margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* When sidebar is pinned (via body class), shift content more */
 body.sidebar-pinned .app-main.has-left-nav {
-  margin-left: calc(var(--sidebar-width, 208px) + 8px);
+  margin-left: calc(var(--sidebar-width, 208px) + 32px);
+}
+
+/* When using system header navigation, no left margin needed */
+.app-main.has-system-header {
+  margin-left: 0;
+}
+
+/* Header nav mode - adjust app height to account for header */
+.app--header-nav {
+  height: 100vh;
+}
+
+.app--header-nav .app-main {
+  min-height: 0;
+  height: calc(100vh - 44px); /* 44px header height */
+}
+
+.app--header-nav .app-main__content {
+  min-height: 0;
+  height: 100%;
 }
 
 /* ===== Top Right Bar ===== */
@@ -4034,6 +4092,22 @@ body.sidebar-pinned .app-main.has-left-nav {
   flex-wrap: wrap;
   padding-right: 180px;
   box-sizing: border-box;
+  flex-shrink: 0; /* Prevent toolbar from shrinking */
+}
+
+/* Compact toolbar variant - reduces padding and label visibility */
+.graph-nav-toolbar.compact {
+  gap: 12px;
+  padding: 6px 12px;
+}
+
+.graph-nav-toolbar.compact .toolbar-section-label {
+  display: none;
+}
+
+.graph-nav-toolbar.compact .toolbar-btn {
+  padding: 5px 8px;
+  font-size: 11px;
 }
 
 .toolbar-section {
@@ -4582,7 +4656,8 @@ button.link:hover {
 .graph-layout-controls {
   position: absolute;
   bottom: 16px;
-  left: 16px;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -5869,9 +5944,9 @@ button.link:hover {
   flex-direction: row;
   background: var(--panel);
   border-left: 1px solid var(--border);
-  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.08);
+  box-shadow: -2px 0 10px rgba(31, 30, 27, 0.08);
   z-index: 100;
-  transition: width 0.2s ease;
+  transition: width 0.12s ease-out;
   max-width: 100%;
   overflow: hidden;
 }
@@ -5904,11 +5979,11 @@ button.link:hover {
   background: var(--panel);
   border: 1px solid var(--border);
   border-right: none;
-  border-radius: 6px 0 0 6px;
+  border-radius: 4px 0 0 4px;
   cursor: pointer;
   color: var(--text-muted);
   z-index: 101;
-  transition: all 0.15s ease;
+  transition: all 0.12s ease-out;
 }
 
 .sd-right-toolbar.collapsed .sd-toolbar-toggle {
@@ -5938,11 +6013,11 @@ button.link:hover {
   align-items: center;
   justify-content: center;
   border: none;
-  border-radius: 8px;
+  border-radius: 4px;
   background: transparent;
   color: var(--text-muted);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.12s ease-out;
 }
 
 .sd-toolbar-tab:hover {
@@ -5968,7 +6043,7 @@ button.link:hover {
   font-weight: 600;
   background: var(--accent);
   color: white;
-  border-radius: 8px;
+  border-radius: 4px;
   padding: 0 4px;
 }
 
@@ -6019,11 +6094,11 @@ button.link:hover {
   width: 28px;
   height: 28px;
   border: none;
-  border-radius: 6px;
+  border-radius: 4px;
   background: transparent;
   color: var(--text-muted);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.12s ease-out;
 }
 
 .sd-toolbar-close:hover {
@@ -6062,16 +6137,21 @@ button.link:hover {
   min-width: 80px;
   padding: 8px 12px;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 4px;
   background: var(--bg-alt);
   color: var(--text);
   font-size: 12px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.12s ease-out;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
+}
+
+.sd-toolbar-body .sd-panel-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(31, 30, 27, 0.08);
 }
 
 .sd-toolbar-body .sd-panel-btn:hover {
@@ -6094,15 +6174,17 @@ button.link:hover {
 .sd-toolbar-body .sd-panel-list-item {
   padding: 10px 12px;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 4px;
   background: var(--bg-alt);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.12s ease-out;
 }
 
 .sd-toolbar-body .sd-panel-list-item:hover {
   background: var(--accent-soft);
   border-color: var(--accent);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(31, 30, 27, 0.08);
 }
 
 .sd-toolbar-body .sd-panel-list-item.active {
@@ -8608,7 +8690,7 @@ button.link:hover {
   border-top: 1px solid var(--border);
 }
 
-/* Button styles for kanban */
+/* REMOVED: Legacy kanban button styles - now centralized in styles/components.css
 .btn {
   padding: 8px 16px;
   font-size: 13px;
@@ -8651,6 +8733,7 @@ button.link:hover {
   opacity: 0.5;
   cursor: not-allowed;
 }
+*/
 
 /* ============================================
    TRACEABILITY PANEL - EPIC 6
@@ -25132,7 +25215,7 @@ button.chain-item:hover {
   gap: 12px;
 }
 
-/* Buttons */
+/* REMOVED: Legacy button styles - now centralized in styles/components.css
 .btn {
   display: inline-flex;
   align-items: center;
@@ -25189,6 +25272,7 @@ button.chain-item:hover {
 .btn-danger:hover {
   background: #dc2626;
 }
+*/
 
 /* ============================================
    TYPE SELECTION STEP (GuidedCreateModal)

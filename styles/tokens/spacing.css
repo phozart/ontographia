@@ -1,0 +1,104 @@
+/**
+ * Design Tokens: Spacing
+ * Ontographia V2 Design System
+ *
+ * 8px base unit spacing scale for consistent layout rhythm.
+ * All spacing values are multiples of the base unit.
+ */
+
+:root {
+  /* ========================================
+   * Base Unit
+   * ======================================== */
+  --spacing-unit: 8px;
+
+  /* ========================================
+   * Spacing Scale
+   * ======================================== */
+  --spacing-0: 0;
+  --spacing-px: 1px;
+  --spacing-0-5: 2px;    /* 0.25 * base */
+  --spacing-xs: 4px;     /* 0.5 * base */
+  --spacing-sm: 8px;     /* 1 * base */
+  --spacing-md: 16px;    /* 2 * base */
+  --spacing-lg: 24px;    /* 3 * base */
+  --spacing-xl: 32px;    /* 4 * base */
+  --spacing-2xl: 48px;   /* 6 * base */
+  --spacing-3xl: 64px;   /* 8 * base */
+  --spacing-4xl: 96px;   /* 12 * base */
+  --spacing-5xl: 128px;  /* 16 * base */
+
+  /* ========================================
+   * Semantic Spacing Aliases
+   * ======================================== */
+
+  /* Component Internal Spacing */
+  --spacing-input-x: var(--spacing-md);
+  --spacing-input-y: var(--spacing-sm);
+  --spacing-button-x: var(--spacing-md);
+  --spacing-button-y: var(--spacing-sm);
+  --spacing-card-padding: var(--spacing-lg);
+  --spacing-modal-padding: var(--spacing-xl);
+
+  /* Layout Gaps */
+  --spacing-stack-xs: var(--spacing-xs);
+  --spacing-stack-sm: var(--spacing-sm);
+  --spacing-stack-md: var(--spacing-md);
+  --spacing-stack-lg: var(--spacing-lg);
+
+  --spacing-inline-xs: var(--spacing-xs);
+  --spacing-inline-sm: var(--spacing-sm);
+  --spacing-inline-md: var(--spacing-md);
+  --spacing-inline-lg: var(--spacing-lg);
+
+  /* Section Spacing */
+  --spacing-section-sm: var(--spacing-lg);
+  --spacing-section-md: var(--spacing-xl);
+  --spacing-section-lg: var(--spacing-2xl);
+
+  /* ========================================
+   * Layout Dimensions
+   * ======================================== */
+
+  /* Navigation */
+  --layout-sidebar-width: 280px;
+  --layout-sidebar-collapsed: 64px;
+  --layout-topbar-height: 64px;
+  --layout-footer-height: 32px;
+
+  /* Content */
+  --layout-content-max-width: 1200px;
+  --layout-content-wide: 1400px;
+  --layout-content-narrow: 800px;
+
+  /* Panels */
+  --layout-panel-sm: 280px;
+  --layout-panel-md: 360px;
+  --layout-panel-lg: 480px;
+
+  /* ========================================
+   * Border Radius
+   * ======================================== */
+  --radius-none: 0;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+
+  /* ========================================
+   * Z-Index Scale
+   * ======================================== */
+  --z-base: 0;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-fixed: 300;
+  --z-drawer: 400;
+  --z-modal-backdrop: 500;
+  --z-modal: 600;
+  --z-popover: 700;
+  --z-tooltip: 800;
+  --z-toast: 900;
+  --z-max: 9999;
+}

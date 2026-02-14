@@ -1,0 +1,302 @@
+/* styles/floating-dock.css - macOS-style floating dock navigation */
+
+/* ============================================
+   DOCK CONTAINER
+   ============================================ */
+
+.floating-dock-container {
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  pointer-events: none;
+}
+
+/* ============================================
+   DOCK BAR
+   ============================================ */
+
+.floating-dock {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 18px;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.12),
+    0 2px 8px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  pointer-events: auto;
+}
+
+:root[data-theme='dark'] .floating-dock {
+  background: rgba(30, 35, 45, 0.85);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 2px 8px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* ============================================
+   DOCK ITEMS
+   ============================================ */
+
+.dock-items {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.dock-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--text-muted);
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition:
+    transform 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 0.15s ease,
+    color 0.15s ease;
+  position: relative;
+  transform-origin: bottom center;
+}
+
+.dock-item:hover {
+  background: rgba(0, 0, 0, 0.08);
+  color: var(--text);
+}
+
+:root[data-theme='dark'] .dock-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.dock-item.active {
+  color: var(--accent);
+}
+
+.dock-item svg {
+  width: 24px;
+  height: 24px;
+  transition: transform 0.15s ease;
+}
+
+/* Active indicator dot */
+.dock-item-indicator {
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+/* Button variant (for more/settings) */
+.dock-item-button {
+  background: transparent;
+  font-family: inherit;
+}
+
+/* ============================================
+   DOCK DIVIDER
+   ============================================ */
+
+.dock-divider {
+  width: 1px;
+  height: 32px;
+  background: var(--border);
+  margin: 0 4px;
+  opacity: 0.5;
+}
+
+/* ============================================
+   DOCK MENU WRAPPER
+   ============================================ */
+
+.dock-menu-wrapper {
+  position: relative;
+}
+
+/* ============================================
+   DOCK POPUP MENU
+   ============================================ */
+
+.dock-popup {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 200px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 14px;
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.15),
+    0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 8px;
+  animation: dockPopupIn 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+:root[data-theme='dark'] .dock-popup {
+  background: rgba(40, 45, 55, 0.95);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dock-popup-right {
+  left: auto;
+  right: 0;
+  transform: none;
+}
+
+@keyframes dockPopupIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(8px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+}
+
+.dock-popup-right {
+  animation-name: dockPopupInRight;
+}
+
+@keyframes dockPopupInRight {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.dock-popup-header {
+  padding: 8px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 4px;
+}
+
+.dock-popup-header strong {
+  display: block;
+  font-size: 13px;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--text);
+  margin-top: 2px;
+}
+
+.dock-popup-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dock-popup-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: background-color 0.15s ease;
+}
+
+.dock-popup-item:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+:root[data-theme='dark'] .dock-popup-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.dock-popup-item.active {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.dock-popup-item svg {
+  width: 20px;
+  height: 20px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.dock-popup-item.active svg {
+  color: var(--accent);
+}
+
+.dock-popup-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 6px 0;
+}
+
+/* ============================================
+   LAYOUT ADJUSTMENTS FOR DOCK
+   ============================================ */
+
+.app-main.has-dock {
+  margin-left: 0 !important;
+  padding-bottom: 80px; /* Space for dock */
+}
+
+/* Hide dock on mobile */
+@media (max-width: 768px) {
+  .floating-dock-container {
+    display: none;
+  }
+
+  .app-main.has-dock {
+    padding-bottom: 0;
+  }
+}
+
+/* Smaller screens - more compact dock */
+@media (max-width: 1024px) {
+  .dock-item {
+    width: 40px;
+    height: 40px;
+  }
+
+  .dock-item svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .floating-dock {
+    padding: 6px 10px;
+    border-radius: 16px;
+  }
+}

@@ -1,2 +1,3 @@
 // Re-export the existing graphnavigator page
-export { default } from '../../../graphnavigator';
+import GraphNavigatorPage from '../../../graphnavigator';
+export default GraphNavigatorPage;

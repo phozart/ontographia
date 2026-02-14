@@ -1,0 +1,201 @@
+/**
+ * Services Module Styles
+ */
+
+/* Loading & Empty */
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px;
+}
+
+.loadingSpinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #E2E0DB;
+  border-top-color: #47453F;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading p {
+  margin-top: 16px;
+  color: #5C5A54;
+}
+
+/* Catalog */
+.serviceCatalog {
+  padding: 16px;
+}
+
+.catalogContent {
+  margin-top: 16px;
+}
+
+.serviceGroup {
+  margin-bottom: 32px;
+}
+
+.groupTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #1F1E1B;
+  margin: 0 0 16px 0;
+}
+
+.groupDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.groupCount {
+  margin-left: auto;
+  padding: 2px 8px;
+  background: #F0EFEC;
+  color: #5C5A54;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 4px;
+}
+
+.serviceGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+/* Service Card */
+.serviceCard {
+  padding: 16px;
+  background: #FDFCFA;
+  border: 1px solid #E2E0DB;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 150ms ease-out;
+  border-left: 3px solid var(--card-accent, #3b82f6);
+}
+
+.serviceCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(31, 30, 27, 0.08);
+}
+
+.serviceCard.selected {
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.cardTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.cardName {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #1F1E1B;
+  margin: 0;
+}
+
+.statusBadge {
+  padding: 2px 6px;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  border-radius: 4px;
+}
+
+.typeBadge {
+  padding: 2px 6px;
+  background: #F0EFEC;
+  color: #5C5A54;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  border-radius: 4px;
+}
+
+.cardDescription {
+  font-size: 0.8125rem;
+  color: #5C5A54;
+  margin: 0 0 12px 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.cardMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 12px;
+  border-top: 1px solid #E2E0DB;
+}
+
+.metaItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.8125rem;
+}
+
+.metaLabel {
+  color: #9C9A94;
+}
+
+.metaValue {
+  color: #1F1E1B;
+}
+
+.tierBadge {
+  font-weight: 500;
+}
+
+.cardFooter {
+  display: flex;
+  gap: 12px;
+  padding-top: 12px;
+  margin-top: 12px;
+  border-top: 1px solid #E2E0DB;
+}
+
+.footerStat {
+  font-size: 0.75rem;
+  color: #5C5A54;
+}
+
+/* ============================================================================
+   MODAL FORM
+   ============================================================================ */
+
+.modalForm {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.formError {
+  padding: 8px 12px;
+  background: rgba(165, 77, 77, 0.08);
+  border: 1px solid rgba(165, 77, 77, 0.2);
+  border-radius: 4px;
+  color: #A54D4D;
+  font-size: 13px;
+}

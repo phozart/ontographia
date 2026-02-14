@@ -5,6 +5,7 @@
 import { query } from '../../../lib/pg';
 import { getUserFromRequest, checkProjectAccess } from '../../../lib/projectAccess';
 import { DWD_ALL_TYPES, DWD_TYPE_DEFS, isDWDType, DWD_CASE_STATUS, DWD_ADJUSTMENT_STATUS } from '../../../lib/dwd-types';
+import { errorResponse } from '../../../lib/api/errorResponse';
 
 // ============ DATABASE CONSTRAINT VALUES ============
 const VALID_ARTEFACT_STATUS = ['Draft', 'InReview', 'Approved', 'Deprecated', 'Superseded'];
@@ -64,8 +65,8 @@ export default async function handler(req, res) {
           (SELECT COUNT(*) FROM artefact_relationships WHERE from_artefact_id = a.id) as outgoing_count,
           (SELECT COUNT(*) FROM artefact_relationships WHERE to_artefact_id = a.id) as incoming_count
         FROM artefacts a
-        LEFT JOIN users u ON u.id = a.owner_id
-        LEFT JOIN users cb ON cb.id = a.created_by
+        LEFT JOIN users u ON u.username = a.owner_id
+        LEFT JOIN users cb ON cb.username = a.created_by
         WHERE a.project_id = $1
           AND a.artefact_type LIKE 'dwd_%'
       `;
@@ -154,7 +155,7 @@ export default async function handler(req, res) {
       });
     } catch (err) {
       console.error('Error listing DWD artefacts:', err);
-      return res.status(500).json({ error: 'Failed to list artefacts', details: err.message });
+      return errorResponse(res, 500, 'Failed to list artefacts', err);
     }
   }
 
@@ -254,7 +255,7 @@ export default async function handler(req, res) {
       return res.status(201).json(result.rows[0]);
     } catch (err) {
       console.error('Error creating DWD artefact:', err);
-      return res.status(500).json({ error: 'Failed to create artefact', details: err.message });
+      return errorResponse(res, 500, 'Failed to create artefact', err);
     }
   }
 

@@ -2,6 +2,7 @@
 // Get, update, delete single diagram
 
 import { diagramRepository } from '../../../lib/repositories';
+import { errorResponse } from '../../../lib/api/errorResponse';
 
 function getUserFromReq(req) {
   const user = req.headers['x-user'];
@@ -69,6 +70,6 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   } catch (err) {
     console.error('Diagram API error', err);
-    return res.status(500).json({ error: 'Internal server error', details: err.message });
+    return errorResponse(res, 500, 'Internal server error', err);
   }
 }

@@ -1,5 +1,6 @@
 // components/landing/index.js
-// Export all landing page components
+// Re-export from spaces/landing for backwards compatibility
 
-export { default as Hero } from './Hero';
-export { default as InteractiveDemo } from './InteractiveDemo';
+export { default as Hero } from '../spaces/landing/Hero';
+export { default as InteractiveDemo } from '../spaces/landing/InteractiveDemo';
+export { default as BrandPoster } from '../BrandPoster';

@@ -1,15 +1,17 @@
 {
   "name": "Ontographia",
   "short_name": "Ontographia",
+  "description": "Knowledge Graph Studio - Where Work Is Understood and Remembered",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#000000",
+  "background_color": "#1f2937",
+  "theme_color": "#1f2937",
   "icons": [
     {
       "src": "/icons/icon.svg",
       "sizes": "any",
-      "type": "image/svg+xml"
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
     }
   ]
 }

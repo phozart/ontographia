@@ -1,6 +1,20 @@
 /* pds-tools.css - Tool-specific styles for Project Design Workspace */
 
 /* ============================================================================
+   Modal Backdrop (shared)
+   ============================================================================ */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+/* ============================================================================
    Tool Layout
    ============================================================================ */
 
@@ -22,7 +36,7 @@
 
 .pds-tool-legend,
 .pds-tool-stats {
-  background: var(--surface-raised);
+  background: var(--bg);
   border-radius: 12px;
   padding: 16px;
 }
@@ -60,7 +74,7 @@
   font-size: 12px;
   font-weight: 500;
   padding: 2px 6px;
-  background: var(--surface);
+  background: var(--panel);
   border-radius: 10px;
   color: var(--text-muted);
 }
@@ -151,7 +165,7 @@
   flex-direction: column;
   align-items: center;
   padding: 16px;
-  background: var(--surface);
+  background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 12px;
   cursor: pointer;
@@ -292,7 +306,7 @@
   display: flex;
   gap: 24px;
   padding: 16px;
-  background: var(--surface-raised);
+  background: var(--bg);
   border-radius: 12px;
 }
 
@@ -325,7 +339,7 @@
 }
 
 .pds-progress-card {
-  background: var(--surface);
+  background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 16px;
@@ -333,7 +347,7 @@
 
 .pds-progress-bar {
   height: 8px;
-  background: var(--surface-raised);
+  background: var(--bg);
   border-radius: 4px;
   overflow: hidden;
   margin-bottom: 12px;
@@ -425,7 +439,7 @@
 
 .pds-lesson-tag {
   padding: 2px 8px;
-  background: var(--surface-raised);
+  background: var(--bg);
   border-radius: 10px;
   font-size: 11px;
   color: var(--text-muted);
@@ -491,14 +505,14 @@
    ============================================================================ */
 
 .pds-type-selector {
-  background: var(--surface);
+  background: var(--panel);
   border-radius: 16px;
   width: 640px;
   max-width: 90vw;
   max-height: 80vh;
   display: flex;
   flex-direction: column;
-  box-shadow: var(--shadow-xl);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
 }
 
 .pds-type-selector__header {
@@ -529,7 +543,7 @@
 }
 
 .pds-type-selector__close:hover {
-  background: var(--surface-raised);
+  background: var(--bg);
   color: var(--text);
 }
 
@@ -568,7 +582,7 @@
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  background: var(--surface-raised);
+  background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 20px;
   font-size: 13px;
@@ -625,7 +639,7 @@
   align-items: flex-start;
   gap: 12px;
   padding: 12px;
-  background: var(--surface);
+  background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 10px;
   text-align: left;
@@ -682,14 +696,14 @@
    ============================================================================ */
 
 .pds-artefact-modal {
-  background: var(--surface);
+  background: var(--panel);
   border-radius: 16px;
   width: 560px;
   max-width: 90vw;
   max-height: 85vh;
   display: flex;
   flex-direction: column;
-  box-shadow: var(--shadow-xl);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
 }
 
 .pds-artefact-modal__header {
@@ -733,7 +747,7 @@
 
 .pds-artefact-modal__tips-toggle:hover,
 .pds-artefact-modal__close:hover {
-  background: var(--surface-raised);
+  background: var(--bg);
   color: var(--text);
 }
 
@@ -745,7 +759,7 @@
 
 .pds-artefact-modal__guidance {
   padding: 12px 16px;
-  background: var(--accent-subtle);
+  background: var(--accent-soft);
   border-radius: 8px;
   margin-bottom: 20px;
 }
@@ -753,7 +767,7 @@
 .pds-artefact-modal__guidance p {
   margin: 0;
   font-size: 13px;
-  color: var(--accent-text);
+  color: var(--accent);
   line-height: 1.5;
 }
 
@@ -794,7 +808,7 @@
 .pds-form-field textarea {
   width: 100%;
   padding: 10px 12px;
-  background: var(--surface);
+  background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 8px;
   font-size: 14px;
@@ -860,13 +874,13 @@
 }
 
 .pds-guidance-panel {
-  background: var(--surface);
+  background: var(--panel);
   width: 400px;
   max-width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
-  box-shadow: var(--shadow-xl);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
   animation: slideIn 0.2s ease;
 }
 
@@ -917,7 +931,7 @@
 }
 
 .pds-guidance-panel__close:hover {
-  background: var(--surface-raised);
+  background: var(--bg);
   color: var(--text);
 }
 
@@ -1078,7 +1092,7 @@
 .pds-guidance-panel__footer {
   padding: 16px 24px;
   border-top: 1px solid var(--border);
-  background: var(--surface-raised);
+  background: var(--bg);
 }
 
 .pds-guidance-panel__footer p {
@@ -1088,9 +1102,316 @@
 }
 
 /* ============================================================================
-   Overview Dashboard Specific
+   Overview Dashboard - Modern Grid Layout
    ============================================================================ */
 
+.pds-dashboard-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 20px;
+}
+
+/* Health card spans two rows on the left */
+.pds-dashboard-card--health {
+  grid-row: 1 / 3;
+}
+
+/* Activity card spans full width */
+.pds-dashboard-card--activity {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 900px) {
+  .pds-dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+  .pds-dashboard-card--health {
+    grid-row: auto;
+  }
+}
+
+.pds-dashboard-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.pds-dashboard-card:hover {
+  border-color: var(--border-strong, var(--border));
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+.pds-dashboard-card__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.pds-dashboard-card__header h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.pds-dashboard-card__icon {
+  color: var(--accent);
+  font-size: 20px !important;
+}
+
+/* ============================================================================
+   Project Health Wheel (Radar Chart)
+   ============================================================================ */
+
+.pds-health-wheel-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 360px;
+  padding: 10px 0;
+}
+
+.pds-health-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.pds-health-empty__icon {
+  font-size: 48px !important;
+  color: var(--border);
+  margin-bottom: 12px;
+}
+
+.pds-health-empty p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* ============================================================================
+   Stage Progress Bars
+   ============================================================================ */
+
+.pds-stage-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pds-stage-bar {
+  cursor: pointer;
+  padding: 6px 8px;
+  margin: -6px -8px;
+  border-radius: 6px;
+  transition: background 0.15s ease;
+}
+
+.pds-stage-bar:hover {
+  background: var(--bg);
+}
+
+.pds-stage-bar__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.pds-stage-bar__name {
+  font-size: 12px;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.pds-stage-bar__value {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.pds-stage-bar__track {
+  height: 6px;
+  background: var(--bg);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.pds-stage-bar__fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.4s ease;
+  min-width: 2px;
+}
+
+/* ============================================================================
+   Quick Actions Grid
+   ============================================================================ */
+
+.pds-action-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+@media (max-width: 900px) {
+  .pds-action-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .pds-action-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.pds-action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pds-action-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.pds-action-btn__icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  color: white;
+}
+
+.pds-action-btn__icon svg {
+  font-size: 16px;
+}
+
+.pds-action-btn--purple .pds-action-btn__icon { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); }
+.pds-action-btn--blue .pds-action-btn__icon { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); }
+.pds-action-btn--amber .pds-action-btn__icon { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+.pds-action-btn--green .pds-action-btn__icon { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+
+.pds-action-btn--purple:hover { border-color: #8b5cf6; background: rgba(139, 92, 246, 0.05); }
+.pds-action-btn--blue:hover { border-color: #3b82f6; background: rgba(59, 130, 246, 0.05); }
+.pds-action-btn--amber:hover { border-color: #f59e0b; background: rgba(245, 158, 11, 0.05); }
+.pds-action-btn--green:hover { border-color: #10b981; background: rgba(16, 185, 129, 0.05); }
+
+.pds-action-btn__label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text);
+  text-align: center;
+  line-height: 1.3;
+}
+
+/* ============================================================================
+   Recent Activity List
+   ============================================================================ */
+
+.pds-activity-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.pds-activity-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  margin: 0 -12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.pds-activity-item:hover {
+  background: var(--bg);
+}
+
+.pds-activity-item__icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(16, 185, 129, 0.1);
+  border-radius: 8px;
+  color: #10b981;
+  flex-shrink: 0;
+}
+
+.pds-activity-item__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.pds-activity-item__name {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pds-activity-item__type {
+  display: block;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-transform: capitalize;
+  margin-top: 2px;
+}
+
+/* Activity Empty State */
+.pds-activity-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 20px;
+  text-align: center;
+}
+
+.pds-activity-empty__icon {
+  font-size: 40px !important;
+  color: var(--border);
+  margin-bottom: 12px;
+}
+
+.pds-activity-empty__title {
+  margin: 0 0 4px 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.pds-activity-empty__desc {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+  max-width: 280px;
+  line-height: 1.5;
+}
+
+/* Legacy support */
 .pds-overview-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -1098,7 +1419,7 @@
 }
 
 .pds-overview-card {
-  background: var(--surface);
+  background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 12px;
 }
@@ -1157,14 +1478,14 @@
    ============================================================================ */
 
 .pds-cross-linker {
-  background: var(--surface);
+  background: var(--panel);
   border-radius: 16px;
   width: 600px;
   max-width: 90vw;
   max-height: 80vh;
   display: flex;
   flex-direction: column;
-  box-shadow: var(--shadow-xl);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
 }
 
 .pds-cross-linker__header {
@@ -1205,7 +1526,7 @@
 }
 
 .pds-cross-linker__close:hover {
-  background: var(--surface-raised);
+  background: var(--bg);
   color: var(--text);
 }
 
@@ -1219,7 +1540,7 @@
 
 .pds-cross-linker__tab {
   padding: 8px 16px;
-  background: var(--surface-raised);
+  background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 8px;
   font-size: 13px;
@@ -1301,7 +1622,7 @@
   justify-content: space-between;
   gap: 16px;
   padding: 16px;
-  background: var(--surface);
+  background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 10px;
   transition: border-color 0.15s ease;
@@ -1396,7 +1717,7 @@
 }
 
 .pds-cross-linker__link-btn:hover:not(:disabled) {
-  background: var(--accent-hover);
+  background: var(--accent);
 }
 
 .pds-cross-linker__link-btn:disabled {
@@ -1407,7 +1728,7 @@
 .pds-cross-linker__footer {
   padding: 16px 24px;
   border-top: 1px solid var(--border);
-  background: var(--surface-raised);
+  background: var(--bg);
   border-radius: 0 0 16px 16px;
 }
 
@@ -1420,4 +1741,449 @@
 
 .pds-cross-linker__footer strong {
   color: var(--text);
+}
+
+/* ============================================================================
+   Intent & Governance View Styles
+   ============================================================================ */
+
+/* Key Questions Banner */
+.pds-intent-questions {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(139, 92, 246, 0.08) 100%);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+}
+
+.pds-intent-questions__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #6366f1;
+  margin-bottom: 12px;
+}
+
+.pds-intent-questions__header svg {
+  font-size: 16px;
+}
+
+.pds-intent-questions__list {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.pds-intent-question {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  flex: 1;
+  min-width: 200px;
+}
+
+.pds-intent-question__number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: #6366f1;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 600;
+  color: white;
+  flex-shrink: 0;
+}
+
+.pds-intent-question__text {
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.5;
+}
+
+/* Intent Grid Layout */
+.pds-intent-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+@media (max-width: 1024px) {
+  .pds-intent-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Intent Section Cards */
+.pds-intent-section {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  min-height: 280px;
+}
+
+.pds-intent-section__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.pds-intent-section__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  color: white;
+  flex-shrink: 0;
+}
+
+.pds-intent-section__icon svg {
+  font-size: 20px;
+}
+
+.pds-intent-section__title {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pds-intent-section__title h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.pds-intent-section__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  background: var(--bg);
+  border-radius: 11px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.pds-intent-section__content {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.pds-intent-section__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.pds-intent-section__empty svg {
+  font-size: 40px;
+  margin-bottom: 12px;
+  opacity: 0.4;
+}
+
+.pds-intent-section__empty p {
+  margin: 0 0 16px 0;
+  font-size: 14px;
+}
+
+/* Stakeholder Cards */
+.pds-stakeholder-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pds-stakeholder-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: var(--bg);
+  border: 1px solid transparent;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.pds-stakeholder-card:hover {
+  border-color: var(--accent);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.pds-stakeholder-card__avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 16px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.pds-stakeholder-card__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.pds-stakeholder-card__name {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pds-stakeholder-card__role {
+  display: block;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.pds-stakeholder-card__badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Business Case Cards */
+.pds-business-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pds-business-card {
+  padding: 14px;
+  background: var(--bg);
+  border: 1px solid transparent;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.pds-business-card:hover {
+  border-color: var(--accent);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.pds-business-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.pds-business-card__header h4 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.pds-business-card__status {
+  padding: 3px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: capitalize;
+  background: var(--panel);
+  color: var(--text-muted);
+}
+
+.pds-business-card__status--draft {
+  background: rgba(107, 114, 128, 0.1);
+  color: #6b7280;
+}
+
+.pds-business-card__status--submitted {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+
+.pds-business-card__status--approved {
+  background: rgba(34, 197, 94, 0.1);
+  color: #22c55e;
+}
+
+.pds-business-card__status--rejected {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.pds-business-card__problem {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* Governance Gate Cards */
+.pds-gate-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pds-gate-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: var(--bg);
+  border: 1px solid transparent;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.pds-gate-card:hover {
+  border-color: var(--accent);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.pds-gate-card__status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+.pds-gate-card__status svg {
+  font-size: 24px;
+}
+
+.pds-gate-card__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.pds-gate-card__name {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.pds-gate-card__authority {
+  display: block;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.pds-gate-card__outcome {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Success Measure Cards */
+.pds-measure-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pds-measure-card {
+  padding: 14px;
+  background: var(--bg);
+  border: 1px solid transparent;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.pds-measure-card:hover {
+  border-color: var(--accent);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.pds-measure-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.pds-measure-card__name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.pds-measure-card__status {
+  padding: 3px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.pds-measure-card__values {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pds-measure-card__value {
+  flex: 1;
+  text-align: center;
+  padding: 8px;
+  background: var(--panel);
+  border-radius: 8px;
+}
+
+.pds-measure-card__value--target {
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.pds-measure-card__label {
+  display: block;
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+
+.pds-measure-card__number {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.pds-measure-card__arrow {
+  font-size: 14px;
+  color: var(--text-muted);
+  flex-shrink: 0;
 }

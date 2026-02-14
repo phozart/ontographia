@@ -1,0 +1,323 @@
+/**
+ * Design Tokens: Colors
+ * Ontographia V2 Design System - Phozart System Theme
+ *
+ * Three-Layer Architecture:
+ * - Shell (header): Dark warm graphite (#35332F)
+ * - Panel (sidebars): Warm off-white (#F0EFEC)
+ * - Canvas (content): Paper white (#FDFCFA)
+ *
+ * Color palette organized by semantic meaning for consistent theming
+ * across all 18 spaces.
+ */
+
+:root {
+  /* ========================================
+   * Phozart System Layers
+   * ======================================== */
+  --color-shell: #35332F;
+  --color-shell-hover: #47453F;
+  --color-shell-border: #47453F;
+  --color-shell-text: #F0EFEC;
+  --color-shell-text-muted: #9C9890;
+  --color-shell-text-faint: #6B6860;
+
+  --color-panel: #F0EFEC;
+  --color-panel-border: #E2E0DB;
+  --color-panel-text: #5C5A54;
+
+  --color-canvas: #FDFCFA;
+  --color-canvas-border: #E8E6E1;
+
+  /* ========================================
+   * Brand Colors (Warm graphite-based)
+   * ======================================== */
+  --color-primary: #47453F;
+  --color-primary-hover: #35332F;
+  --color-primary-active: #2A2825;
+  --color-primary-light: #F0EFEC;
+  --color-primary-soft: rgba(71, 69, 63, 0.12);
+
+  --color-secondary: #5B7A99;
+  --color-secondary-hover: #4A6A89;
+  --color-secondary-active: #3A5A79;
+  --color-secondary-light: #E8EEF3;
+  --color-secondary-soft: rgba(91, 122, 153, 0.12);
+
+  /* ========================================
+   * Semantic Colors (Muted warm palette)
+   * ======================================== */
+  --color-success: #5B8A6A;
+  --color-success-hover: #4A7A5A;
+  --color-success-active: #3A6A4A;
+  --color-success-light: #E8F0EB;
+  --color-success-soft: rgba(91, 138, 106, 0.12);
+
+  --color-warning: #C9A227;
+  --color-warning-hover: #B89217;
+  --color-warning-active: #A88207;
+  --color-warning-light: #F5EFD8;
+  --color-warning-soft: rgba(201, 162, 39, 0.12);
+
+  --color-error: #A54D4D;
+  --color-error-hover: #8F4343;
+  --color-error-active: #793939;
+  --color-error-light: #F2E4E4;
+  --color-error-soft: rgba(165, 77, 77, 0.12);
+
+  --color-info: #5B7A99;
+  --color-info-hover: #4A6A89;
+  --color-info-active: #3A5A79;
+  --color-info-light: #E8EEF3;
+  --color-info-soft: rgba(91, 122, 153, 0.12);
+
+  /* ========================================
+   * Background Colors
+   * ======================================== */
+  --color-bg: #FDFCFA;
+  --color-bg-secondary: #F0EFEC;
+  --color-bg-tertiary: #E8E6E1;
+  --color-bg-elevated: #FDFCFA;
+  --color-bg-hover: #F5F4F2;
+  --color-bg-active: #E8E6E1;
+  --color-bg-overlay: rgba(31, 30, 27, 0.5);
+
+  /* ========================================
+   * Text Colors
+   * ======================================== */
+  --color-text: #1F1E1B;
+  --color-text-secondary: #5C5A54;
+  --color-text-tertiary: #9C9A94;
+  --color-text-disabled: #C4C2BC;
+  --color-text-inverse: #F0EFEC;
+  --color-text-link: #5B7A99;
+  --color-text-link-hover: #4A6A89;
+
+  /* ========================================
+   * Border Colors
+   * ======================================== */
+  --color-border: #E2E0DB;
+  --color-border-strong: #C4C2BC;
+  --color-border-focus: #47453F;
+  --color-border-error: #A54D4D;
+
+  /* ========================================
+   * Surface Colors (Cards, Panels)
+   * ======================================== */
+  --color-surface: #FDFCFA;
+  --color-surface-elevated: #FDFCFA;
+  --color-surface-sunken: #F0EFEC;
+
+  /* ========================================
+   * Space Colors (Graph Nodes & Navigation)
+   * Each space has a distinct color for visual identity
+   * (Muted to match warm palette)
+   * ======================================== */
+
+  /* Business Analysis (BA) */
+  --color-space-ba: #5B7A99;
+  --color-space-ba-light: #E8EEF3;
+  --color-space-ba-soft: rgba(91, 122, 153, 0.12);
+
+  /* Enterprise Architecture (EA) */
+  --color-space-ea: #4A8A99;
+  --color-space-ea-light: #E5F0F3;
+  --color-space-ea-soft: rgba(74, 138, 153, 0.12);
+
+  /* Strategic Reasoning Studio (SRS) */
+  --color-space-srs: #6B6899;
+  --color-space-srs-light: #ECEAF3;
+  --color-space-srs-soft: rgba(107, 104, 153, 0.12);
+
+  /* Project Design Studio (PDS) */
+  --color-space-pds: #5B8A6A;
+  --color-space-pds-light: #E8F0EB;
+  --color-space-pds-soft: rgba(91, 138, 106, 0.12);
+
+  /* Capability Mapping (CAP) */
+  --color-space-cap: #C9A227;
+  --color-space-cap-light: #F5EFD8;
+  --color-space-cap-soft: rgba(201, 162, 39, 0.12);
+
+  /* Portfolio Management */
+  --color-space-portfolio: #99687A;
+  --color-space-portfolio-light: #F3E8ED;
+  --color-space-portfolio-soft: rgba(153, 104, 122, 0.12);
+
+  /* Product Design Workshop (PDW) */
+  --color-space-pdw: #4A9A8A;
+  --color-space-pdw-light: #E5F3F0;
+  --color-space-pdw-soft: rgba(74, 154, 138, 0.12);
+
+  /* Dynamic Work Design (DWD) */
+  --color-space-dwd: #B87A4A;
+  --color-space-dwd-light: #F5ECE5;
+  --color-space-dwd-soft: rgba(184, 122, 74, 0.12);
+
+  /* Adaptive Learning System (ALS) */
+  --color-space-als: #4A99AA;
+  --color-space-als-light: #E5F2F5;
+  --color-space-als-soft: rgba(74, 153, 170, 0.12);
+
+  /* Mental Models Studio (MMS) */
+  --color-space-mms: #A5686A;
+  --color-space-mms-light: #F5E8E8;
+  --color-space-mms-soft: rgba(165, 104, 106, 0.12);
+
+  /* Negotiation Preparation (NP) */
+  --color-space-np: #7A9A5A;
+  --color-space-np-light: #EDF3E8;
+  --color-space-np-soft: rgba(122, 154, 90, 0.12);
+
+  /* System Dynamics (SD) */
+  --color-space-sd: #5A8A9A;
+  --color-space-sd-light: #E8F0F3;
+  --color-space-sd-soft: rgba(90, 138, 154, 0.12);
+
+  /* Change Management (CM) */
+  --color-space-cm: #7A7872;
+  --color-space-cm-light: #EDECEB;
+  --color-space-cm-soft: rgba(122, 120, 114, 0.12);
+
+  /* Performance Management (Perf) */
+  --color-space-perf: #5B8A6A;
+  --color-space-perf-light: #E8F0EB;
+  --color-space-perf-soft: rgba(91, 138, 106, 0.12);
+
+  /* Governance (Gov) */
+  --color-space-gov: #6B6965;
+  --color-space-gov-light: #ECEAE9;
+  --color-space-gov-soft: rgba(107, 105, 101, 0.12);
+
+  /* Risk Management */
+  --color-space-risk: #A54D4D;
+  --color-space-risk-light: #F2E4E4;
+  --color-space-risk-soft: rgba(165, 77, 77, 0.12);
+
+  /* Philosophy Studio */
+  --color-space-philosophy: #5C5A54;
+  --color-space-philosophy-light: #ECEAE8;
+  --color-space-philosophy-soft: rgba(92, 90, 84, 0.12);
+
+  /* Knowledge Studio (KS) */
+  --color-space-ks: #4A8A7A;
+  --color-space-ks-light: #E5F0ED;
+  --color-space-ks-soft: rgba(74, 138, 122, 0.12);
+
+  /* ========================================
+   * Graph Node Colors (Entity Types)
+   * (Muted warm palette)
+   * ======================================== */
+  --color-node-capability: #C9A227;
+  --color-node-process: #5B7A99;
+  --color-node-requirement: #B87A4A;
+  --color-node-stakeholder: #99687A;
+  --color-node-system: #4A99AA;
+  --color-node-data: #5B8A6A;
+  --color-node-decision: #A54D4D;
+  --color-node-risk: #A54D4D;
+  --color-node-goal: #5B8A6A;
+  --color-node-default: #7A7872;
+
+  /* ========================================
+   * Interactive State Colors
+   * ======================================== */
+  --color-focus-ring: rgba(71, 69, 63, 0.4);
+  --color-selection: rgba(71, 69, 63, 0.15);
+  --color-highlight: rgba(201, 162, 39, 0.25);
+}
+
+/* ========================================
+ * Dark Mode Overrides
+ * ChatGPT-like dark mode with warm tones
+ * ======================================== */
+:root[data-theme='dark'] {
+  /* Shell layer - same in dark mode */
+  --color-shell: #35332F;
+  --color-shell-hover: #47453F;
+  --color-shell-border: #47453F;
+  --color-shell-text: #F0EFEC;
+  --color-shell-text-muted: #9C9890;
+  --color-shell-text-faint: #6B6860;
+
+  /* Panel - dark warm grey */
+  --color-panel: #2A2825;
+  --color-panel-border: #3D3A36;
+  --color-panel-text: #C4C2BC;
+
+  /* Canvas - slightly lighter than panel */
+  --color-canvas: #1F1E1B;
+  --color-canvas-border: #3D3A36;
+
+  /* Brand Colors */
+  --color-primary: #9C9890;
+  --color-primary-hover: #C4C2BC;
+  --color-primary-active: #F0EFEC;
+  --color-primary-light: #3D3A36;
+  --color-primary-soft: rgba(156, 152, 144, 0.15);
+
+  --color-secondary: #7A9AB5;
+  --color-secondary-hover: #9AB5C9;
+  --color-secondary-active: #B5C9D8;
+  --color-secondary-light: #2A3540;
+  --color-secondary-soft: rgba(122, 154, 181, 0.15);
+
+  /* Semantic Colors (brighter for dark mode) */
+  --color-success: #7AAA8A;
+  --color-success-hover: #9ABAA5;
+  --color-success-active: #AACAB5;
+  --color-success-light: #2A3530;
+  --color-success-soft: rgba(122, 170, 138, 0.15);
+
+  --color-warning: #D9B247;
+  --color-warning-hover: #E5C267;
+  --color-warning-active: #F0D287;
+  --color-warning-light: #3D3525;
+  --color-warning-soft: rgba(217, 178, 71, 0.15);
+
+  --color-error: #C57070;
+  --color-error-hover: #D59090;
+  --color-error-active: #E5A5A5;
+  --color-error-light: #3D2A2A;
+  --color-error-soft: rgba(197, 112, 112, 0.15);
+
+  --color-info: #7A9AB5;
+  --color-info-hover: #9AB5C9;
+  --color-info-active: #B5C9D8;
+  --color-info-light: #2A3540;
+  --color-info-soft: rgba(122, 154, 181, 0.15);
+
+  /* Background Colors */
+  --color-bg: #1F1E1B;
+  --color-bg-secondary: #2A2825;
+  --color-bg-tertiary: #3D3A36;
+  --color-bg-elevated: #2A2825;
+  --color-bg-hover: #3D3A36;
+  --color-bg-active: #47453F;
+  --color-bg-overlay: rgba(0, 0, 0, 0.7);
+
+  /* Text Colors */
+  --color-text: #F0EFEC;
+  --color-text-secondary: #C4C2BC;
+  --color-text-tertiary: #9C9890;
+  --color-text-disabled: #6B6860;
+  --color-text-inverse: #1F1E1B;
+  --color-text-link: #9AB5C9;
+  --color-text-link-hover: #B5C9D8;
+
+  /* Border Colors */
+  --color-border: #3D3A36;
+  --color-border-strong: #5C5A54;
+  --color-border-focus: #9C9890;
+  --color-border-error: #C57070;
+
+  /* Surface Colors */
+  --color-surface: #2A2825;
+  --color-surface-elevated: #3D3A36;
+  --color-surface-sunken: #1F1E1B;
+
+  /* Interactive State Colors */
+  --color-focus-ring: rgba(156, 152, 144, 0.5);
+  --color-selection: rgba(156, 152, 144, 0.25);
+  --color-highlight: rgba(217, 178, 71, 0.25);
+}

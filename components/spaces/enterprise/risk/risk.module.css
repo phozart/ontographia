@@ -1,0 +1,449 @@
+/**
+ * Risk Module Styles
+ * Following Ontographia Design System
+ */
+
+.register {
+  padding: var(--space-6);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--space-6);
+}
+
+.headerContent h2 {
+  color: var(--color-text-primary, #1F1E1B);
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0 0 var(--space-1) 0;
+}
+
+.subtitle {
+  color: var(--color-text-secondary, #5C5A54);
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+.addButton {
+  background: var(--color-shell-accent, #47453F);
+  color: var(--color-shell-text, #F0EFEC);
+  border: none;
+  padding: var(--space-2) var(--space-4);
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform 100ms ease-out, box-shadow 100ms ease-out;
+}
+
+.addButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(31, 30, 27, 0.15);
+}
+
+/* Risk Summary */
+.riskSummary {
+  display: flex;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+  padding: var(--space-4);
+  background: var(--color-panel, #F0EFEC);
+  border: 1px solid var(--color-border, #E2E0DB);
+  border-radius: 4px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.riskStat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 60px;
+}
+
+.riskValue {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--color-text-primary, #1F1E1B);
+}
+
+.riskLabel {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary, #5C5A54);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.riskStat.critical .riskValue { color: var(--color-danger, #A54D4D); }
+.riskStat.high .riskValue { color: #C97B4D; }
+.riskStat.medium .riskValue { color: var(--color-warning, #C9A227); }
+.riskStat.low .riskValue { color: var(--color-success, #5B8A6A); }
+
+.riskDivider {
+  width: 1px;
+  height: 40px;
+  background: var(--color-border, #E2E0DB);
+}
+
+/* Toolbar */
+.toolbar {
+  display: flex;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+  flex-wrap: wrap;
+}
+
+.filterGroup {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.select {
+  background: var(--color-canvas, #FDFCFA);
+  border: 1px solid var(--color-border, #E2E0DB);
+  border-radius: 4px;
+  padding: var(--space-2) var(--space-3);
+  font-size: 0.875rem;
+  color: var(--color-text-primary, #1F1E1B);
+  min-width: 150px;
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 200px;
+  background: var(--color-canvas, #FDFCFA);
+  border: 1px solid var(--color-border, #E2E0DB);
+  border-radius: 4px;
+  padding: var(--space-2) var(--space-3);
+  font-size: 0.875rem;
+  color: var(--color-text-primary, #1F1E1B);
+}
+
+/* Risk List */
+.riskList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/* Card */
+.card {
+  display: flex;
+  gap: var(--space-4);
+  background: var(--color-canvas, #FDFCFA);
+  border: 1px solid var(--color-border, #E2E0DB);
+  border-radius: 4px;
+  padding: var(--space-4);
+  cursor: pointer;
+  transition: transform 100ms ease-out, box-shadow 100ms ease-out;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(31, 30, 27, 0.1);
+}
+
+.cardLeft {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 80px;
+}
+
+.severityBadge {
+  font-size: 0.625rem;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 3px;
+  letter-spacing: 0.05em;
+}
+
+.severityCritical {
+  background: var(--color-danger, #A54D4D);
+  color: white;
+}
+
+.severityHigh {
+  background: #C97B4D;
+  color: white;
+}
+
+.severityMedium {
+  background: var(--color-warning, #C9A227);
+  color: white;
+}
+
+.severityLow {
+  background: var(--color-success, #5B8A6A);
+  color: white;
+}
+
+.riskScore {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.scoreValue {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text-primary, #1F1E1B);
+}
+
+.scoreLabel {
+  font-size: 0.625rem;
+  color: var(--color-text-muted, #9C9A94);
+  text-transform: uppercase;
+}
+
+.cardContent {
+  flex: 1;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-2);
+}
+
+.cardTitle {
+  color: var(--color-text-primary, #1F1E1B);
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.status {
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 10px;
+  text-transform: capitalize;
+}
+
+.statusOpen {
+  background: rgba(201, 162, 39, 0.15);
+  color: var(--color-warning, #C9A227);
+}
+
+.statusMitigated {
+  background: rgba(91, 138, 106, 0.15);
+  color: var(--color-success, #5B8A6A);
+}
+
+.statusAccepted {
+  background: rgba(156, 154, 148, 0.15);
+  color: var(--color-text-muted, #9C9A94);
+}
+
+.statusClosed {
+  background: rgba(71, 69, 63, 0.15);
+  color: var(--color-shell-accent, #47453F);
+}
+
+.cardDescription {
+  color: var(--color-text-secondary, #5C5A54);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  margin: 0 0 var(--space-3) 0;
+}
+
+.cardMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.metaItem {
+  color: var(--color-text-muted, #9C9A94);
+  font-size: 0.75rem;
+}
+
+.mitigation {
+  background: var(--color-panel, #F0EFEC);
+  padding: var(--space-2) var(--space-3);
+  border-radius: 4px;
+  font-size: 0.8rem;
+}
+
+.mitigationLabel {
+  color: var(--color-text-secondary, #5C5A54);
+  font-weight: 500;
+  margin-right: var(--space-1);
+}
+
+.mitigationText {
+  color: var(--color-text-secondary, #5C5A54);
+}
+
+/* Heatmap */
+.heatmapContainer {
+  padding: var(--space-6);
+}
+
+.heatmapTitle {
+  color: var(--color-text-primary, #1F1E1B);
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 var(--space-6) 0;
+}
+
+.heatmap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.yAxisLabel,
+.xAxisLabel {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-text-secondary, #5C5A54);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.yAxisLabel {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  margin-right: var(--space-2);
+}
+
+.grid {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.headerRow,
+.row {
+  display: flex;
+  gap: 2px;
+}
+
+.cornerCell {
+  width: 80px;
+  height: 32px;
+}
+
+.headerCell {
+  width: 80px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  color: var(--color-text-secondary, #5C5A54);
+  font-weight: 500;
+}
+
+.rowLabel {
+  width: 80px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: var(--space-2);
+  font-size: 0.75rem;
+  color: var(--color-text-secondary, #5C5A54);
+  font-weight: 500;
+}
+
+.cell {
+  width: 80px;
+  height: 60px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: transform 100ms ease-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cell:hover {
+  transform: scale(1.05);
+}
+
+.cellLow { background: rgba(91, 138, 106, 0.3); }
+.cellMedium { background: rgba(201, 162, 39, 0.4); }
+.cellHigh { background: rgba(201, 123, 77, 0.5); }
+.cellCritical { background: rgba(165, 77, 77, 0.6); }
+
+.cellContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.cellCount {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-primary, #1F1E1B);
+}
+
+.cellDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-text-primary, #1F1E1B);
+}
+
+/* Legend */
+.legend {
+  display: flex;
+  gap: var(--space-6);
+  margin-top: var(--space-6);
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.75rem;
+  color: var(--color-text-secondary, #5C5A54);
+}
+
+.legendDot {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+}
+
+/* Empty State */
+.emptyState {
+  text-align: center;
+  padding: var(--space-12);
+  color: var(--color-text-secondary, #5C5A54);
+}
+
+.emptyState p {
+  margin-bottom: var(--space-4);
+}
+
+/* ============================================================================
+   MODAL FORM
+   ============================================================================ */
+
+.modalForm {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.formError {
+  padding: 8px 12px;
+  background: rgba(165, 77, 77, 0.08);
+  border: 1px solid rgba(165, 77, 77, 0.2);
+  border-radius: 4px;
+  color: #A54D4D;
+  font-size: 13px;
+}

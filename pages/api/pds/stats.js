@@ -8,6 +8,7 @@
 
 import { query } from '../../../lib/pg';
 import { getUserFromRequest, checkProjectAccess } from '../../../lib/projectAccess';
+import { errorResponse } from '../../../lib/api/errorResponse';
 import { PDS_STAGES, PDS_ARTEFACT_TYPES } from '../../../lib/pds-types';
 
 export default async function handler(req, res) {
@@ -305,7 +306,6 @@ export default async function handler(req, res) {
       health,
     });
   } catch (err) {
-    console.error('Error fetching PDS stats:', err);
-    return res.status(500).json({ error: 'Failed to fetch stats', details: err.message });
+    return errorResponse(res, 500, 'Failed to fetch stats', err);
   }
 }

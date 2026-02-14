@@ -6,18 +6,17 @@ import '../styles/pdw-workspace.css'; // Product Design workspace styles
 import '../styles/dwd-workspace.css'; // Dynamic Work Design workspace styles
 import '../styles/projects-overview.css'; // Projects Overview dashboard styles
 import '../styles/ea-workspace.css'; // Enterprise Architecture workspace styles
-import '../styles/np-workspace.css'; // Negotiation & Persuasion workspace styles
-import '../styles/mms-workspace.css'; // Mental Models & Sensemaking workspace styles
 import '../styles/als-workspace.css'; // Academic Learning Studio styles
 import '../styles/requirement-card.css'; // Requirement card two-column layout
-import '../styles/cm-workspace.css'; // Change Management workspace styles
 import '../styles/process-flow-builder.css'; // Reusable process flow builder
 import '../styles/diagram-studio.css'; // DiagramStudio unified diagramming
-import '../styles/philosophy-workspace.css'; // Philosophy & Critical Thinking Studio
-import '../styles/portfolio-workspace.css'; // Portfolio Studio styles
-import '../styles/srs-workspace.css'; // Strategic Reasoning Suite styles
 import '../styles/pds-workspace.css'; // Project Design Workspace styles
 import '../styles/pds-tools.css'; // Project Design tools styles
+import '../styles/gtm-studio.css'; // GTM Studio styles
+import '../styles/decision-gates.css'; // Decision Gates page styles
+import '../styles/handoffs.css'; // Handoffs page styles
+import '../styles/program-dashboard.css'; // Program Dashboard page styles
+import '../styles/admin.css'; // Admin pages styles
 import Layout from '../components/Layout';
 import { FilterProvider } from '../components/FilterContext';
 import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
@@ -26,7 +25,6 @@ import { DomainProvider } from '../components/DomainContext';
 import { ProjectProvider } from '../components/ProjectContext';
 import { RequirementProvider } from '../components/RequirementContext';
 import { ArtefactProvider } from '../components/ArtefactContext';
-import { BAProvider } from '../components/ba/BAContext';
 import { UndoRedoProvider } from '../components/UndoRedoContext';
 import { KeyboardShortcutsProvider } from '../components/KeyboardShortcuts';
 import { NotificationProvider } from '../components/NotificationContext';
@@ -88,7 +86,6 @@ function MyApp({ Component, pageProps }) {
           <ProjectProvider>
             <RequirementProvider>
             <ArtefactProvider>
-              <BAProvider>
               <NotificationProvider>
                 <PresenceProvider>
                   <FilterProvider>
@@ -104,7 +101,6 @@ function MyApp({ Component, pageProps }) {
                 </FilterProvider>
                 </PresenceProvider>
               </NotificationProvider>
-              </BAProvider>
             </ArtefactProvider>
             </RequirementProvider>
           </ProjectProvider>

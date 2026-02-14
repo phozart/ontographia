@@ -1,0 +1,53 @@
+{
+  "name": "@ontographia/diagram-studio",
+  "version": "0.1.0",
+  "description": "Collaborative diagramming platform for Ontographia",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./components": "./src/components/index.js",
+    "./context": "./src/context/index.js",
+    "./hooks": "./src/hooks/index.js",
+    "./types": "./src/types/index.js",
+    "./utils": "./src/utils/index.js",
+    "./packs": "./src/packs/index.js"
+  },
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix"
+  },
+  "dependencies": {
+    "ulid": "^2.3.0",
+    "yjs": "^13.6.10",
+    "y-websocket": "^2.0.2",
+    "lib0": "^0.2.88"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0",
+    "next": "^14.0.0 || ^15.0.0 || ^16.0.0",
+    "@mui/material": "^5.0.0",
+    "@mui/icons-material": "^5.0.0"
+  },
+  "devDependencies": {
+    "@testing-library/react": "^16.0.0",
+    "@testing-library/jest-dom": "^6.0.0",
+    "jest": "^29.0.0",
+    "jest-environment-jsdom": "^29.0.0"
+  },
+  "files": [
+    "src"
+  ],
+  "keywords": [
+    "diagram",
+    "collaborative",
+    "canvas",
+    "drawing",
+    "ontographia"
+  ],
+  "author": "Ontographia",
+  "license": "MIT"
+}

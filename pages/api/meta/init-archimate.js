@@ -1,6 +1,7 @@
 // pages/api/meta/init-archimate.js
 // Seeds ArchiMate 3.2 node types and relationship types into the graph database
 import { runWrite } from '../../../lib/neo4j';
+import { getUserFromRequest } from '../../../lib/projectAccess';
 
 // ArchiMate Layers
 const layers = [
@@ -104,6 +105,15 @@ const relationshipTypes = [
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Use POST for initialisation' });
+  }
+
+  // Admin authentication required for init endpoints
+  const { user, role } = getUserFromRequest(req);
+  if (!user) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+  if (role !== 'admin') {
+    return res.status(403).json({ error: 'Admin access required for initialization' });
   }
 
   const { domain = 'ea' } = req.body || {};

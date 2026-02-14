@@ -1,34 +1,59 @@
-/* styles/variables.css - CSS Custom Properties (Design Tokens) */
+/* styles/variables.css - Phozart System Design Tokens */
 
 :root {
-  /* Colors - Light Mode */
-  --bg: #eef2f7;
-  --bg-alt: #ffffff;
-  --panel: #f9fafb;
-  --text: #111827;
-  --text-muted: #6b7280;
-  --border: #d7dde5;
-  --border-strong: #c3cbd6;
-  --accent: #1f3a8a;
-  --accent-soft: rgba(31, 58, 138, 0.14);
-  --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+  /* ===== PHOZART SYSTEM - WARM PROFESSIONAL PALETTE ===== */
 
-  /* UI Elements */
-  --btn: #1f2937;
-  --btn-2: #374151;
-  --btn-text: #f9fafb;
-  --bg-hover: #e5e7eb;
+  /* Backgrounds - Warm off-whites */
+  --bg: #F0EFEC;
+  --bg-alt: #FDFCFA;
+  --panel: #F0EFEC;
+
+  /* Text - Warm greys */
+  --text: #1F1E1B;
+  --text-muted: #5C5A54;
+  --text-faint: #9C9A94;
+
+  /* Borders */
+  --border: #E2E0DB;
+  --border-strong: #C4C2BC;
+
+  /* Accent - Warm graphite */
+  --accent: #47453F;
+  --accent-soft: rgba(71, 69, 63, 0.12);
+  --accent-hover: #35332F;
+
+  /* Shadows - Warm tinted */
+  --shadow: 0 10px 30px rgba(31, 30, 27, 0.08);
+  --shadow-sm: 0 1px 2px rgba(31, 30, 27, 0.04);
+  --shadow-md: 0 2px 8px rgba(31, 30, 27, 0.08);
+  --shadow-lg: 0 4px 12px rgba(31, 30, 27, 0.08);
+  --shadow-xl: 0 8px 24px rgba(31, 30, 27, 0.12);
+
+  /* Buttons */
+  --btn: #47453F;
+  --btn-2: #35332F;
+  --btn-text: #F0EFEC;
+  --bg-hover: #F5F4F2;
 
   /* Navigation */
-  --nav-hover-bg: rgba(31, 41, 55, 0.08);
-  --nav-hover-color: #111827;
-  --nav-active-bg: #1f2937;
-  --nav-active-color: #f9fafb;
+  --nav-hover-bg: rgba(71, 69, 63, 0.06);
+  --nav-hover-color: #1F1E1B;
+  --nav-active-bg: #47453F;
+  --nav-active-color: #F0EFEC;
+
+  /* Semantic Colors */
+  --success: #5B8A6A;
+  --success-soft: rgba(91, 138, 106, 0.12);
+  --warning: #C9A227;
+  --warning-soft: rgba(201, 162, 39, 0.12);
+  --danger: #A54D4D;
+  --danger-soft: rgba(165, 77, 77, 0.12);
 
   /* Layout */
   --footer-height: 30px;
   --topbar-height: 72px;
   --sidebar-width: 280px;
+  --system-header-height: 44px;
 
   /* Spacing */
   --space-xs: 4px;
@@ -45,28 +70,40 @@
   --radius-full: 9999px;
 
   /* Transitions */
-  --transition-fast: 0.15s ease;
-  --transition-normal: 0.2s ease;
-  --transition-slow: 0.3s ease;
+  --transition-fast: 100ms ease-out;
+  --transition-normal: 150ms ease-out;
+  --transition-slow: 200ms ease-out;
 }
 
 :root[data-theme='dark'] {
-  --bg: #1f2430;
-  --bg-alt: #262d3a;
-  --panel: #2f3646;
-  --text: #f4f6fb;
-  --text-muted: #c7cedd;
-  --border: #3b4558;
-  --border-strong: #4b566c;
-  --accent: #7aa2ff;
-  --accent-soft: rgba(122, 162, 255, 0.18);
-  --shadow: 0 10px 28px rgba(0, 0, 0, 0.2);
-  --btn: #e5e7eb;
-  --btn-2: #d1d5db;
-  --btn-text: #111827;
-  --bg-hover: #3b4558;
-  --nav-hover-bg: rgba(229, 231, 235, 0.12);
-  --nav-hover-color: #f4f6fb;
-  --nav-active-bg: #e5e7eb;
-  --nav-active-color: #111827;
+  --bg: #1F1E1B;
+  --bg-alt: #2A2825;
+  --panel: #2A2825;
+  --text: #F0EFEC;
+  --text-muted: #C4C2BC;
+  --text-faint: #9C9890;
+  --border: #3D3A36;
+  --border-strong: #5C5A54;
+  --accent: #9C9890;
+  --accent-soft: rgba(156, 152, 144, 0.15);
+  --accent-hover: #C4C2BC;
+  --shadow: 0 10px 28px rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.12);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.2);
+  --shadow-xl: 0 8px 24px rgba(0, 0, 0, 0.3);
+  --btn: #9C9890;
+  --btn-2: #C4C2BC;
+  --btn-text: #1F1E1B;
+  --bg-hover: #3D3A36;
+  --nav-hover-bg: rgba(156, 152, 144, 0.12);
+  --nav-hover-color: #F0EFEC;
+  --nav-active-bg: #9C9890;
+  --nav-active-color: #1F1E1B;
+  --success: #7AAA8A;
+  --success-soft: rgba(122, 170, 138, 0.15);
+  --warning: #D9B247;
+  --warning-soft: rgba(217, 178, 71, 0.15);
+  --danger: #C57070;
+  --danger-soft: rgba(197, 112, 112, 0.15);
 }

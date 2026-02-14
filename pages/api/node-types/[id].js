@@ -1,7 +1,16 @@
 // pages/api/node-types/[id].js
-import { runRead, runWrite } from '../../../lib/neo4j';
+// Single node type operations - PostgreSQL implementation
+
+import { query } from '../../../lib/pg';
+import { getUserFromRequest } from '../../../lib/projectAccess';
 
 export default async function handler(req, res) {
+  // Authentication required for write operations
+  const { user, role } = getUserFromRequest(req);
+  if (req.method !== 'GET' && !user) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+
   const { id } = req.query;
 
   if (!id) {
@@ -10,30 +19,27 @@ export default async function handler(req, res) {
 
   try {
     if (req.method === 'GET') {
-      const records = await runRead(
-        `
-        MATCH (t:NodeType {id: $id})
-        RETURN t
-        `,
-        { id }
+      const result = await query(
+        'SELECT * FROM graph_node_types WHERE id = $1',
+        [id]
       );
 
-      if (records.length === 0) {
+      if (result.rows.length === 0) {
         return res.status(404).json({ error: 'NodeType not found' });
       }
 
-      const t = records[0].get('t').properties;
+      const row = result.rows[0];
 
       return res.status(200).json({
-        id: t.id,
-        name: t.name,
-        label: t.label,
-        description: t.description || '',
-        layer: t.layer || 'Unassigned',
-        color: t.color || '#888888',
-        icon: t.icon || 'dot',
-        domain: t.domain || 'core',
-        shape: t.shape || 'ellipse'
+        id: row.id,
+        name: row.name,
+        label: row.label || row.name,
+        description: row.description || '',
+        layer: row.layer || 'Unassigned',
+        color: row.color || '#888888',
+        icon: row.icon || 'dot',
+        domain: row.domain || 'core',
+        shape: row.shape || 'ellipse',
       });
     }
 
@@ -44,56 +50,55 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'name is required' });
       }
 
-      await runWrite(
-        `
-        MATCH (t:NodeType {id: $id})
-        SET t.name = $name,
-            t.label = coalesce($label, $name),
-            t.description = coalesce($description, t.description, ''),
-            t.layer = coalesce($layer, t.layer, 'Unassigned'),
-            t.color = coalesce($color, t.color, '#888888'),
-            t.icon = coalesce($icon, t.icon, 'dot'),
-            t.domain = coalesce($domain, t.domain, 'core'),
-            t.shape = coalesce($shape, t.shape, 'ellipse')
-        RETURN t
-        `,
-        { id, name, label, description, layer, color, icon, domain, shape }
-      );
+      const result = await query(`
+        UPDATE graph_node_types
+        SET name = $2,
+            label = COALESCE($3, name),
+            description = COALESCE($4, description, ''),
+            layer = COALESCE($5, layer, 'Unassigned'),
+            color = COALESCE($6, color, '#888888'),
+            icon = COALESCE($7, icon, 'dot'),
+            domain = COALESCE($8, domain, 'core'),
+            shape = COALESCE($9, shape, 'ellipse'),
+            updated_at = NOW()
+        WHERE id = $1
+        RETURNING id
+      `, [id, name, label, description, layer, color, icon, domain, shape]);
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: 'NodeType not found' });
+      }
 
       return res.status(200).json({ id });
     }
 
     if (req.method === 'DELETE') {
-      const result = await runRead(
-        `
-        MATCH (t:NodeType {id: $id})
-        OPTIONAL MATCH (n:DomainNode)-[:INSTANCE_OF]->(t)
-        WITH t, count(n) AS c
-        RETURN c
-        `,
-        { id }
+      // Check if any nodes are using this type
+      const nodesResult = await query(
+        'SELECT COUNT(*) as count FROM graph_nodes WHERE type_id = $1',
+        [id]
       );
 
-      if (result.length === 0) {
-        return res.status(404).json({ error: 'NodeType not found' });
-      }
-
-      const count = result[0].get('c').toNumber ? result[0].get('c').toNumber() : result[0].get('c');
+      const count = parseInt(nodesResult.rows[0]?.count || 0);
       if (count > 0) {
         return res.status(400).json({ error: 'Cannot delete NodeType with existing nodes' });
       }
 
-      await runWrite(
-        'MATCH (t:NodeType {id: $id}) DETACH DELETE t',
-        { id }
+      const result = await query(
+        'DELETE FROM graph_node_types WHERE id = $1 RETURNING id',
+        [id]
       );
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: 'NodeType not found' });
+      }
 
       return res.status(204).end();
     }
 
     return res.status(405).json({ error: 'Method not allowed' });
   } catch (e) {
-    console.error(e);
-    return res.status(500).json({ error: 'Internal server error' });
+    console.error('[node-types/[id] API error]', e);
+    return res.status(500).json({ error: 'Internal server error', details: e.message });
   }
 }

@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
+import SystemHeader from './SystemHeader';
 import LeftNav from './LeftNav';
+import FloatingDock from './FloatingDock';
 import AnimatedLogoBackground from './AnimatedLogoBackground';
 import { LogoSpinner } from './Logo';
 import { useAuth } from './AuthContext';
@@ -12,11 +14,18 @@ export default function Layout({ theme, onThemeChange, children }) {
   const [showMobileNotice, setShowMobileNotice] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isEmbedded, setIsEmbedded] = useState(false);
+  const [navStyle, setNavStyle] = useState('header'); // 'sidebar', 'dock', or 'header'
   const router = useRouter();
   const { user } = useAuth();
+
+  // Nav style: 'header' (new top header), 'sidebar' (floating island), or 'dock' (bottom dock)
+  useEffect(() => {
+    // Use new top header navigation
+    setNavStyle('header');
+  }, []);
   // Check if current page is a full-width studio page
   const studioPatterns = [
-    '/studio', '/graphnavigator', '/graph-editor', '/diagram-workspace',
+    '/studio', '/graphnavigator', '/graph-editor', '/graph/', '/diagram-workspace',
     '/system-dynamics', '/requirements-studio', '/knowledge-studio',
     '/product-design-workspace', '/dynamic-work-design', '/ea-studio',
     '/negotiation-studio', '/enterprise-architecture', '/ea-workspace',
@@ -25,7 +34,13 @@ export default function Layout({ theme, onThemeChange, children }) {
     '/risk-studio', '/portfolio-studio', '/strategic-reasoning',
     '/admin/style-guide', '/admin/menu-config',
     // Domain-scoped routes
-    '/app/workspaces/', '/app/reasoning/', '/app/knowledge/'
+    '/app/workspaces/', '/app/reasoning/', '/app/knowledge/',
+    // New space routes
+    '/app/spaces/',
+    // Cross-space tools
+    '/app/trace-explorer',
+    // GTM Studio
+    '/gtm'
   ];
   const isStudio = studioPatterns.some(p => router.pathname.includes(p));
   const routeTimer = useRef(null);
@@ -107,10 +122,19 @@ export default function Layout({ theme, onThemeChange, children }) {
         <link rel="manifest" href="/manifest.json" />
 <meta name="theme-color" content="#000000" />
       </Head>
-      <div className={`app app--${theme}${isEmbedded ? ' app--embedded' : ''}`}>
+      <div className={`app app--${theme}${isEmbedded ? ' app--embedded' : ''}${navStyle === 'header' ? ' app--header-nav' : ''}`}>
+        {/* System Header - Top navigation bar */}
+        {!isEmbedded && navStyle === 'header' && (
+          <SystemHeader theme={theme} onThemeChange={onThemeChange} />
+        )}
         <div className="app-body">
-          {!isMobile && !isEmbedded && <LeftNav theme={theme} onThemeChange={onThemeChange} />}
-          <main className={`app-main${isStudio ? ' app-main--studio' : ''}${!isMobile && !isEmbedded ? ' has-left-nav' : ''}${isEmbedded ? ' app-main--embedded' : ''}`}>
+          {!isMobile && !isEmbedded && navStyle === 'sidebar' && (
+            <LeftNav theme={theme} onThemeChange={onThemeChange} />
+          )}
+          {!isMobile && !isEmbedded && navStyle === 'dock' && (
+            <FloatingDock theme={theme} onThemeChange={onThemeChange} />
+          )}
+          <main className={`app-main${isStudio ? ' app-main--studio' : ''}${!isMobile && !isEmbedded && navStyle === 'sidebar' ? ' has-left-nav' : ''}${!isMobile && !isEmbedded && navStyle === 'dock' ? ' has-dock' : ''}${navStyle === 'header' ? ' has-system-header' : ''}${isEmbedded ? ' app-main--embedded' : ''}`}>
             {!isEmbedded && (
               <div className="bg-logo-wrap" aria-hidden>
                 <AnimatedLogoBackground />

@@ -4,6 +4,7 @@
 
 import { query } from '../../../lib/pg';
 import { getUserFromRequest, checkProjectAccess } from '../../../lib/projectAccess';
+import { errorResponse } from '../../../lib/api/errorResponse';
 import { getCaseCompleteness, DWD_CASE_STATUS } from '../../../lib/dwd-types';
 
 export default async function handler(req, res) {
@@ -47,8 +48,8 @@ export default async function handler(req, res) {
            JOIN artefacts a2 ON a2.id = ar.to_artefact_id
            WHERE ar.from_artefact_id = a.id AND a2.artefact_type = 'dwd_learning') as learning_count
         FROM artefacts a
-        LEFT JOIN users u ON u.id = a.owner_id
-        LEFT JOIN users cb ON cb.id = a.created_by
+        LEFT JOIN users u ON u.username = a.owner_id
+        LEFT JOIN users cb ON cb.username = a.created_by
         WHERE a.project_id = $1
           AND a.artefact_type = 'dwd_case'
       `;
@@ -130,7 +131,7 @@ export default async function handler(req, res) {
       });
     } catch (err) {
       console.error('Error listing DWD cases:', err);
-      return res.status(500).json({ error: 'Failed to list cases', details: err.message });
+      return errorResponse(res, 500, 'Failed to list cases', err);
     }
   }
 
@@ -179,7 +180,7 @@ export default async function handler(req, res) {
       return res.status(201).json(result.rows[0]);
     } catch (err) {
       console.error('Error creating DWD case:', err);
-      return res.status(500).json({ error: 'Failed to create case', details: err.message });
+      return errorResponse(res, 500, 'Failed to create case', err);
     }
   }
 

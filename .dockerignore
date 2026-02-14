@@ -1,16 +1,66 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Build output
+.next
+out
+dist
+build
+
+# Environment files (keep only production)
+.env.local
+.env.development
+.env.development.local
+
+# Testing
+coverage
+.nyc_output
+tests
+__tests__
+*.test.js
+jest.config.js
+playwright.config.js
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
 # Backups
 *.tar
 *.tar.gz
 neo4j_data_backup*
 images_backup*
 
-# Node / project churn
-node_modules
-npm-debug.log
+# Deprecated files
+_deprecated_pages
+
+# Git
+.git
+.gitignore
+
+# Lock files (use package-lock.json)
 yarn.lock
 pnpm-lock.yaml
 
-# Git + misc
-.git
-.gitignore
-.DS_Store
+# Documentation (optional, remove for smaller image)
+docs
+*.md
+!README.md
+
+# Docker files
+Dockerfile*
+docker-compose*
+.dockerignore

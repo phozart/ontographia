@@ -1,4 +1,5 @@
 /* styles/layout.css - App shell, navigation, and layout components */
+/* Phozart System Design - Warm professional palette */
 
 /* ============================================
    APP SHELL
@@ -9,6 +10,7 @@
   flex-direction: column;
   height: 100vh;
   padding-bottom: 0;
+  background: #F0EFEC;
 }
 
 .page-container {
@@ -29,14 +31,14 @@
   justify-content: space-between;
   padding: 0 20px;
   padding-left: 10px;
-  border-bottom: 1px solid var(--border);
-  background: linear-gradient(135deg, var(--bg-alt), var(--panel));
-  box-shadow: var(--shadow);
+  border-bottom: 1px solid #E2E0DB;
+  background: linear-gradient(135deg, #FDFCFA, #F0EFEC);
+  box-shadow: var(--shadow-sm);
 }
 
 .app--dark .topbar {
-  background: linear-gradient(135deg, #262d3a, #2f3646);
-  border-bottom: 1px solid #3b4558;
+  background: linear-gradient(135deg, #2A2825, #1F1E1B);
+  border-bottom: 1px solid #3D3A36;
 }
 
 .topbar-left {
@@ -71,8 +73,8 @@
 .left-nav {
   width: var(--sidebar-width);
   min-width: var(--sidebar-width);
-  background: var(--panel);
-  border-right: 1px solid var(--border);
+  background: #F0EFEC;
+  border-right: 1px solid #E2E0DB;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
@@ -86,30 +88,57 @@
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
-  color: var(--text-muted);
+  color: #9C9A94;
   margin-bottom: var(--space-sm);
+  letter-spacing: 0.5px;
 }
 
+/* Panel Navigation - Left accent line pattern */
 .nav-item {
+  position: relative;
   display: flex;
   align-items: center;
   gap: var(--space-sm);
-  padding: 10px 12px;
-  border-radius: var(--radius-md);
-  color: var(--text-muted);
+  padding: 9px 16px 9px 20px;
+  border-radius: 0;
+  color: #6B6965;
+  font-size: 0.875rem;
   text-decoration: none;
-  transition: all var(--transition-fast);
+  cursor: pointer;
+  transition: all 100ms ease-out;
 }
 
 .nav-item:hover {
-  background: var(--nav-hover-bg);
-  color: var(--nav-hover-color);
+  background: rgba(71, 69, 63, 0.04);
+  color: #47453F;
   text-decoration: none;
 }
 
 .nav-item.active {
-  background: var(--nav-active-bg);
-  color: var(--nav-active-color);
+  background: rgba(71, 69, 63, 0.06);
+  color: #1F1E1B;
+  font-weight: 500;
+}
+
+/* Left accent line for active state */
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 4px;
+  bottom: 4px;
+  width: 2px;
+  background: #47453F;
+  border-radius: 0 1px 1px 0;
+}
+
+.nav-item svg {
+  font-size: 18px;
+  opacity: 0.7;
+}
+
+.nav-item.active svg {
+  opacity: 1;
 }
 
 /* ============================================
@@ -126,6 +155,7 @@
   flex: 1;
   overflow-y: auto;
   padding: var(--space-lg);
+  background: #FDFCFA;
 }
 
 /* ============================================
@@ -135,8 +165,8 @@
 .sidebar-panel {
   width: 320px;
   min-width: 320px;
-  background: var(--panel);
-  border-left: 1px solid var(--border);
+  background: #F0EFEC;
+  border-left: 1px solid #E2E0DB;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -147,7 +177,8 @@
   align-items: center;
   justify-content: space-between;
   padding: var(--space-md);
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid #E2E0DB;
+  background: #F0EFEC;
 }
 
 .sidebar-content {
@@ -165,10 +196,36 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-top: 1px solid var(--border);
-  background: var(--panel);
+  border-top: 1px solid #E2E0DB;
+  background: #F0EFEC;
   font-size: 12px;
-  color: var(--text-muted);
+  color: #9C9A94;
+}
+
+/* ============================================
+   HEADER NAV MODE (new top header layout)
+   ============================================ */
+
+.app--header-nav {
+  display: flex;
+  flex-direction: column;
+}
+
+.app--header-nav .app-body {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.app--header-nav .app-main {
+  margin-left: 0;
+}
+
+.app-main.has-system-header {
+  /* Main content fills remaining space after header */
+  flex: 1;
+  height: 100%;
+  overflow: auto;
 }
 
 /* ============================================
@@ -198,13 +255,13 @@
 }
 
 /* ============================================
-   ROUTE LOADER
+   ROUTE LOADER - Warm overlay
    ============================================ */
 
 .route-loader {
   position: fixed;
   inset: 0;
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(253, 252, 250, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -213,7 +270,87 @@
 }
 
 :root[data-theme='dark'] .route-loader {
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(31, 30, 27, 0.6);
+}
+
+/* ============================================
+   HORIZONTAL TABS
+   ============================================ */
+
+.view-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: rgba(71, 69, 63, 0.04);
+  border-radius: 6px;
+}
+
+.view-tab {
+  padding: 8px 14px;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: #6B6965;
+  font-size: 0.8125rem;
+  cursor: pointer;
+  transition: all 100ms ease-out;
+}
+
+.view-tab:hover {
+  background: rgba(71, 69, 63, 0.04);
+  color: #47453F;
+}
+
+.view-tab.active {
+  background: rgba(71, 69, 63, 0.08);
+  color: #1F1E1B;
+  font-weight: 500;
+}
+
+/* ============================================
+   PANEL NAVIGATION (Vertical in panels)
+   ============================================ */
+
+.panel-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.panel-nav-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px 10px 20px;
+  border-radius: 0;
+  color: #6B6965;
+  font-size: 0.875rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 100ms ease-out;
+}
+
+.panel-nav-item:hover {
+  background: rgba(71, 69, 63, 0.04);
+  color: #47453F;
+}
+
+.panel-nav-item.active {
+  background: rgba(71, 69, 63, 0.06);
+  color: #1F1E1B;
+  font-weight: 500;
+}
+
+.panel-nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 4px;
+  bottom: 4px;
+  width: 2px;
+  background: #47453F;
+  border-radius: 0 1px 1px 0;
 }
 
 /* ============================================

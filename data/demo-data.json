@@ -1,83 +1,223 @@
 {
-  "nodeTypes": [
-    {
-      "id": "nt_language",
-      "name": "Programming Language",
-      "label": "Programming Language",
-      "description": "Languages for expressing algorithms",
-      "layer": "Concept",
-      "color": "#0B2545",
-      "icon": "dot",
-      "shape": "ellipse"
-    },
-    {
-      "id": "nt_function",
-      "name": "Function",
-      "label": "Function",
-      "description": "Units of computation",
-      "layer": "Implementation",
-      "color": "#1f3a8a",
-      "icon": "dot",
-      "shape": "round-rectangle"
-    },
-    {
-      "id": "nt_rule",
-      "name": "Rule",
-      "label": "Rule",
-      "description": "Constraints or business logic",
-      "layer": "Logic",
-      "color": "#7c3aed",
-      "icon": "dot",
-      "shape": "diamond"
-    },
-    {
-      "id": "nt_question",
-      "name": "Philosophical Question",
-      "label": "Philosophical Question",
-      "description": "Why and meaning",
-      "layer": "Reflection",
-      "color": "#e11d48",
-      "icon": "dot",
-      "shape": "hexagon"
-    }
-  ],
   "nodes": [
     {
-      "id": "n_python",
-      "name": "Python",
-      "typeId": "nt_language",
-      "layer": "Concept",
-      "description": "A multi-paradigm programming language",
-      "attributes": { "paradigm": "multi-paradigm", "typing": "dynamic", "motto": "Readability matters" }
+      "id": "n_cap_customer_mgmt",
+      "typeId": "nt_capability",
+      "name": "Customer Management",
+      "description": "Core capability for managing customer relationships",
+      "layer": "Business",
+      "domain": "core",
+      "weight": 3
     },
     {
-      "id": "n_recursion",
-      "name": "Recursive Function",
-      "typeId": "nt_function",
-      "layer": "Implementation",
-      "description": "A function that calls itself",
-      "attributes": { "examples": "factorial, fibonacci", "pitfall": "stack depth" }
+      "id": "n_cap_order_mgmt",
+      "typeId": "nt_capability",
+      "name": "Order Management",
+      "description": "Process and track customer orders",
+      "layer": "Business",
+      "domain": "core",
+      "weight": 3
     },
     {
-      "id": "n_rules",
-      "name": "Business Rule Engine",
-      "typeId": "nt_rule",
-      "layer": "Logic",
-      "description": "Captures business logic declaratively",
-      "attributes": { "format": "DSL", "benefit": "separation of concerns" }
+      "id": "n_cap_inventory",
+      "typeId": "nt_capability",
+      "name": "Inventory Management",
+      "description": "Track and manage product inventory",
+      "layer": "Business",
+      "domain": "core",
+      "weight": 2
     },
     {
-      "id": "n_question",
-      "name": "What is meaning?",
-      "typeId": "nt_question",
-      "layer": "Reflection",
-      "description": "Philosophical inquiry into semantics",
-      "attributes": { "domain": "epistemology", "debate": "realism vs constructivism" }
+      "id": "n_cap_analytics",
+      "typeId": "nt_capability",
+      "name": "Business Analytics",
+      "description": "Generate insights from business data",
+      "layer": "Business",
+      "domain": "core",
+      "weight": 2
+    },
+    {
+      "id": "n_app_crm",
+      "typeId": "nt_application",
+      "name": "CRM System",
+      "description": "Customer relationship management application",
+      "layer": "Application",
+      "domain": "core",
+      "weight": 3
+    },
+    {
+      "id": "n_app_erp",
+      "typeId": "nt_application",
+      "name": "ERP System",
+      "description": "Enterprise resource planning application",
+      "layer": "Application",
+      "domain": "core",
+      "weight": 4
+    },
+    {
+      "id": "n_app_analytics_platform",
+      "typeId": "nt_application",
+      "name": "Analytics Platform",
+      "description": "Business intelligence and analytics application",
+      "layer": "Application",
+      "domain": "core",
+      "weight": 2
+    },
+    {
+      "id": "n_tech_postgres",
+      "typeId": "nt_technology",
+      "name": "PostgreSQL",
+      "description": "Relational database for transactional data",
+      "layer": "Technology",
+      "domain": "core",
+      "weight": 3
+    },
+    {
+      "id": "n_tech_redis",
+      "typeId": "nt_technology",
+      "name": "Redis",
+      "description": "In-memory cache and message broker",
+      "layer": "Technology",
+      "domain": "core",
+      "weight": 2
+    },
+    {
+      "id": "n_tech_kubernetes",
+      "typeId": "nt_technology",
+      "name": "Kubernetes",
+      "description": "Container orchestration platform",
+      "layer": "Technology",
+      "domain": "core",
+      "weight": 4
     }
   ],
   "relationships": [
-    { "id": "rel_1", "type": "IMPLEMENTS", "sourceId": "n_python", "targetId": "n_recursion" },
-    { "id": "rel_2", "type": "EXPRESSES", "sourceId": "n_recursion", "targetId": "n_rules" },
-    { "id": "rel_3", "type": "RAISES", "sourceId": "n_rules", "targetId": "n_question" }
+    {
+      "id": "r_1",
+      "sourceId": "n_cap_customer_mgmt",
+      "targetId": "n_app_crm",
+      "type": "realized-by"
+    },
+    {
+      "id": "r_2",
+      "sourceId": "n_cap_order_mgmt",
+      "targetId": "n_app_erp",
+      "type": "realized-by"
+    },
+    {
+      "id": "r_3",
+      "sourceId": "n_cap_inventory",
+      "targetId": "n_app_erp",
+      "type": "realized-by"
+    },
+    {
+      "id": "r_4",
+      "sourceId": "n_cap_analytics",
+      "targetId": "n_app_analytics_platform",
+      "type": "realized-by"
+    },
+    {
+      "id": "r_5",
+      "sourceId": "n_app_crm",
+      "targetId": "n_tech_postgres",
+      "type": "uses"
+    },
+    {
+      "id": "r_6",
+      "sourceId": "n_app_crm",
+      "targetId": "n_tech_redis",
+      "type": "uses"
+    },
+    {
+      "id": "r_7",
+      "sourceId": "n_app_erp",
+      "targetId": "n_tech_postgres",
+      "type": "uses"
+    },
+    {
+      "id": "r_8",
+      "sourceId": "n_app_analytics_platform",
+      "targetId": "n_tech_postgres",
+      "type": "uses"
+    },
+    {
+      "id": "r_9",
+      "sourceId": "n_app_crm",
+      "targetId": "n_tech_kubernetes",
+      "type": "deployed-on"
+    },
+    {
+      "id": "r_10",
+      "sourceId": "n_app_erp",
+      "targetId": "n_tech_kubernetes",
+      "type": "deployed-on"
+    },
+    {
+      "id": "r_11",
+      "sourceId": "n_app_analytics_platform",
+      "targetId": "n_tech_kubernetes",
+      "type": "deployed-on"
+    },
+    {
+      "id": "r_12",
+      "sourceId": "n_cap_customer_mgmt",
+      "targetId": "n_cap_order_mgmt",
+      "type": "depends-on"
+    }
+  ],
+  "nodeTypes": [
+    {
+      "id": "nt_capability",
+      "name": "Capability",
+      "label": "Capability",
+      "color": "#3b82f6",
+      "shape": "roundrectangle",
+      "layer": "Business",
+      "domain": "core"
+    },
+    {
+      "id": "nt_application",
+      "name": "Application",
+      "label": "Application",
+      "color": "#10b981",
+      "shape": "roundrectangle",
+      "layer": "Application",
+      "domain": "core"
+    },
+    {
+      "id": "nt_technology",
+      "name": "Technology",
+      "label": "Technology",
+      "color": "#f59e0b",
+      "shape": "roundrectangle",
+      "layer": "Technology",
+      "domain": "core"
+    }
+  ],
+  "relationshipTypes": [
+    {
+      "id": "rt_realized_by",
+      "name": "realized-by",
+      "label": "Realized By",
+      "description": "Capability realized by application"
+    },
+    {
+      "id": "rt_uses",
+      "name": "uses",
+      "label": "Uses",
+      "description": "Application uses technology"
+    },
+    {
+      "id": "rt_deployed_on",
+      "name": "deployed-on",
+      "label": "Deployed On",
+      "description": "Application deployed on infrastructure"
+    },
+    {
+      "id": "rt_depends_on",
+      "name": "depends-on",
+      "label": "Depends On",
+      "description": "Dependency relationship"
+    }
   ]
 }

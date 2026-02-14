@@ -1,5 +1,14 @@
 /* styles/base.css - Reset, typography, and base elements */
 
+/**
+ * Note: Design tokens are imported via styles/tokens/index.css
+ * Use token variables for consistent styling:
+ *   - Colors: var(--color-*)
+ *   - Spacing: var(--spacing-*)
+ *   - Typography: var(--font-*), var(--text-*)
+ *   - Shadows: var(--shadow-*)
+ */
+
 html, body, #__next {
   height: 100%;
   margin: 0;
@@ -7,10 +16,14 @@ html, body, #__next {
 }
 
 body {
-  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  letter-spacing: 0.01em;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
+  background: var(--color-bg);
+  color: var(--color-text);
+  letter-spacing: var(--letter-spacing-normal);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 h1, h2, h3, h4, h5, h6,
@@ -24,35 +37,81 @@ input,
 select,
 textarea,
 label {
-  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  letter-spacing: 0.01em;
+  font-family: var(--font-sans);
+  letter-spacing: var(--letter-spacing-normal);
+}
+
+/* Headings */
+h1 {
+  font-size: var(--font-size-4xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+}
+
+h2 {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-tight);
+}
+
+h3 {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-snug);
+}
+
+h4 {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-snug);
+}
+
+h5 {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-snug);
+}
+
+h6 {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-snug);
 }
 
 /* Links */
 a {
-  color: var(--accent);
+  color: var(--color-text-link);
   text-decoration: none;
+  transition: color var(--transition-fast);
 }
 
 a:hover {
+  color: var(--color-text-link-hover);
   text-decoration: none;
 }
 
 /* Form Elements */
 input, select, textarea {
   width: 100%;
-  padding: 12px;
-  border: 1px solid var(--border);
+  padding: var(--spacing-input-y) var(--spacing-input-x);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  background: var(--bg);
-  color: var(--text);
-  font-size: 14px;
-  transition: border-color var(--transition-fast);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-size: var(--text-input-size);
+  transition: border-color var(--transition-fast),
+              box-shadow var(--transition-fast);
 }
 
 input:focus, select:focus, textarea:focus {
   outline: none;
-  border-color: var(--accent);
+  border-color: var(--color-border-focus);
+  box-shadow: var(--shadow-input-focus);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--color-text-tertiary);
 }
 
 textarea {
@@ -62,27 +121,62 @@ textarea {
 
 label {
   display: block;
-  margin-bottom: 6px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text);
+  margin-bottom: var(--spacing-xs);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text);
+}
+
+/* Code elements */
+code, pre {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+}
+
+code {
+  background: var(--color-bg-tertiary);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+}
+
+pre {
+  background: var(--color-bg-tertiary);
+  padding: var(--spacing-md);
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+}
+
+pre code {
+  background: none;
+  padding: 0;
 }
 
 /* Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: var(--spacing-sm);
+  height: var(--spacing-sm);
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--bg);
+  background: var(--color-bg);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 4px;
+  background: var(--color-border);
+  border-radius: var(--radius-sm);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--border-strong);
+  background: var(--color-border-strong);
+}
+
+/* Selection */
+::selection {
+  background: var(--color-selection);
+}
+
+/* Focus visible for accessibility */
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
 }

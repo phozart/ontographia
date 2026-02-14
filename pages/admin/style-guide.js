@@ -24,11 +24,33 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import CloseIcon from '@mui/icons-material/Close';
+import LayersIcon from '@mui/icons-material/Layers';
+import DescriptionIcon from '@mui/icons-material/Description';
+import TimelineIcon from '@mui/icons-material/Timeline';
+import AccountTreeIcon from '@mui/icons-material/AccountTree';
+import LoopIcon from '@mui/icons-material/Loop';
+import SettingsIcon from '@mui/icons-material/Settings';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import PersonIcon from '@mui/icons-material/Person';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
+import GroupIcon from '@mui/icons-material/Group';
+import SecurityIcon from '@mui/icons-material/Security';
+import ArticleIcon from '@mui/icons-material/Article';
+import FeedbackIcon from '@mui/icons-material/Feedback';
+import LogoutIcon from '@mui/icons-material/Logout';
+import LightbulbIcon from '@mui/icons-material/Lightbulb';
+import SyncAltIcon from '@mui/icons-material/SyncAlt';
+import PsychologyIcon from '@mui/icons-material/Psychology';
+import HandshakeIcon from '@mui/icons-material/Handshake';
+import SchoolIcon from '@mui/icons-material/School';
+import MenuBookIcon from '@mui/icons-material/MenuBook';
+import AutoStoriesIcon from '@mui/icons-material/AutoStories';
+import WorkIcon from '@mui/icons-material/Work';
 
 export default function StyleGuidePage() {
   const { role } = useAuth();
   const router = useRouter();
-  const [activeSection, setActiveSection] = useState('development');
+  const [activeSection, setActiveSection] = useState('philosophy');
   const [modalOpen, setModalOpen] = useState(false);
 
   // Admin-only access
@@ -43,6 +65,7 @@ export default function StyleGuidePage() {
   }
 
   const sections = [
+    { id: 'philosophy', name: 'Design Philosophy' },
     { id: 'development', name: 'Development Guide' },
     { id: 'database', name: 'Database ERD' },
     { id: 'colors', name: 'Colors' },
@@ -60,20 +83,30 @@ export default function StyleGuidePage() {
 
   return (
     <div className="style-guide">
+      {/* System Control Strip - Operational, not informational */}
       <header className="sg-header">
-        <h1>Ontographia Development Guide</h1>
-        <p>Architecture, database, patterns, and UI component reference</p>
+        <div className="sg-header-left">
+          <span className="sg-system-label">ONTOGRAPHIA</span>
+          <span className="sg-header-divider" />
+          <span className="sg-module-label">Development Guide</span>
+        </div>
+        <div className="sg-header-right">
+          <span className="sg-status-indicator" />
+          <span className="sg-status-text">System Ready</span>
+        </div>
       </header>
 
       <div className="sg-layout">
-        {/* Sidebar */}
+        {/* Workspace Navigator - Structural, not button-like */}
         <nav className="sg-nav">
+          <div className="sg-nav-header">MODULES</div>
           {sections.map(section => (
             <button
               key={section.id}
               className={`sg-nav-item ${activeSection === section.id ? 'active' : ''}`}
               onClick={() => setActiveSection(section.id)}
             >
+              <span className="sg-nav-indicator" />
               {section.name}
             </button>
           ))}
@@ -81,49 +114,344 @@ export default function StyleGuidePage() {
 
         {/* Content */}
         <main className="sg-content">
+          {/* Design Philosophy Section */}
+          {activeSection === 'philosophy' && (
+            <section className="sg-section" data-section="philosophy">
+              <h2>UI Style Guide – Visual & Interaction Principles</h2>
+
+              <div className="sg-intro-box" style={{ marginBottom: '32px' }}>
+                <p style={{ margin: 0, fontSize: '1.0625rem', lineHeight: 1.7, color: '#1a1a1a' }}>
+                  The interface must feel like a <strong>modern professional engineering console</strong>: calm, precise, and visually refined.
+                  It should support long cognitive sessions without visual fatigue.
+                </p>
+                <p style={{ margin: '12px 0 0', fontSize: '0.9375rem', color: '#52525b' }}>
+                  The design must be lean and minimal, but not sterile. Subtle color, soft floating layers, and refined interaction are encouraged when they serve clarity.
+                </p>
+              </div>
+
+              <div className="sg-doctrine" style={{ marginBottom: '32px' }}>
+                <p style={{ margin: 0, fontSize: '1rem', fontStyle: 'italic', color: '#1F1E1B' }}>
+                  <strong style={{ color: '#47453F' }}>Doctrine:</strong> Subtle color, controlled floating, zero friction. A system that disappears while thinking happens.
+                </p>
+              </div>
+
+              <h3>1. Light & Dark Mode Philosophy</h3>
+              <p className="sg-description">Both modes must be equally usable for long work sessions.</p>
+
+              <div className="sg-demo-row" style={{ gap: '24px', marginBottom: '24px' }}>
+                <div style={{ flex: 1, padding: '20px', background: '#faf9f7', borderRadius: '10px', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+                  <h4 style={{ margin: '0 0 12px', color: '#1a1a1a', fontSize: '0.9375rem', fontWeight: 600 }}>Light Mode</h4>
+                  <ul style={{ margin: 0, paddingLeft: '20px', color: '#52525b', fontSize: '0.875rem', lineHeight: 1.8 }}>
+                    <li>Background is not pure white; use soft warm or cool off-white</li>
+                    <li>Avoid high contrast black on white</li>
+                    <li>Prefer slightly muted neutrals</li>
+                    <li>Feels "paper-like", not "screen-like"</li>
+                  </ul>
+                </div>
+                <div style={{ flex: 1, padding: '20px', background: '#1f2937', borderRadius: '10px' }}>
+                  <h4 style={{ margin: '0 0 12px', color: '#f3f4f6', fontSize: '0.9375rem', fontWeight: 600 }}>Dark Mode</h4>
+                  <ul style={{ margin: 0, paddingLeft: '20px', color: '#9ca3af', fontSize: '0.875rem', lineHeight: 1.8 }}>
+                    <li>Similar to ChatGPT dark mode: dark grey, not black</li>
+                    <li>Soft contrast, no neon colors</li>
+                    <li>Must reduce eye strain during prolonged usage</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div className="sg-rule-box" style={{ marginBottom: '24px' }}>
+                <p style={{ margin: 0, fontSize: '0.875rem', color: '#52525b' }}>
+                  <strong style={{ color: '#1a1a1a' }}>Rule:</strong> Switching modes must preserve hierarchy, contrast logic, and visual identity.
+                </p>
+              </div>
+
+              <h3>2. Color Usage</h3>
+              <p className="sg-description">Color is functional and structural, not decorative.</p>
+
+              <div className="sg-demo-row" style={{ gap: '24px', marginBottom: '24px' }}>
+                <div style={{ flex: 1 }}>
+                  <h4 style={{ margin: '0 0 12px', fontSize: '0.9375rem', color: '#1a1a1a', fontWeight: 600 }}>Rules</h4>
+                  <ul style={{ margin: 0, paddingLeft: '20px', color: '#52525b', fontSize: '0.875rem', lineHeight: 1.8 }}>
+                    <li>Base palette is restrained and professional</li>
+                    <li>1 primary accent color</li>
+                    <li>1–2 secondary support colors</li>
+                    <li>Greys for structure</li>
+                  </ul>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <h4 style={{ margin: '0 0 12px', fontSize: '0.9375rem', color: '#059669', fontWeight: 600 }}>Allowed Usage</h4>
+                  <ul style={{ margin: 0, paddingLeft: '20px', color: '#52525b', fontSize: '0.875rem', lineHeight: 1.8 }}>
+                    <li>Active state</li>
+                    <li>Selection & Focus</li>
+                    <li>Section identity</li>
+                    <li>Semantic meaning</li>
+                  </ul>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <h4 style={{ margin: '0 0 12px', fontSize: '0.9375rem', color: '#dc2626', fontWeight: 600 }}>Forbidden</h4>
+                  <ul style={{ margin: 0, paddingLeft: '20px', color: '#52525b', fontSize: '0.875rem', lineHeight: 1.8 }}>
+                    <li>Random color usage within the same context</li>
+                    <li>Multiple unrelated colors on the same screen</li>
+                    <li>Decorative gradients</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div className="sg-rule-box" style={{ marginBottom: '24px' }}>
+                <p style={{ margin: 0, fontSize: '0.875rem', color: '#52525b' }}>
+                  <strong style={{ color: '#1a1a1a' }}>Rule:</strong> Sections may have distinct color identity, but must be muted, harmonized, and consistent within that section.
+                </p>
+              </div>
+
+              <h3>3. Floating & Elevation</h3>
+              <p className="sg-description">Floating menus are part of the identity and must stay.</p>
+
+              <div className="sg-demo-row" style={{ gap: '24px', alignItems: 'flex-start', marginBottom: '24px' }}>
+                <div style={{ flex: 1, padding: '24px', background: '#ffffff', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', borderRadius: '10px', textAlign: 'center' }}>
+                  <span style={{ fontSize: '0.8125rem', color: '#71717a' }}>Level 1</span>
+                  <p style={{ margin: '8px 0 0', fontWeight: 500, color: '#1a1a1a' }}>Structural Docked</p>
+                  <span style={{ fontSize: '0.75rem', color: '#71717a' }}>Slight shadow</span>
+                </div>
+                <div style={{ flex: 1, padding: '24px', background: '#ffffff', boxShadow: '0 4px 12px rgba(0,0,0,0.08)', borderRadius: '10px', textAlign: 'center' }}>
+                  <span style={{ fontSize: '0.8125rem', color: '#71717a' }}>Level 2</span>
+                  <p style={{ margin: '8px 0 0', fontWeight: 500, color: '#1a1a1a' }}>Primary Floating</p>
+                  <span style={{ fontSize: '0.75rem', color: '#71717a' }}>Medium shadow</span>
+                </div>
+                <div style={{ flex: 1, padding: '24px', background: '#ffffff', boxShadow: '0 12px 32px rgba(0,0,0,0.12)', borderRadius: '10px', textAlign: 'center' }}>
+                  <span style={{ fontSize: '0.8125rem', color: '#71717a' }}>Level 3</span>
+                  <p style={{ margin: '8px 0 0', fontWeight: 500, color: '#1a1a1a' }}>Temporary Panels</p>
+                  <span style={{ fontSize: '0.75rem', color: '#71717a' }}>Strong shadow</span>
+                </div>
+              </div>
+
+              <div className="sg-rule-box" style={{ marginBottom: '24px' }}>
+                <p style={{ margin: 0, fontSize: '0.875rem', color: '#52525b' }}>
+                  <strong style={{ color: '#1a1a1a' }}>Rules:</strong> Use soft shadows with a consistent shadow scale system. Floating indicates importance or temporality. Never float everything.
+                </p>
+              </div>
+
+              <h3>4. Buttons & Controls</h3>
+              <p className="sg-description">All buttons must feel like part of the same system.</p>
+
+              <div className="sg-demo-row" style={{ gap: '16px', marginBottom: '16px' }}>
+                <button className="btn-primary">Primary Action</button>
+                <button className="btn-secondary">Secondary Action</button>
+                <button className="btn-tertiary">Tertiary Action</button>
+              </div>
+
+              <div className="sg-checklist" style={{ marginBottom: '24px' }}>
+                <div className="checklist-item">
+                  <CheckIcon fontSize="small" className="check-icon" />
+                  <span>One button language: same padding, rounding, elevation, typography</span>
+                </div>
+                <div className="checklist-item">
+                  <CheckIcon fontSize="small" className="check-icon" />
+                  <span>Primary / Secondary / Tertiary distinction only</span>
+                </div>
+                <div className="checklist-item">
+                  <CheckIcon fontSize="small" className="check-icon" />
+                  <span>No custom button styles per feature</span>
+                </div>
+              </div>
+
+              <h3>5. Borders</h3>
+              <p className="sg-description">Borders are the last resort.</p>
+
+              <div className="sg-demo-row" style={{ gap: '24px', marginBottom: '24px' }}>
+                <div style={{ flex: 1 }}>
+                  <h4 style={{ margin: '0 0 12px', fontSize: '0.9375rem', color: '#059669', fontWeight: 600 }}>Prefer</h4>
+                  <ul style={{ margin: 0, paddingLeft: '20px', color: '#52525b', fontSize: '0.875rem', lineHeight: 1.8 }}>
+                    <li>Spacing</li>
+                    <li>Elevation</li>
+                    <li>Background tone</li>
+                  </ul>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <h4 style={{ margin: '0 0 12px', fontSize: '0.9375rem', color: '#dc2626', fontWeight: 600 }}>Avoid</h4>
+                  <ul style={{ margin: 0, paddingLeft: '20px', color: '#52525b', fontSize: '0.875rem', lineHeight: 1.8 }}>
+                    <li>Heavy outlines</li>
+                    <li>"Box soup"</li>
+                    <li>Borders for everything</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div className="sg-rule-box" style={{ marginBottom: '24px' }}>
+                <p style={{ margin: 0, fontSize: '0.875rem', color: '#52525b' }}>
+                  <strong style={{ color: '#1a1a1a' }}>Rule:</strong> Use borders only when containment must be explicit.
+                </p>
+              </div>
+
+              <h3>6. Interaction Design</h3>
+              <p className="sg-description">Interaction must feel immediate, smooth, predictable, and silent.</p>
+
+              <div className="sg-checklist" style={{ marginBottom: '24px' }}>
+                <div className="checklist-item">
+                  <CheckIcon fontSize="small" className="check-icon" />
+                  <span>Auto-save everywhere by default</span>
+                </div>
+                <div className="checklist-item">
+                  <CheckIcon fontSize="small" className="check-icon" />
+                  <span>No explicit save buttons unless necessary</span>
+                </div>
+                <div className="checklist-item">
+                  <CheckIcon fontSize="small" className="check-icon" />
+                  <span>Inline editing (click to rename, edit in place)</span>
+                </div>
+                <div className="checklist-item">
+                  <CheckIcon fontSize="small" className="check-icon" />
+                  <span>Auto-complete wherever there is known structure</span>
+                </div>
+                <div className="checklist-item">
+                  <CheckIcon fontSize="small" className="check-icon" />
+                  <span>No disruptive modals unless critical</span>
+                </div>
+              </div>
+
+              <div className="sg-rule-box" style={{ marginBottom: '24px', background: 'transparent', borderLeft: '2px solid #BFBDB7', borderRadius: '0', padding: '12px 16px' }}>
+                <p style={{ margin: 0, fontSize: '0.9375rem', color: '#1F1E1B' }}>
+                  <strong style={{ color: '#47453F' }}>Goal:</strong> The system should feel alive but calm.
+                </p>
+              </div>
+
+              <h3>7. Motion</h3>
+              <p className="sg-description">Motion is functional, not expressive.</p>
+
+              <div className="sg-demo-row" style={{ gap: '24px', marginBottom: '24px' }}>
+                <div style={{ flex: 1 }}>
+                  <h4 style={{ margin: '0 0 12px', fontSize: '0.9375rem', color: '#059669', fontWeight: 600 }}>Do</h4>
+                  <ul style={{ margin: 0, paddingLeft: '20px', color: '#52525b', fontSize: '0.875rem', lineHeight: 1.8 }}>
+                    <li>Fast, subtle easing</li>
+                    <li>Communicate state change</li>
+                    <li>Communicate context shift</li>
+                    <li>Communicate hierarchy</li>
+                  </ul>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <h4 style={{ margin: '0 0 12px', fontSize: '0.9375rem', color: '#dc2626', fontWeight: 600 }}>Don't</h4>
+                  <ul style={{ margin: 0, paddingLeft: '20px', color: '#52525b', fontSize: '0.875rem', lineHeight: 1.8 }}>
+                    <li>Bounce effects</li>
+                    <li>Elastic animations</li>
+                    <li>Decorative motion</li>
+                    <li>Slow transitions</li>
+                  </ul>
+                </div>
+              </div>
+
+              <h3>8. Consistency Enforcement</h3>
+              <p className="sg-description">Consistency is mandatory.</p>
+
+              <div className="sg-checklist" style={{ marginBottom: '24px' }}>
+                <div className="checklist-item">
+                  <CheckIcon fontSize="small" className="check-icon" />
+                  <span>Same action = same visual language everywhere</span>
+                </div>
+                <div className="checklist-item">
+                  <CheckIcon fontSize="small" className="check-icon" />
+                  <span>Same control type = same interaction everywhere</span>
+                </div>
+                <div className="checklist-item">
+                  <CheckIcon fontSize="small" className="check-icon" />
+                  <span>No local visual inventions</span>
+                </div>
+                <div className="checklist-item">
+                  <CheckIcon fontSize="small" className="check-icon" />
+                  <span>All new components must follow existing primitives</span>
+                </div>
+              </div>
+
+              <div className="sg-rule-box" style={{ marginBottom: '24px', background: '#fef3c7', borderLeft: '3px solid #d97706' }}>
+                <p style={{ margin: 0, fontSize: '0.875rem', color: '#1a1a1a' }}>
+                  <strong style={{ color: '#92400e' }}>Rule:</strong> No feature may introduce its own palette, shadows, or animation logic.
+                </p>
+              </div>
+
+              <h3>9. UX Philosophy</h3>
+              <p className="sg-description">The product should feel effortless, intelligent, and invisible.</p>
+
+              <div className="sg-demo-row" style={{ gap: '24px', marginBottom: '24px' }}>
+                <div style={{ flex: 1, padding: '20px', background: '#ffffff', borderRadius: '10px', textAlign: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+                  <div style={{ fontSize: '1.75rem', marginBottom: '8px' }}>💾</div>
+                  <p style={{ margin: 0, fontSize: '0.875rem', color: '#52525b' }}>User never thinks about <strong style={{ color: '#1a1a1a' }}>saving</strong></p>
+                </div>
+                <div style={{ flex: 1, padding: '20px', background: '#ffffff', borderRadius: '10px', textAlign: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+                  <div style={{ fontSize: '1.75rem', marginBottom: '8px' }}>🧠</div>
+                  <p style={{ margin: 0, fontSize: '0.875rem', color: '#52525b' }}>User never thinks about <strong style={{ color: '#1a1a1a' }}>managing state</strong></p>
+                </div>
+                <div style={{ flex: 1, padding: '20px', background: '#ffffff', borderRadius: '10px', textAlign: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+                  <div style={{ fontSize: '1.75rem', marginBottom: '8px' }}>📝</div>
+                  <p style={{ margin: 0, fontSize: '0.875rem', color: '#52525b' }}>User never thinks about <strong style={{ color: '#1a1a1a' }}>remembering actions</strong></p>
+                </div>
+              </div>
+
+              <div className="sg-doctrine">
+                <p style={{ margin: 0, fontSize: '1rem', color: '#1C1917' }}>
+                  <strong style={{ color: '#47453F' }}>The system does that.</strong>
+                </p>
+              </div>
+            </section>
+          )}
+
           {/* Development Guide Section */}
           {activeSection === 'development' && (
             <section className="sg-section">
               <h2>Development Guide</h2>
 
               <h3>Project Architecture</h3>
-              <div className="sg-code-block">
-                <pre>{`Knowledge-graph/
-├── components/           # React components
-│   ├── {module}/        # Module-specific (pds/, gov/, cap/, risk/)
-│   │   ├── {Module}Context.js      # State management
-│   │   ├── {Module}Workspace.js    # Main layout
-│   │   ├── {Module}Navigator.js    # Left sidebar navigation
-│   │   ├── views/                  # View components
-│   │   ├── tools/                  # Tool components
-│   │   └── artefacts/              # Artefact modals
-│   ├── AuthContext.js   # Authentication
-│   ├── Layout.js        # Main app layout
-│   └── LeftNav.js       # Global navigation
+              <div className="sg-code-block" style={{ background: '#1E293B', borderRadius: '12px', padding: 0 }}>
+                <pre style={{ background: '#1E293B', color: '#E2E8F0', padding: '20px 24px', margin: 0, borderRadius: '12px' }}>{`ontographia/
+├── components/
+│   ├── spaces/               # ⭐ Space components (new structure)
+│   │   ├── SpacePageFactory.js    # Dynamic space page renderer
+│   │   ├── als/              # Adaptive Learning Space
+│   │   ├── ba/               # Business Analysis
+│   │   ├── cap/              # Capability Management
+│   │   ├── cm/               # Change Management
+│   │   ├── dwd/              # Dynamic Work Design
+│   │   ├── ea/               # Enterprise Architecture
+│   │   ├── ks/               # Knowledge Studio
+│   │   ├── mms/              # Mental Model Studio
+│   │   ├── np/               # Negotiation Preparation
+│   │   ├── pds/              # Project Design Studio
+│   │   ├── pdw/              # Product Design Workshop
+│   │   ├── perf/             # Performance Management
+│   │   ├── philosophy/       # Philosophy Studio
+│   │   ├── portfolio/        # Portfolio Management
+│   │   ├── sd/               # System Dynamics
+│   │   └── srs/              # Strategic Reasoning Studio
+│   ├── ui/                   # Shared UI components
+│   ├── shared/               # Cross-space shared components
+│   ├── AuthContext.js        # Authentication
+│   ├── Layout.js             # Main app layout
+│   └── LeftNav.js            # Global navigation
 ├── lib/
-│   ├── {prefix}-types.js    # Type definitions
-│   ├── {prefix}-guidance.js # Coaching content
-│   ├── {prefix}-tools.js    # Tools registry
-│   ├── repositories/        # Data access layer
-│   └── pg.js               # Database schema + utilities
+│   ├── {prefix}-types.js     # Type definitions
+│   ├── {prefix}-guidance.js  # Coaching content
+│   ├── repositories/         # Data access layer
+│   ├── services/             # Business logic services
+│   └── pg.js                 # Database schema + utilities
 ├── pages/
-│   ├── app/                 # ⭐ NEW PAGES GO HERE
-│   │   ├── workspaces/     # Workspace pages (e.g. project-design.js)
-│   │   ├── reasoning/      # Reasoning studio pages
-│   │   └── knowledge/      # Knowledge studio pages
-│   ├── api/{prefix}/       # API routes
-│   └── {legacy}.js         # Legacy root pages (redirect to app/)
+│   ├── app/
+│   │   ├── spaces/           # ⭐ Space pages (new structure)
+│   │   └── knowledge/        # Knowledge studio pages
+│   ├── api/                  # API routes
+│   │   ├── auth/            # Authentication endpoints
+│   │   ├── ea/              # EA-specific endpoints
+│   │   ├── graph/           # Graph operations
+│   │   └── meta/            # Metadata initialization
+│   └── admin/               # Admin pages (style-guide, etc.)
 ├── styles/
-│   └── {prefix}-workspace.css  # Workspace-specific styles
-└── tests/{prefix}/         # Test files per module`}</pre>
+│   ├── base.css             # Base styles + CSS variables
+│   ├── components.css       # Shared component styles
+│   └── {prefix}-workspace.css  # Space-specific styles
+└── public/                  # Static assets`}</pre>
               </div>
 
-              <div className="sg-info-box" style={{ marginTop: '16px', background: 'var(--warning-soft)', border: '1px solid var(--warning)', borderRadius: '8px', padding: '16px' }}>
-                <h4 style={{ margin: '0 0 8px', color: 'var(--warning)' }}>Important: Page Location</h4>
-                <p style={{ margin: 0, fontSize: '0.9rem' }}>
-                  <strong>All new workspace pages should be created in <code>pages/app/workspaces/</code></strong><br />
-                  Reasoning studios go in <code>pages/app/reasoning/</code><br />
-                  If a legacy root page exists, update it to redirect to the new location.
+              <div className="sg-info-box" style={{ marginTop: '16px', background: 'transparent', borderLeft: '2px solid #47453F', borderRadius: '0', padding: '14px 18px' }}>
+                <h4 style={{ margin: '0 0 8px', color: '#47453F', fontSize: '0.9375rem', fontWeight: 500 }}>Space-Based Architecture</h4>
+                <p style={{ margin: 0, fontSize: '0.875rem', color: '#6B6965', lineHeight: 1.6 }}>
+                  Components are organized by <strong>space</strong> in <code style={{ background: '#F0EFEC', color: '#47453F', padding: '2px 8px', borderRadius: '2px' }}>components/spaces/{'{space}'}/</code><br />
+                  Each space contains: Context, Workspace, Navigator, views/, and artefacts/ components.<br />
+                  <code style={{ background: '#F0EFEC', color: '#47453F', padding: '2px 8px', borderRadius: '2px' }}>SpacePageFactory.js</code> dynamically renders space pages.
                 </p>
               </div>
 
@@ -139,77 +467,86 @@ export default function StyleGuidePage() {
                   </thead>
                   <tbody>
                     <tr>
-                      <td>Module folder</td>
-                      <td>lowercase</td>
-                      <td><code>components/gov/</code></td>
+                      <td>Space folder</td>
+                      <td>lowercase abbreviation</td>
+                      <td><code>components/spaces/ea/</code></td>
                     </tr>
                     <tr>
                       <td>Component files</td>
-                      <td>PascalCase</td>
-                      <td><code>GovDashboard.js</code></td>
+                      <td>PascalCase with prefix</td>
+                      <td><code>EAWorkspace.js</code>, <code>EANavigator.js</code></td>
+                    </tr>
+                    <tr>
+                      <td>Context files</td>
+                      <td>PascalCase + Context</td>
+                      <td><code>EAContext.js</code></td>
                     </tr>
                     <tr>
                       <td>Type definitions</td>
                       <td>kebab-case prefix</td>
-                      <td><code>lib/gov-types.js</code></td>
+                      <td><code>lib/ea-types.js</code></td>
                     </tr>
                     <tr>
                       <td>API routes</td>
-                      <td>kebab-case</td>
-                      <td><code>pages/api/gov/artefacts.js</code></td>
+                      <td>nested folders</td>
+                      <td><code>pages/api/ea/elements.js</code></td>
                     </tr>
                     <tr>
-                      <td>Studio pages</td>
-                      <td>kebab-case</td>
-                      <td><code>pages/governance-studio.js</code></td>
+                      <td>Space pages</td>
+                      <td>kebab-case studio</td>
+                      <td><code>pages/ea-studio.js</code></td>
                     </tr>
                     <tr>
                       <td>Constants</td>
                       <td>SCREAMING_SNAKE_CASE</td>
-                      <td><code>GOV_TYPE_DEFS</code></td>
+                      <td><code>EA_ELEMENT_TYPES</code></td>
                     </tr>
                     <tr>
                       <td>Artefact types</td>
                       <td>snake_case prefix</td>
-                      <td><code>gov_decision_type</code></td>
+                      <td><code>ea_capability</code>, <code>pds_milestone</code></td>
                     </tr>
                   </tbody>
                 </table>
               </div>
 
-              <h3>Module Implementation Checklist</h3>
+              <h3>Space Implementation Checklist</h3>
               <div className="sg-checklist">
                 <div className="checklist-item">
                   <CheckIcon fontSize="small" className="check-icon" />
-                  <span>Type definitions with JSDoc (<code>lib/{'{prefix}'}-types.js</code>)</span>
+                  <span>Space folder created (<code>components/spaces/{'{space}'}/</code>)</span>
                 </div>
                 <div className="checklist-item">
                   <CheckIcon fontSize="small" className="check-icon" />
-                  <span>Repository with tests (<code>lib/repositories/{'{Prefix}'}Repository.js</code>)</span>
+                  <span>Type definitions (<code>lib/{'{space}'}-types.js</code>)</span>
                 </div>
                 <div className="checklist-item">
                   <CheckIcon fontSize="small" className="check-icon" />
-                  <span>API routes: list, create, update, delete</span>
+                  <span>Repository (<code>lib/repositories/{'{Space}'}Repository.js</code>)</span>
                 </div>
                 <div className="checklist-item">
                   <CheckIcon fontSize="small" className="check-icon" />
-                  <span>Context provider with auth headers</span>
+                  <span>Context provider (<code>{'{Space}'}Context.js</code>)</span>
                 </div>
                 <div className="checklist-item">
                   <CheckIcon fontSize="small" className="check-icon" />
-                  <span>Workspace components (Dashboard, ListView, Modal)</span>
+                  <span>Workspace component (<code>{'{Space}'}Workspace.js</code>)</span>
                 </div>
                 <div className="checklist-item">
                   <CheckIcon fontSize="small" className="check-icon" />
-                  <span>Studio page added</span>
+                  <span>Navigator component (<code>{'{Space}'}Navigator.js</code>)</span>
                 </div>
                 <div className="checklist-item">
                   <CheckIcon fontSize="small" className="check-icon" />
-                  <span>Navigation entry in LeftNav.js</span>
+                  <span>API routes (<code>pages/api/{'{space}'}/</code>)</span>
                 </div>
                 <div className="checklist-item">
                   <CheckIcon fontSize="small" className="check-icon" />
-                  <span>Layout.js studioPatterns updated</span>
+                  <span>Studio page (<code>pages/{'{space}'}-studio.js</code>)</span>
+                </div>
+                <div className="checklist-item">
+                  <CheckIcon fontSize="small" className="check-icon" />
+                  <span>LeftNav.js navigation entry added</span>
                 </div>
               </div>
 
@@ -439,8 +776,8 @@ const studioPatterns = [
 └── {prefix}-tools.test.js      # If workspace has tools`}</pre>
               </div>
 
-              <div className="sg-info-box" style={{ marginTop: '16px', background: 'var(--success-soft)', border: '1px solid var(--success)', borderRadius: '8px', padding: '16px' }}>
-                <h4 style={{ margin: '0 0 8px', color: 'var(--success)' }}>Available Icons for Navigation</h4>
+              <div className="sg-info-box" style={{ marginTop: '16px', background: 'rgba(34, 197, 94, 0.08)', border: 'none', borderRadius: '14px', padding: '18px 22px', boxShadow: '0 2px 6px rgba(34, 197, 94, 0.12)' }}>
+                <h4 style={{ margin: '0 0 8px', color: '#16A34A' }}>Available Icons for Navigation</h4>
                 <p style={{ margin: 0, fontSize: '0.9rem' }}>
                   <code>HomeIcon</code>, <code>DashboardIcon</code>, <code>AppsIcon</code>, <code>HubIcon</code>,
                   <code>AccountTreeIcon</code>, <code>LoopIcon</code>, <code>AssignmentIcon</code>, <code>ArchitectureIcon</code>,
@@ -494,6 +831,12 @@ const studioPatterns = [
 ├──────────────────────────┴──────────────────────────────┤
 │ page_registry: path(PK), name, category, default_roles  │
 │ user_page_permissions: user_id(FK), page_path(FK)       │
+└─────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────┐
+│     Authentication (Tokens)                             │
+├─────────────────────────────────────────────────────────┤
+│ user_refresh_tokens: user_id(FK), token_id, expires_at  │
 └─────────────────────────────────────────────────────────┘`}</pre>
               </div>
 
@@ -533,17 +876,18 @@ const studioPatterns = [
                                            │ content (JSONB)         │
                                            └─────────────────────────┘
 
-┌─────────────────────┐
-│      diagrams       │  ← Used by System Dynamics, EA, BPMN, UML
-├─────────────────────┤
-│ id (PK, UUID)       │
-│ domain_id (FK)      │
-│ project_id (FK)     │
-│ user_id (FK)        │
-│ type, name          │
-│ elements (JSONB)    │
-│ connections (JSONB) │
-└─────────────────────┘`}</pre>
+┌─────────────────────┐       ┌─────────────────────────┐
+│      diagrams       │       │   document_templates    │
+├─────────────────────┤       ├─────────────────────────┤
+│ id (PK, UUID)       │       │ id (PK, TEXT)           │
+│ domain_id (FK)      │       │ name, description       │
+│ project_id (FK)     │       │ document_type           │
+│ user_id (FK)        │       │ content (JSONB)         │
+│ type, name          │       │ artefact_types (JSONB)  │
+│ elements (JSONB)    │       │ is_system               │
+│ connections (JSONB) │       │ created_by (FK)         │
+└─────────────────────┘       └─────────────────────────┘
+  ↑ Used by System Dynamics, EA, BPMN, UML, etc.`}</pre>
               </div>
 
               <h3>Enterprise Architecture (EA)</h3>
@@ -581,62 +925,22 @@ const studioPatterns = [
 │ compliance_level    │       │ decision, rationale │
 │ lifecycle_end       │       │ alternatives (JSON) │
 └─────────────────────┘       │ status, superseded  │
+                              └─────────────────────┘
+                                       │
+                              ┌────────▼────────────┐
+                              │ ea_decision_history │
+                              ├─────────────────────┤
+                              │ decision_id (FK)    │
+                              │ action, changes     │
+                              │ previous/new_state  │
+                              │ changed_by, at      │
                               └─────────────────────┘`}</pre>
-              </div>
-
-              <h3>Strategic Reasoning Suite (SRS)</h3>
-              <p className="sg-description">Tables for reasoning sessions with multiple thinking spaces.</p>
-              <div className="sg-code-block">
-                <pre style={{ fontSize: '11px', lineHeight: '1.4' }}>{`┌─────────────────────┐
-│    srs_sessions     │
-├─────────────────────┤
-│ id (PK, SERIAL)     │
-│ project_id (UUID)   │
-│ owner_id            │
-│ title, intent       │
-│ mode (solo/collab)  │
-│ current_space       │
-│ status              │
-│ conclusion          │
-└─────────────────────┘
-         │
-         ├──▶ srs_spaces (canvas state per space)
-         │
-         ├──▶ srs_questions (content, type, maturity, x/y)
-         │
-         ├──▶ srs_frames (mental models with elements)
-         │         └──▶ srs_frame_elements (challenged assumptions)
-         │
-         ├──▶ srs_parallel_states (scenarios with probability)
-         │
-         ├──▶ srs_system_nodes + srs_causal_links (CLD diagrams)
-         │         └──▶ srs_feedback_loops
-         │
-         ├──▶ srs_perspectives (stakeholder viewpoints)
-         │
-         ├──▶ srs_decisions (options, readiness_score, outcome)
-         │
-         ├──▶ srs_assumptions (status: untested/validated/invalid)
-         │
-         ├──▶ srs_connections (cross-space links)
-         │
-         ├──▶ srs_comments, srs_coaching_events
-         │
-         ├──▶ srs_snapshots (point-in-time captures)
-         │
-         └──▶ srs_session_participants (for collaborative sessions)`}</pre>
               </div>
 
               <h3>Other Studio Tables</h3>
               <p className="sg-description">Additional workspaces with their own table groups.</p>
               <div className="sg-code-block">
-                <pre style={{ fontSize: '11px', lineHeight: '1.4' }}>{`┌─────────────────────────────────────────────────────────────┐
-│  N&P Studio (Negotiation & Persuasion)                      │
-├─────────────────────────────────────────────────────────────┤
-│ np_situations → np_elements → np_element_relationships      │
-│              → np_journal                                   │
-│              → np_conversation_turns                        │
-└─────────────────────────────────────────────────────────────┘
+                <pre style={{ fontSize: '11px', lineHeight: '1.4' }}>{`
 
 ┌─────────────────────────────────────────────────────────────┐
 │  MMS Studio (Mental Models & Sensemaking)                   │
@@ -717,301 +1021,400 @@ const studioPatterns = [
 
           {/* Colors Section */}
           {activeSection === 'colors' && (
-            <section className="sg-section">
-              <h2>Colors</h2>
+            <section className="sg-section" data-section="colors">
+              <h2>Color System</h2>
 
-              <div className="sg-info-box" style={{ marginBottom: '24px', background: 'var(--info-soft)', border: '1px solid var(--info)', borderRadius: '8px', padding: '16px' }}>
-                <h4 style={{ margin: '0 0 8px', color: 'var(--info)' }}>Professional Slate Palette</h4>
-                <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-                  A refined color system with muted tones for enterprise applications. All colors are available as CSS variables.
+              <div className="sg-intro-box" style={{ marginBottom: '32px' }}>
+                <p style={{ margin: 0, fontSize: '1.0625rem', lineHeight: 1.7, color: '#1C1917' }}>
+                  A <strong>warm, premium color system</strong> designed for long cognitive sessions without visual fatigue.
+                  Colors are subtle and intentional — supporting focus, not demanding attention.
+                </p>
+                <p style={{ margin: '12px 0 0', fontSize: '0.9375rem', color: '#57534E' }}>
+                  We use <strong>Stone (warm neutrals)</strong> as our foundation with <strong>Coral (#EF4444)</strong> as the primary accent.
+                  This creates a paper-like warmth that feels natural and refined.
                 </p>
               </div>
 
-              <h3>Core Colors</h3>
-              <p className="sg-description">Foundation colors for backgrounds, text, and borders.</p>
-              <div className="color-grid">
-                <div className="color-swatch">
-                  <div className="swatch" style={{ background: 'var(--bg)' }} />
-                  <span className="swatch-name">--bg</span>
-                  <span className="swatch-use">Page background</span>
-                </div>
-                <div className="color-swatch">
-                  <div className="swatch" style={{ background: 'var(--bg-alt)' }} />
-                  <span className="swatch-name">--bg-alt</span>
-                  <span className="swatch-use">Alt background</span>
-                </div>
-                <div className="color-swatch">
-                  <div className="swatch" style={{ background: 'var(--panel)' }} />
-                  <span className="swatch-name">--panel</span>
-                  <span className="swatch-use">Card/panel bg</span>
-                </div>
-                <div className="color-swatch">
-                  <div className="swatch" style={{ background: 'var(--text)', color: 'white' }}>Aa</div>
-                  <span className="swatch-name">--text</span>
-                  <span className="swatch-use">Primary text</span>
-                </div>
-                <div className="color-swatch">
-                  <div className="swatch" style={{ background: 'var(--text-muted)', color: 'white' }}>Aa</div>
-                  <span className="swatch-name">--text-muted</span>
-                  <span className="swatch-use">Secondary text</span>
-                </div>
-                <div className="color-swatch">
-                  <div className="swatch" style={{ background: 'var(--border)' }} />
-                  <span className="swatch-name">--border</span>
-                  <span className="swatch-use">Borders</span>
-                </div>
-                <div className="color-swatch">
-                  <div className="swatch" style={{ background: 'var(--border-strong)' }} />
-                  <span className="swatch-name">--border-strong</span>
-                  <span className="swatch-use">Strong borders</span>
-                </div>
+              {/* Phozart Primary Palette */}
+              <h3>Phozart Primary Palette</h3>
+              <p className="sg-description">The foundation of our warm, premium aesthetic. Use these as your primary colors.</p>
+              <div className="color-grid" style={{ marginBottom: '24px' }}>
+                {[
+                  { bg: '#FEFDFB', name: 'warm-white', label: 'Base', note: 'Page background' },
+                  { bg: '#FAF9F7', name: 'warm-50', label: '50', note: 'Secondary bg' },
+                  { bg: '#F5F4F2', name: 'warm-100', label: '100', note: 'Hover states' },
+                  { bg: '#EFEEE9', name: 'warm-200', label: '200', note: 'Borders' },
+                  { bg: '#E7E5E4', name: 'warm-300', label: '300', note: 'Dividers' },
+                  { bg: '#A8A29E', name: 'warm-muted', label: 'Muted', note: 'Muted text', light: true },
+                  { bg: '#57534E', name: 'warm-secondary', label: 'Secondary', note: 'Body text', light: true },
+                  { bg: '#1C1917', name: 'warm-primary', label: 'Primary', note: 'Headings', light: true },
+                ].map(c => (
+                  <div key={c.name} className="color-swatch">
+                    <div className="swatch" style={{ background: c.bg, color: c.light ? '#fff' : '#1C1917' }}>{c.label}</div>
+                    <span className="swatch-name">--{c.name}</span>
+                    <span className="swatch-use">{c.note}</span>
+                  </div>
+                ))}
               </div>
 
-              <h3>Accent Colors</h3>
-              <p className="sg-description">Primary action colors for buttons and interactive elements.</p>
-              <div className="color-grid">
-                <div className="color-swatch">
-                  <div className="swatch" style={{ background: 'var(--accent)', color: 'white' }}>Aa</div>
-                  <span className="swatch-name">--accent</span>
-                  <span className="swatch-use">Primary action</span>
-                </div>
-                <div className="color-swatch">
-                  <div className="swatch" style={{ background: 'var(--accent-soft)' }} />
-                  <span className="swatch-name">--accent-soft</span>
-                  <span className="swatch-use">Subtle highlight</span>
-                </div>
-                <div className="color-swatch">
-                  <div className="swatch" style={{ background: 'var(--primary)', color: 'white' }}>Aa</div>
-                  <span className="swatch-name">--primary</span>
-                  <span className="swatch-use">Alias for accent</span>
-                </div>
+              <h3>Primary Accent: Coral</h3>
+              <p className="sg-description">Warm coral accent for CTAs, active states, and highlights. Vibrant yet refined.</p>
+              <div className="color-grid" style={{ marginBottom: '24px' }}>
+                {[
+                  { bg: '#FEF2F2', name: 'coral-50', label: '50' },
+                  { bg: '#FEE2E2', name: 'coral-100', label: '100' },
+                  { bg: '#FECACA', name: 'coral-200', label: '200' },
+                  { bg: '#FCA5A5', name: 'coral-300', label: '300' },
+                  { bg: '#F87171', name: 'coral-400', label: '400' },
+                  { bg: '#EF4444', name: 'coral-500', label: '500 ★', light: true },
+                  { bg: '#DC2626', name: 'coral-600', label: '600', light: true },
+                  { bg: '#B91C1C', name: 'coral-700', label: '700', light: true },
+                  { bg: '#991B1B', name: 'coral-800', label: '800', light: true },
+                  { bg: '#7F1D1D', name: 'coral-900', label: '900', light: true },
+                ].map(c => (
+                  <div key={c.name} className="color-swatch">
+                    <div className="swatch" style={{ background: c.bg, color: c.light ? '#fff' : '#991B1B' }}>{c.label}</div>
+                    <span className="swatch-name">--{c.name}</span>
+                    <span className="swatch-use">{c.bg}</span>
+                  </div>
+                ))}
               </div>
 
+              {/* Neutral Scales */}
+              <h3>Neutral Scales</h3>
+              <p className="sg-description">Foundation colors for backgrounds, text, borders. Three temperature options for different contexts.</p>
+
+              <h4 style={{ margin: '24px 0 12px', fontSize: '0.875rem', color: '#1a1a1a', fontWeight: 600 }}>Slate (Cool Neutral)</h4>
+              <div className="color-grid" style={{ marginBottom: '20px' }}>
+                {[
+                  { bg: '#f8fafc', name: 'slate-50', label: '50' },
+                  { bg: '#f1f5f9', name: 'slate-100', label: '100' },
+                  { bg: '#e2e8f0', name: 'slate-200', label: '200' },
+                  { bg: '#cbd5e1', name: 'slate-300', label: '300' },
+                  { bg: '#94a3b8', name: 'slate-400', label: '400', light: true },
+                  { bg: '#64748b', name: 'slate-500', label: '500', light: true },
+                  { bg: '#475569', name: 'slate-600', label: '600', light: true },
+                  { bg: '#334155', name: 'slate-700', label: '700', light: true },
+                  { bg: '#1e293b', name: 'slate-800', label: '800', light: true },
+                  { bg: '#0f172a', name: 'slate-900', label: '900', light: true },
+                ].map(c => (
+                  <div key={c.name} className="color-swatch">
+                    <div className="swatch" style={{ background: c.bg, color: c.light ? '#fff' : '#1a1a1a' }}>{c.label}</div>
+                    <span className="swatch-name">--{c.name}</span>
+                    <span className="swatch-use">{c.bg}</span>
+                  </div>
+                ))}
+              </div>
+
+              <h4 style={{ margin: '24px 0 12px', fontSize: '0.875rem', color: '#1a1a1a', fontWeight: 600 }}>Zinc (True Neutral)</h4>
+              <div className="color-grid" style={{ marginBottom: '20px' }}>
+                {[
+                  { bg: '#fafafa', name: 'zinc-50', label: '50' },
+                  { bg: '#f4f4f5', name: 'zinc-100', label: '100' },
+                  { bg: '#e4e4e7', name: 'zinc-200', label: '200' },
+                  { bg: '#d4d4d8', name: 'zinc-300', label: '300' },
+                  { bg: '#a1a1aa', name: 'zinc-400', label: '400', light: true },
+                  { bg: '#71717a', name: 'zinc-500', label: '500', light: true },
+                  { bg: '#52525b', name: 'zinc-600', label: '600', light: true },
+                  { bg: '#3f3f46', name: 'zinc-700', label: '700', light: true },
+                  { bg: '#27272a', name: 'zinc-800', label: '800', light: true },
+                  { bg: '#18181b', name: 'zinc-900', label: '900', light: true },
+                ].map(c => (
+                  <div key={c.name} className="color-swatch">
+                    <div className="swatch" style={{ background: c.bg, color: c.light ? '#fff' : '#1a1a1a' }}>{c.label}</div>
+                    <span className="swatch-name">--{c.name}</span>
+                    <span className="swatch-use">{c.bg}</span>
+                  </div>
+                ))}
+              </div>
+
+              <h4 style={{ margin: '24px 0 12px', fontSize: '0.875rem', color: '#1a1a1a', fontWeight: 600 }}>Stone (Warm Neutral)</h4>
+              <div className="color-grid" style={{ marginBottom: '24px' }}>
+                {[
+                  { bg: '#fafaf9', name: 'stone-50', label: '50' },
+                  { bg: '#f5f5f4', name: 'stone-100', label: '100' },
+                  { bg: '#e7e5e4', name: 'stone-200', label: '200' },
+                  { bg: '#d6d3d1', name: 'stone-300', label: '300' },
+                  { bg: '#a8a29e', name: 'stone-400', label: '400', light: true },
+                  { bg: '#78716c', name: 'stone-500', label: '500', light: true },
+                  { bg: '#57534e', name: 'stone-600', label: '600', light: true },
+                  { bg: '#44403c', name: 'stone-700', label: '700', light: true },
+                  { bg: '#292524', name: 'stone-800', label: '800', light: true },
+                  { bg: '#1c1917', name: 'stone-900', label: '900', light: true },
+                ].map(c => (
+                  <div key={c.name} className="color-swatch">
+                    <div className="swatch" style={{ background: c.bg, color: c.light ? '#fff' : '#1a1a1a' }}>{c.label}</div>
+                    <span className="swatch-name">--{c.name}</span>
+                    <span className="swatch-use">{c.bg}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Primary Blue Scale */}
+              <h3>Primary Blue</h3>
+              <p className="sg-description">Primary accent color for actions, links, and focus states. Professional, not purple.</p>
+              <div className="color-grid" style={{ marginBottom: '24px' }}>
+                {[
+                  { bg: '#eff6ff', name: 'blue-50', label: '50' },
+                  { bg: '#dbeafe', name: 'blue-100', label: '100' },
+                  { bg: '#bfdbfe', name: 'blue-200', label: '200' },
+                  { bg: '#93c5fd', name: 'blue-300', label: '300' },
+                  { bg: '#60a5fa', name: 'blue-400', label: '400' },
+                  { bg: '#3b82f6', name: 'blue-500', label: '500', light: true },
+                  { bg: '#2563eb', name: 'blue-600', label: '600', light: true },
+                  { bg: '#1d4ed8', name: 'blue-700', label: '700', light: true },
+                  { bg: '#1e40af', name: 'blue-800', label: '800 ★', light: true },
+                  { bg: '#1e3a8a', name: 'blue-900', label: '900', light: true },
+                ].map(c => (
+                  <div key={c.name} className="color-swatch">
+                    <div className="swatch" style={{ background: c.bg, color: c.light ? '#fff' : '#1e40af' }}>{c.label}</div>
+                    <span className="swatch-name">--{c.name}</span>
+                    <span className="swatch-use">{c.bg}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Semantic Colors */}
               <h3>Semantic Colors</h3>
-              <p className="sg-description">Status and feedback colors with soft variants for backgrounds.</p>
-              <div className="color-grid">
-                <div className="color-swatch">
-                  <div className="swatch" style={{ background: 'var(--success)', color: 'white' }}>Success</div>
-                  <span className="swatch-name">--success</span>
-                  <span className="swatch-use">Approved, complete</span>
+              <p className="sg-description">Status and feedback colors with full gradation for flexibility.</p>
+
+              <h4 style={{ margin: '24px 0 12px', fontSize: '0.875rem', color: '#059669', fontWeight: 600 }}>Success (Emerald)</h4>
+              <div className="color-grid" style={{ marginBottom: '20px' }}>
+                {[
+                  { bg: '#ecfdf5', name: 'emerald-50', label: '50' },
+                  { bg: '#d1fae5', name: 'emerald-100', label: '100' },
+                  { bg: '#a7f3d0', name: 'emerald-200', label: '200' },
+                  { bg: '#6ee7b7', name: 'emerald-300', label: '300' },
+                  { bg: '#34d399', name: 'emerald-400', label: '400' },
+                  { bg: '#10b981', name: 'emerald-500', label: '500', light: true },
+                  { bg: '#059669', name: 'emerald-600', label: '600 ★', light: true },
+                  { bg: '#047857', name: 'emerald-700', label: '700', light: true },
+                  { bg: '#065f46', name: 'emerald-800', label: '800', light: true },
+                  { bg: '#064e3b', name: 'emerald-900', label: '900', light: true },
+                ].map(c => (
+                  <div key={c.name} className="color-swatch">
+                    <div className="swatch" style={{ background: c.bg, color: c.light ? '#fff' : '#065f46' }}>{c.label}</div>
+                    <span className="swatch-name">--{c.name}</span>
+                    <span className="swatch-use">{c.bg}</span>
+                  </div>
+                ))}
+              </div>
+
+              <h4 style={{ margin: '24px 0 12px', fontSize: '0.875rem', color: '#d97706', fontWeight: 600 }}>Warning (Amber)</h4>
+              <div className="color-grid" style={{ marginBottom: '20px' }}>
+                {[
+                  { bg: '#fffbeb', name: 'amber-50', label: '50' },
+                  { bg: '#fef3c7', name: 'amber-100', label: '100' },
+                  { bg: '#fde68a', name: 'amber-200', label: '200' },
+                  { bg: '#fcd34d', name: 'amber-300', label: '300' },
+                  { bg: '#fbbf24', name: 'amber-400', label: '400' },
+                  { bg: '#f59e0b', name: 'amber-500', label: '500' },
+                  { bg: '#d97706', name: 'amber-600', label: '600 ★', light: true },
+                  { bg: '#b45309', name: 'amber-700', label: '700', light: true },
+                  { bg: '#92400e', name: 'amber-800', label: '800', light: true },
+                  { bg: '#78350f', name: 'amber-900', label: '900', light: true },
+                ].map(c => (
+                  <div key={c.name} className="color-swatch">
+                    <div className="swatch" style={{ background: c.bg, color: c.light ? '#fff' : '#92400e' }}>{c.label}</div>
+                    <span className="swatch-name">--{c.name}</span>
+                    <span className="swatch-use">{c.bg}</span>
+                  </div>
+                ))}
+              </div>
+
+              <h4 style={{ margin: '24px 0 12px', fontSize: '0.875rem', color: '#dc2626', fontWeight: 600 }}>Danger (Red)</h4>
+              <div className="color-grid" style={{ marginBottom: '20px' }}>
+                {[
+                  { bg: '#fef2f2', name: 'red-50', label: '50' },
+                  { bg: '#fee2e2', name: 'red-100', label: '100' },
+                  { bg: '#fecaca', name: 'red-200', label: '200' },
+                  { bg: '#fca5a5', name: 'red-300', label: '300' },
+                  { bg: '#f87171', name: 'red-400', label: '400' },
+                  { bg: '#ef4444', name: 'red-500', label: '500', light: true },
+                  { bg: '#dc2626', name: 'red-600', label: '600 ★', light: true },
+                  { bg: '#b91c1c', name: 'red-700', label: '700', light: true },
+                  { bg: '#991b1b', name: 'red-800', label: '800', light: true },
+                  { bg: '#7f1d1d', name: 'red-900', label: '900', light: true },
+                ].map(c => (
+                  <div key={c.name} className="color-swatch">
+                    <div className="swatch" style={{ background: c.bg, color: c.light ? '#fff' : '#991b1b' }}>{c.label}</div>
+                    <span className="swatch-name">--{c.name}</span>
+                    <span className="swatch-use">{c.bg}</span>
+                  </div>
+                ))}
+              </div>
+
+              <h4 style={{ margin: '24px 0 12px', fontSize: '0.875rem', color: '#0d9488', fontWeight: 600 }}>Info (Teal)</h4>
+              <div className="color-grid" style={{ marginBottom: '24px' }}>
+                {[
+                  { bg: '#f0fdfa', name: 'teal-50', label: '50' },
+                  { bg: '#ccfbf1', name: 'teal-100', label: '100' },
+                  { bg: '#99f6e4', name: 'teal-200', label: '200' },
+                  { bg: '#5eead4', name: 'teal-300', label: '300' },
+                  { bg: '#2dd4bf', name: 'teal-400', label: '400' },
+                  { bg: '#14b8a6', name: 'teal-500', label: '500', light: true },
+                  { bg: '#0d9488', name: 'teal-600', label: '600 ★', light: true },
+                  { bg: '#0f766e', name: 'teal-700', label: '700', light: true },
+                  { bg: '#115e59', name: 'teal-800', label: '800', light: true },
+                  { bg: '#134e4a', name: 'teal-900', label: '900', light: true },
+                ].map(c => (
+                  <div key={c.name} className="color-swatch">
+                    <div className="swatch" style={{ background: c.bg, color: c.light ? '#fff' : '#115e59' }}>{c.label}</div>
+                    <span className="swatch-name">--{c.name}</span>
+                    <span className="swatch-use">{c.bg}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Module Colors */}
+              <h3>Module Identity Colors</h3>
+              <p className="sg-description">Distinct colors for different workspaces and modules. Each has a full scale.</p>
+
+              <h4 style={{ margin: '24px 0 12px', fontSize: '0.875rem', color: '#0369a1', fontWeight: 600 }}>Sky (Services, Integrations)</h4>
+              <div className="color-grid" style={{ marginBottom: '20px' }}>
+                {[
+                  { bg: '#f0f9ff', name: 'sky-50', label: '50' },
+                  { bg: '#e0f2fe', name: 'sky-100', label: '100' },
+                  { bg: '#bae6fd', name: 'sky-200', label: '200' },
+                  { bg: '#7dd3fc', name: 'sky-300', label: '300' },
+                  { bg: '#38bdf8', name: 'sky-400', label: '400' },
+                  { bg: '#0ea5e9', name: 'sky-500', label: '500', light: true },
+                  { bg: '#0284c7', name: 'sky-600', label: '600', light: true },
+                  { bg: '#0369a1', name: 'sky-700', label: '700 ★', light: true },
+                  { bg: '#075985', name: 'sky-800', label: '800', light: true },
+                  { bg: '#0c4a6e', name: 'sky-900', label: '900', light: true },
+                ].map(c => (
+                  <div key={c.name} className="color-swatch">
+                    <div className="swatch" style={{ background: c.bg, color: c.light ? '#fff' : '#075985' }}>{c.label}</div>
+                    <span className="swatch-name">--{c.name}</span>
+                    <span className="swatch-use">{c.bg}</span>
+                  </div>
+                ))}
+              </div>
+
+              <h4 style={{ margin: '24px 0 12px', fontSize: '0.875rem', color: '#c2410c', fontWeight: 600 }}>Orange (Performance, Metrics)</h4>
+              <div className="color-grid" style={{ marginBottom: '20px' }}>
+                {[
+                  { bg: '#fff7ed', name: 'orange-50', label: '50' },
+                  { bg: '#ffedd5', name: 'orange-100', label: '100' },
+                  { bg: '#fed7aa', name: 'orange-200', label: '200' },
+                  { bg: '#fdba74', name: 'orange-300', label: '300' },
+                  { bg: '#fb923c', name: 'orange-400', label: '400' },
+                  { bg: '#f97316', name: 'orange-500', label: '500' },
+                  { bg: '#ea580c', name: 'orange-600', label: '600', light: true },
+                  { bg: '#c2410c', name: 'orange-700', label: '700 ★', light: true },
+                  { bg: '#9a3412', name: 'orange-800', label: '800', light: true },
+                  { bg: '#7c2d12', name: 'orange-900', label: '900', light: true },
+                ].map(c => (
+                  <div key={c.name} className="color-swatch">
+                    <div className="swatch" style={{ background: c.bg, color: c.light ? '#fff' : '#9a3412' }}>{c.label}</div>
+                    <span className="swatch-name">--{c.name}</span>
+                    <span className="swatch-use">{c.bg}</span>
+                  </div>
+                ))}
+              </div>
+
+              <h4 style={{ margin: '24px 0 12px', fontSize: '0.875rem', color: '#4f46e5', fontWeight: 600 }}>Indigo (Capabilities, Decisions)</h4>
+              <div className="color-grid" style={{ marginBottom: '24px' }}>
+                {[
+                  { bg: '#eef2ff', name: 'indigo-50', label: '50' },
+                  { bg: '#e0e7ff', name: 'indigo-100', label: '100' },
+                  { bg: '#c7d2fe', name: 'indigo-200', label: '200' },
+                  { bg: '#a5b4fc', name: 'indigo-300', label: '300' },
+                  { bg: '#818cf8', name: 'indigo-400', label: '400' },
+                  { bg: '#6366f1', name: 'indigo-500', label: '500', light: true },
+                  { bg: '#4f46e5', name: 'indigo-600', label: '600 ★', light: true },
+                  { bg: '#4338ca', name: 'indigo-700', label: '700', light: true },
+                  { bg: '#3730a3', name: 'indigo-800', label: '800', light: true },
+                  { bg: '#312e81', name: 'indigo-900', label: '900', light: true },
+                ].map(c => (
+                  <div key={c.name} className="color-swatch">
+                    <div className="swatch" style={{ background: c.bg, color: c.light ? '#fff' : '#3730a3' }}>{c.label}</div>
+                    <span className="swatch-name">--{c.name}</span>
+                    <span className="swatch-use">{c.bg}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Elevation */}
+              <h3>Elevation (Shadows)</h3>
+              <p className="sg-description">Controlled shadow system for depth hierarchy. Use elevation to separate, not decoration.</p>
+              <div className="sg-demo-row" style={{ gap: '24px', marginBottom: '24px' }}>
+                <div style={{ flex: 1, padding: '24px', background: '#ffffff', boxShadow: '0 1px 2px rgba(0,0,0,0.04)', borderRadius: '10px', textAlign: 'center' }}>
+                  <p style={{ margin: '0 0 8px', fontWeight: 500, color: '#1a1a1a' }}>sm</p>
+                  <code style={{ fontSize: '0.75rem', color: '#52525b' }}>0 1px 2px</code>
                 </div>
-                <div className="color-swatch">
-                  <div className="swatch" style={{ background: 'var(--success-soft)' }}>Soft</div>
-                  <span className="swatch-name">--success-soft</span>
-                  <span className="swatch-use">Success background</span>
+                <div style={{ flex: 1, padding: '24px', background: '#ffffff', boxShadow: '0 4px 12px rgba(0,0,0,0.08)', borderRadius: '10px', textAlign: 'center' }}>
+                  <p style={{ margin: '0 0 8px', fontWeight: 500, color: '#1a1a1a' }}>md</p>
+                  <code style={{ fontSize: '0.75rem', color: '#52525b' }}>0 4px 12px</code>
                 </div>
-                <div className="color-swatch">
-                  <div className="swatch" style={{ background: 'var(--warning)', color: 'white' }}>Warning</div>
-                  <span className="swatch-name">--warning</span>
-                  <span className="swatch-use">At-risk, pending</span>
+                <div style={{ flex: 1, padding: '24px', background: '#ffffff', boxShadow: '0 12px 32px rgba(0,0,0,0.12)', borderRadius: '10px', textAlign: 'center' }}>
+                  <p style={{ margin: '0 0 8px', fontWeight: 500, color: '#1a1a1a' }}>lg</p>
+                  <code style={{ fontSize: '0.75rem', color: '#52525b' }}>0 12px 32px</code>
                 </div>
-                <div className="color-swatch">
-                  <div className="swatch" style={{ background: 'var(--warning-soft)' }}>Soft</div>
-                  <span className="swatch-name">--warning-soft</span>
-                  <span className="swatch-use">Warning background</span>
-                </div>
-                <div className="color-swatch">
-                  <div className="swatch" style={{ background: 'var(--danger)', color: 'white' }}>Danger</div>
-                  <span className="swatch-name">--danger</span>
-                  <span className="swatch-use">Error, critical</span>
-                </div>
-                <div className="color-swatch">
-                  <div className="swatch" style={{ background: 'var(--danger-soft)' }}>Soft</div>
-                  <span className="swatch-name">--danger-soft</span>
-                  <span className="swatch-use">Danger background</span>
-                </div>
-                <div className="color-swatch">
-                  <div className="swatch" style={{ background: 'var(--info)', color: 'white' }}>Info</div>
-                  <span className="swatch-name">--info</span>
-                  <span className="swatch-use">Informational</span>
-                </div>
-                <div className="color-swatch">
-                  <div className="swatch" style={{ background: 'var(--info-soft)' }}>Soft</div>
-                  <span className="swatch-name">--info-soft</span>
-                  <span className="swatch-use">Info background</span>
+                <div style={{ flex: 1, padding: '24px', background: '#ffffff', boxShadow: '0 24px 48px rgba(0,0,0,0.16)', borderRadius: '10px', textAlign: 'center' }}>
+                  <p style={{ margin: '0 0 8px', fontWeight: 500, color: '#1a1a1a' }}>xl</p>
+                  <code style={{ fontSize: '0.75rem', color: '#52525b' }}>0 24px 48px</code>
                 </div>
               </div>
 
-              <h3>Module Colors</h3>
-              <p className="sg-description">Distinct colors for different modules/domains with soft variants.</p>
-              <div className="color-grid">
-                <div className="color-swatch">
-                  <div className="swatch" style={{ background: 'var(--module-indigo)', color: 'white' }}>Indigo</div>
-                  <span className="swatch-name">--module-indigo</span>
-                  <span className="swatch-use">Capabilities</span>
-                </div>
-                <div className="color-swatch">
-                  <div className="swatch" style={{ background: 'var(--module-indigo-soft)' }}>Soft</div>
-                  <span className="swatch-name">--module-indigo-soft</span>
-                  <span className="swatch-use">Background</span>
-                </div>
-                <div className="color-swatch">
-                  <div className="swatch" style={{ background: 'var(--module-violet)', color: 'white' }}>Violet</div>
-                  <span className="swatch-name">--module-violet</span>
-                  <span className="swatch-use">Value Streams</span>
-                </div>
-                <div className="color-swatch">
-                  <div className="swatch" style={{ background: 'var(--module-violet-soft)' }}>Soft</div>
-                  <span className="swatch-name">--module-violet-soft</span>
-                  <span className="swatch-use">Background</span>
-                </div>
-                <div className="color-swatch">
-                  <div className="swatch" style={{ background: 'var(--module-teal)', color: 'white' }}>Teal</div>
-                  <span className="swatch-name">--module-teal</span>
-                  <span className="swatch-use">Operating Model</span>
-                </div>
-                <div className="color-swatch">
-                  <div className="swatch" style={{ background: 'var(--module-teal-soft)' }}>Soft</div>
-                  <span className="swatch-name">--module-teal-soft</span>
-                  <span className="swatch-use">Background</span>
-                </div>
-                <div className="color-swatch">
-                  <div className="swatch" style={{ background: 'var(--module-sky)', color: 'white' }}>Sky</div>
-                  <span className="swatch-name">--module-sky</span>
-                  <span className="swatch-use">Services</span>
-                </div>
-                <div className="color-swatch">
-                  <div className="swatch" style={{ background: 'var(--module-sky-soft)' }}>Soft</div>
-                  <span className="swatch-name">--module-sky-soft</span>
-                  <span className="swatch-use">Background</span>
-                </div>
-                <div className="color-swatch">
-                  <div className="swatch" style={{ background: 'var(--module-pink)', color: 'white' }}>Pink</div>
-                  <span className="swatch-name">--module-pink</span>
-                  <span className="swatch-use">Risk & Resilience</span>
-                </div>
-                <div className="color-swatch">
-                  <div className="swatch" style={{ background: 'var(--module-pink-soft)' }}>Soft</div>
-                  <span className="swatch-name">--module-pink-soft</span>
-                  <span className="swatch-use">Background</span>
-                </div>
-                <div className="color-swatch">
-                  <div className="swatch" style={{ background: 'var(--module-amber)', color: 'white' }}>Amber</div>
-                  <span className="swatch-name">--module-amber</span>
-                  <span className="swatch-use">Performance</span>
-                </div>
-                <div className="color-swatch">
-                  <div className="swatch" style={{ background: 'var(--module-amber-soft)' }}>Soft</div>
-                  <span className="swatch-name">--module-amber-soft</span>
-                  <span className="swatch-use">Background</span>
-                </div>
-              </div>
-
-              <h3>Slate Scale</h3>
-              <p className="sg-description">Full gray scale for fine-tuned color control (50-900).</p>
-              <div className="color-grid">
-                <div className="color-swatch">
-                  <div className="swatch" style={{ background: 'var(--slate-50)' }}>50</div>
-                  <span className="swatch-name">--slate-50</span>
-                  <span className="swatch-use">#f8fafc</span>
-                </div>
-                <div className="color-swatch">
-                  <div className="swatch" style={{ background: 'var(--slate-100)' }}>100</div>
-                  <span className="swatch-name">--slate-100</span>
-                  <span className="swatch-use">#f1f5f9</span>
-                </div>
-                <div className="color-swatch">
-                  <div className="swatch" style={{ background: 'var(--slate-200)' }}>200</div>
-                  <span className="swatch-name">--slate-200</span>
-                  <span className="swatch-use">#e2e8f0</span>
-                </div>
-                <div className="color-swatch">
-                  <div className="swatch" style={{ background: 'var(--slate-300)' }}>300</div>
-                  <span className="swatch-name">--slate-300</span>
-                  <span className="swatch-use">#cbd5e1</span>
-                </div>
-                <div className="color-swatch">
-                  <div className="swatch" style={{ background: 'var(--slate-400)', color: 'white' }}>400</div>
-                  <span className="swatch-name">--slate-400</span>
-                  <span className="swatch-use">#94a3b8</span>
-                </div>
-                <div className="color-swatch">
-                  <div className="swatch" style={{ background: 'var(--slate-500)', color: 'white' }}>500</div>
-                  <span className="swatch-name">--slate-500</span>
-                  <span className="swatch-use">#64748b</span>
-                </div>
-                <div className="color-swatch">
-                  <div className="swatch" style={{ background: 'var(--slate-600)', color: 'white' }}>600</div>
-                  <span className="swatch-name">--slate-600</span>
-                  <span className="swatch-use">#475569</span>
-                </div>
-                <div className="color-swatch">
-                  <div className="swatch" style={{ background: 'var(--slate-700)', color: 'white' }}>700</div>
-                  <span className="swatch-name">--slate-700</span>
-                  <span className="swatch-use">#334155</span>
-                </div>
-                <div className="color-swatch">
-                  <div className="swatch" style={{ background: 'var(--slate-800)', color: 'white' }}>800</div>
-                  <span className="swatch-name">--slate-800</span>
-                  <span className="swatch-use">#1e293b</span>
-                </div>
-                <div className="color-swatch">
-                  <div className="swatch" style={{ background: 'var(--slate-900)', color: 'white' }}>900</div>
-                  <span className="swatch-name">--slate-900</span>
-                  <span className="swatch-use">#0f172a</span>
-                </div>
-              </div>
-
-              <h3>Shadow Variants</h3>
-              <p className="sg-description">Pre-defined shadows for depth and elevation.</p>
-              <div className="sg-demo-row" style={{ gap: '24px' }}>
-                <div style={{ padding: '24px', background: 'var(--panel)', boxShadow: 'var(--shadow-sm)', borderRadius: '8px' }}>
-                  <span className="swatch-name">--shadow-sm</span>
-                </div>
-                <div style={{ padding: '24px', background: 'var(--panel)', boxShadow: 'var(--shadow-md)', borderRadius: '8px' }}>
-                  <span className="swatch-name">--shadow-md</span>
-                </div>
-                <div style={{ padding: '24px', background: 'var(--panel)', boxShadow: 'var(--shadow-lg)', borderRadius: '8px' }}>
-                  <span className="swatch-name">--shadow-lg</span>
-                </div>
-                <div style={{ padding: '24px', background: 'var(--panel)', boxShadow: 'var(--shadow)', borderRadius: '8px' }}>
-                  <span className="swatch-name">--shadow</span>
-                </div>
-              </div>
-
+              {/* CSS Reference */}
               <h3>CSS Variables Reference</h3>
-              <div className="sg-code-block">
-                <pre>{`/* Core Colors */
---bg, --bg-alt, --panel       /* Backgrounds */
---text, --text-muted          /* Typography */
---border, --border-strong     /* Borders */
---accent, --accent-soft       /* Primary actions */
+              <div className="sg-code-block" style={{ background: '#1E293B', borderRadius: '12px', padding: 0 }}>
+                <pre style={{ background: '#1E293B', color: '#E2E8F0', padding: '20px 24px', margin: 0, borderRadius: '12px' }}>{`/* Semantic Tokens (use these first) */
+--bg                  /* Page background: warm paper-like */
+--bg-alt              /* Alternate background */
+--panel               /* Card/panel background: pure white */
+--text                /* Primary text: near-black */
+--text-secondary      /* Secondary text */
+--text-muted          /* Muted text */
+--border              /* Subtle border */
+--border-strong       /* Emphasized border */
+--accent              /* Primary action (blue-800) */
+--accent-soft         /* Subtle accent highlight */
 
-/* Semantic Colors (with -soft variants) */
---success, --success-soft     /* Green: approved, complete */
---warning, --warning-soft     /* Amber: at-risk, pending */
---danger, --danger-soft       /* Red: error, critical */
---info, --info-soft           /* Indigo: informational */
+/* Status Colors */
+--success, --success-soft     /* Emerald for approved/complete */
+--warning, --warning-soft     /* Amber for at-risk/pending */
+--danger, --danger-soft       /* Red for error/critical */
+--info, --info-soft           /* Teal for informational */
 
-/* Module Colors (with -soft variants) */
---module-indigo    /* Capabilities, Decisions */
---module-violet    /* Value Streams, Rights */
---module-teal      /* Operating Model, Forums */
---module-sky       /* Services */
---module-pink      /* Risk & Resilience */
---module-amber     /* Performance */
+/* Neutral Scales (50-900) */
+--slate-{50-900}      /* Cool neutral */
+--zinc-{50-900}       /* True neutral */
+--stone-{50-900}      /* Warm neutral */
 
-/* Slate Scale */
---slate-50 through --slate-900
+/* Color Scales (50-900) */
+--blue-{50-900}       /* Primary accent */
+--emerald-{50-900}    /* Success */
+--amber-{50-900}      /* Warning */
+--red-{50-900}        /* Danger */
+--teal-{50-900}       /* Info */
+--sky-{50-900}        /* Services */
+--orange-{50-900}     /* Performance */
+--indigo-{50-900}     /* Capabilities */
 
 /* Shadows */
---shadow-sm, --shadow-md, --shadow-lg, --shadow
+--shadow-sm           /* Docked elements */
+--shadow-md           /* Floating panels */
+--shadow-lg           /* Temporary overlays */
+--shadow-xl           /* Modals */
 
-/* Usage Example */
-.my-card {
+/* Usage Examples */
+.card {
   background: var(--panel);
-  border: 1px solid var(--border);
   box-shadow: var(--shadow-sm);
 }
 
-.status-badge.success {
-  background: var(--success-soft);
-  color: var(--success);
+.status-success {
+  background: var(--emerald-50);
+  color: var(--emerald-700);
+  border-left: 3px solid var(--emerald-600);
 }
 
 .module-header.capabilities {
-  background: var(--module-indigo-soft);
-  border-left: 3px solid var(--module-indigo);
+  background: var(--indigo-50);
+  border-left: 3px solid var(--indigo-600);
 }`}</pre>
               </div>
             </section>
@@ -1019,11 +1422,27 @@ const studioPatterns = [
 
           {/* Buttons Section */}
           {activeSection === 'buttons' && (
-            <section className="sg-section">
+            <section className="sg-section" data-section="buttons">
               <h2>Buttons</h2>
 
-              <h3>Primary Buttons</h3>
-              <p className="sg-description">Use for main actions like "Create", "Save", "Submit"</p>
+              <div className="sg-intro-box" style={{ marginBottom: '32px' }}>
+                <p style={{ margin: 0, fontSize: '1.0625rem', lineHeight: 1.7, color: '#1C1917' }}>
+                  Buttons are <strong>tactile and responsive</strong>. They lift on hover (transform: translateY), have generous 12px border-radius,
+                  and meet WCAG touch targets (44px minimum height).
+                </p>
+                <p style={{ margin: '12px 0 0', fontSize: '0.9375rem', color: '#57534E' }}>
+                  Primary buttons use graphite (#47453F) matching the system shell. 4px radius, 100ms transitions, assured presence.
+                </p>
+              </div>
+
+              <div className="sg-doctrine" style={{ marginBottom: '32px' }}>
+                <p style={{ margin: 0, fontSize: '0.9375rem', color: '#1C1917' }}>
+                  <strong style={{ color: '#47453F' }}>Phozart Principle:</strong> Buttons should feel like pressing a real button — slight lift on hover, satisfying press on click.
+                </p>
+              </div>
+
+              <h3>Primary</h3>
+              <p className="sg-description">Main actions: Create, Save, Submit, Confirm</p>
               <div className="sg-demo-row">
                 <button className="btn-primary">
                   <AddIcon fontSize="small" />
@@ -1033,8 +1452,8 @@ const studioPatterns = [
                 <button className="btn-primary" disabled>Disabled</button>
               </div>
 
-              <h3>Secondary Buttons</h3>
-              <p className="sg-description">Use for alternative actions like "Cancel", "Back", "Export"</p>
+              <h3>Secondary</h3>
+              <p className="sg-description">Alternative actions: Cancel, Back, Export</p>
               <div className="sg-demo-row">
                 <button className="btn-secondary">Cancel</button>
                 <button className="btn-secondary">
@@ -1044,8 +1463,19 @@ const studioPatterns = [
                 <button className="btn-secondary" disabled>Disabled</button>
               </div>
 
-              <h3>Danger Buttons</h3>
-              <p className="sg-description">Use for destructive actions like "Delete", "Remove"</p>
+              <h3>Tertiary</h3>
+              <p className="sg-description">Subtle, low-emphasis actions: Edit, View, Options</p>
+              <div className="sg-demo-row">
+                <button className="btn-tertiary">
+                  <EditIcon fontSize="small" />
+                  Edit
+                </button>
+                <button className="btn-tertiary">View Details</button>
+                <button className="btn-ghost">Ghost Style</button>
+              </div>
+
+              <h3>Semantic: Danger</h3>
+              <p className="sg-description">Destructive actions: Delete, Remove, Revoke</p>
               <div className="sg-demo-row">
                 <button className="btn-danger">
                   <DeleteIcon fontSize="small" />
@@ -1054,17 +1484,7 @@ const studioPatterns = [
                 <button className="btn-danger">Remove</button>
               </div>
 
-              <h3>Ghost Buttons</h3>
-              <p className="sg-description">Use for subtle tertiary actions</p>
-              <div className="sg-demo-row">
-                <button className="btn-ghost">
-                  <EditIcon fontSize="small" />
-                  Edit
-                </button>
-                <button className="btn-ghost">View Details</button>
-              </div>
-
-              <h3>Button Sizes</h3>
+              <h3>Sizes</h3>
               <div className="sg-demo-row">
                 <button className="btn-primary btn-sm">Small</button>
                 <button className="btn-primary">Default</button>
@@ -1077,6 +1497,22 @@ const studioPatterns = [
           {activeSection === 'cards' && (
             <section className="sg-section">
               <h2>Cards</h2>
+
+              <div className="sg-intro-box" style={{ marginBottom: '32px' }}>
+                <p style={{ margin: 0, fontSize: '1.0625rem', lineHeight: 1.7, color: '#1C1917' }}>
+                  Cards are <strong>defined by shadows, not borders</strong>. They float above the canvas with multi-layer soft shadows,
+                  generous 16px border-radius, and lift on hover to create depth hierarchy.
+                </p>
+                <p style={{ margin: '12px 0 0', fontSize: '0.9375rem', color: '#57534E' }}>
+                  Everything floats — this creates the premium, tactile feel of the Phozart design system.
+                </p>
+              </div>
+
+              <div className="sg-doctrine" style={{ marginBottom: '32px' }}>
+                <p style={{ margin: 0, fontSize: '0.9375rem', color: '#1C1917' }}>
+                  <strong style={{ color: '#47453F' }}>Phozart Principle:</strong> Cards lift -4px on hover with enhanced shadow. Use rgba(28, 25, 23, ...) for warm shadow tints.
+                </p>
+              </div>
 
               <h3>Standard Card</h3>
               <div className="sg-demo-grid">
@@ -1093,7 +1529,7 @@ const studioPatterns = [
               <h3>Card with Icon</h3>
               <div className="sg-demo-grid">
                 <div className="card card-with-icon">
-                  <div className="card-icon" style={{ background: '#6366f120', color: '#6366f1' }}>
+                  <div className="card-icon" style={{ background: 'rgba(61, 58, 54, 0.08)', color: '#5C5A54' }}>
                     <CategoryIcon />
                   </div>
                   <div className="card-content">
@@ -1107,14 +1543,14 @@ const studioPatterns = [
               <h3>Stat Card</h3>
               <div className="sg-demo-grid cols-4">
                 <div className="stat-card">
-                  <CategoryIcon style={{ color: '#6366f1' }} />
+                  <CategoryIcon style={{ color: '#5C5A54' }} />
                   <div className="stat-content">
                     <span className="stat-value">42</span>
                     <span className="stat-label">Capabilities</span>
                   </div>
                 </div>
                 <div className="stat-card">
-                  <DashboardIcon style={{ color: '#059669' }} />
+                  <DashboardIcon style={{ color: '#5B8A6A' }} />
                   <div className="stat-content">
                     <span className="stat-value">12</span>
                     <span className="stat-label">Forums</span>
@@ -1125,7 +1561,7 @@ const studioPatterns = [
               <h3>Module Card</h3>
               <div className="sg-demo-grid">
                 <button className="module-card">
-                  <div className="module-card-icon" style={{ background: '#6366f120', color: '#6366f1' }}>
+                  <div className="module-card-icon" style={{ background: 'rgba(61, 58, 54, 0.08)', color: '#5C5A54' }}>
                     <CategoryIcon />
                   </div>
                   <div className="module-card-content">
@@ -1136,10 +1572,118 @@ const studioPatterns = [
                 </button>
               </div>
 
+              <h3>Colorful Accent Cards</h3>
+              <p className="sg-description">Cards with colored left borders to identify different spaces or semantic meaning.</p>
+              <div className="sg-demo-grid cols-3">
+                <div className="card card-accent card-accent-ba">
+                  <h4>Business Analysis</h4>
+                  <p>Requirements and stakeholder analysis</p>
+                </div>
+                <div className="card card-accent card-accent-ea">
+                  <h4>Enterprise Architecture</h4>
+                  <p>Architecture layers and views</p>
+                </div>
+                <div className="card card-accent card-accent-pds">
+                  <h4>Project Design</h4>
+                  <p>Project planning and execution</p>
+                </div>
+                <div className="card card-accent card-accent-dwd">
+                  <h4>Dynamic Work Design</h4>
+                  <p>Work patterns and fit analysis</p>
+                </div>
+                <div className="card card-accent card-accent-cap">
+                  <h4>Capability Mapping</h4>
+                  <p>Organizational capabilities</p>
+                </div>
+                <div className="card card-accent card-accent-als">
+                  <h4>Action Learning</h4>
+                  <p>Reflection and learning</p>
+                </div>
+              </div>
+
+              <h3>Semantic Accent Cards</h3>
+              <div className="sg-demo-grid cols-4">
+                <div className="card card-accent card-accent-success">
+                  <h4>Complete</h4>
+                  <p>Approved item</p>
+                </div>
+                <div className="card card-accent card-accent-warning">
+                  <h4>Review</h4>
+                  <p>Needs attention</p>
+                </div>
+                <div className="card card-accent card-accent-danger">
+                  <h4>Blocked</h4>
+                  <p>Critical issue</p>
+                </div>
+                <div className="card card-accent card-accent-info">
+                  <h4>Info</h4>
+                  <p>Reference item</p>
+                </div>
+              </div>
+
+              <h3>Cards with Colored Icons</h3>
+              <p className="sg-description">Use colored icon backgrounds for visual categorization.</p>
+              <div className="sg-demo-grid cols-3">
+                <div className="card card-with-icon">
+                  <div className="card-icon card-icon-ba">
+                    <ArticleIcon />
+                  </div>
+                  <div className="card-content">
+                    <h4>Requirement</h4>
+                    <p>Business requirement item</p>
+                  </div>
+                </div>
+                <div className="card card-with-icon">
+                  <div className="card-icon card-icon-ea">
+                    <LayersIcon />
+                  </div>
+                  <div className="card-content">
+                    <h4>Component</h4>
+                    <p>Architecture component</p>
+                  </div>
+                </div>
+                <div className="card card-with-icon">
+                  <div className="card-icon card-icon-pds">
+                    <TimelineIcon />
+                  </div>
+                  <div className="card-content">
+                    <h4>Milestone</h4>
+                    <p>Project milestone</p>
+                  </div>
+                </div>
+                <div className="card card-with-icon">
+                  <div className="card-icon card-icon-success">
+                    <CheckIcon />
+                  </div>
+                  <div className="card-content">
+                    <h4>Approved</h4>
+                    <p>Status indicator</p>
+                  </div>
+                </div>
+                <div className="card card-with-icon">
+                  <div className="card-icon card-icon-warning">
+                    <WarningIcon />
+                  </div>
+                  <div className="card-content">
+                    <h4>At Risk</h4>
+                    <p>Risk indicator</p>
+                  </div>
+                </div>
+                <div className="card card-with-icon">
+                  <div className="card-icon card-icon-danger">
+                    <InfoIcon />
+                  </div>
+                  <div className="card-content">
+                    <h4>Critical</h4>
+                    <p>Priority indicator</p>
+                  </div>
+                </div>
+              </div>
+
               <h3>Quick Action Card</h3>
               <div className="sg-demo-grid">
                 <button className="quick-action-card">
-                  <div className="action-icon" style={{ background: '#6366f120', color: '#6366f1' }}>
+                  <div className="action-icon" style={{ background: 'rgba(91, 138, 106, 0.12)', color: '#5B8A6A' }}>
                     <AddIcon />
                   </div>
                   <div className="action-content">
@@ -1389,7 +1933,7 @@ sx={{
               <h3>In Context</h3>
               <div className="sg-demo-grid">
                 <div className="card card-with-icon">
-                  <div className="card-icon" style={{ background: '#f59e0b20', color: '#f59e0b' }}>
+                  <div className="card-icon" style={{ background: '#C9A22720', color: '#C9A227' }}>
                     <CategoryIcon />
                   </div>
                   <div className="card-content">
@@ -1411,15 +1955,15 @@ sx={{
 
               <h3>Circular Gauge</h3>
               <div className="sg-demo-row" style={{ gap: '48px' }}>
-                <CircularGauge value={75} label="Coverage" color="var(--accent)" size={120} />
-                <CircularGauge value={42} label="Progress" color="#22c55e" size={100} />
-                <CircularGauge value={90} label="Health" color="#f59e0b" size={100} />
+                <CircularGauge value={75} label="Coverage" color="#5C5A54" size={120} />
+                <CircularGauge value={42} label="Progress" color="#5B8A6A" size={100} />
+                <CircularGauge value={90} label="Health" color="#C9A227" size={100} />
               </div>
 
               <h3>Progress Bar</h3>
               <div className="sg-demo-form">
                 <div className="progress-bar">
-                  <div className="progress-bar-fill" style={{ width: '65%', background: 'var(--accent)' }} />
+                  <div className="progress-bar-fill" style={{ width: '65%', background: '#5C5A54' }} />
                 </div>
                 <div style={{ height: '16px' }} />
                 <div className="progress-bar">
@@ -1427,30 +1971,30 @@ sx={{
                 </div>
                 <div style={{ height: '16px' }} />
                 <div className="progress-bar">
-                  <div className="progress-bar-fill" style={{ width: '85%', background: '#22c55e' }} />
+                  <div className="progress-bar-fill" style={{ width: '85%', background: '#5B8A6A' }} />
                 </div>
               </div>
 
               <h3>Status Bar (Segmented)</h3>
               <div className="sg-demo-form">
                 <div className="status-bar">
-                  <div className="status-bar-segment" style={{ width: '40%', background: '#22c55e' }} />
-                  <div className="status-bar-segment" style={{ width: '35%', background: '#f59e0b' }} />
-                  <div className="status-bar-segment" style={{ width: '25%', background: '#ef4444' }} />
+                  <div className="status-bar-segment" style={{ width: '40%', background: '#5B8A6A' }} />
+                  <div className="status-bar-segment" style={{ width: '35%', background: '#C9A227' }} />
+                  <div className="status-bar-segment" style={{ width: '25%', background: '#A54D4D' }} />
                 </div>
                 <div className="status-legend">
                   <div className="legend-item">
-                    <span className="legend-dot" style={{ background: '#22c55e' }} />
+                    <span className="legend-dot" style={{ background: '#5B8A6A' }} />
                     <span className="legend-label">Approved</span>
                     <span className="legend-count">8</span>
                   </div>
                   <div className="legend-item">
-                    <span className="legend-dot" style={{ background: '#f59e0b' }} />
+                    <span className="legend-dot" style={{ background: '#C9A227' }} />
                     <span className="legend-label">In Review</span>
                     <span className="legend-count">7</span>
                   </div>
                   <div className="legend-item">
-                    <span className="legend-dot" style={{ background: '#ef4444' }} />
+                    <span className="legend-dot" style={{ background: '#A54D4D' }} />
                     <span className="legend-label">Draft</span>
                     <span className="legend-count">5</span>
                   </div>
@@ -1462,67 +2006,466 @@ sx={{
           {/* Navigation Section */}
           {activeSection === 'navigation' && (
             <section className="sg-section">
-              <h2>Navigation</h2>
+              <h2>Navigation Architecture</h2>
 
-              <h3>Breadcrumbs</h3>
-              <div className="sg-demo-box" style={{ padding: 0 }}>
-                <div className="studio-breadcrumbs" style={{ background: 'var(--panel)' }}>
-                  <button className="breadcrumb-item">
-                    <DashboardIcon fontSize="small" />
-                    <span>Overview</span>
+              <div className="sg-intro-box" style={{ marginBottom: '32px' }}>
+                <p style={{ margin: 0, fontSize: '1.0625rem', lineHeight: 1.7, color: '#1C1917' }}>
+                  Navigation is <strong>hierarchical and contextual</strong>. System-level navigation (studio switching) lives in the top bar.
+                  Studio-level navigation (views within a studio) lives in a horizontal bar below the header.
+                </p>
+                <p style={{ margin: '12px 0 0', fontSize: '0.9375rem', color: '#57534E' }}>
+                  This frees the workspace from persistent sidebars, giving full width to content.
+                </p>
+              </div>
+
+              <div className="sg-doctrine" style={{ marginBottom: '32px' }}>
+                <p style={{ margin: 0, fontSize: '0.9375rem', color: '#1C1917' }}>
+                  <strong style={{ color: '#47453F' }}>Architecture Principle:</strong> Studio switching is infrequent. View switching is frequent. Optimize for the common case.
+                </p>
+              </div>
+
+              {/* Navigation Hierarchy */}
+              <h3>Navigation Hierarchy</h3>
+              <div className="nav-hierarchy-diagram">
+                <div className="nav-level">
+                  <div className="nav-level-label">Level 1</div>
+                  <div className="nav-level-name">System Navigation</div>
+                  <div className="nav-level-desc">Top bar: Studio switcher, domain context, global actions</div>
+                </div>
+                <div className="nav-level-connector" />
+                <div className="nav-level">
+                  <div className="nav-level-label">Level 2</div>
+                  <div className="nav-level-name">Studio Navigation</div>
+                  <div className="nav-level-desc">Horizontal tabs: Views within the current studio</div>
+                </div>
+                <div className="nav-level-connector" />
+                <div className="nav-level">
+                  <div className="nav-level-label">Level 3</div>
+                  <div className="nav-level-name">In-Canvas Navigation</div>
+                  <div className="nav-level-desc">Breadcrumbs, filters, search within the view</div>
+                </div>
+              </div>
+
+              {/* Full Layout Preview */}
+              <h3>Full Layout Structure</h3>
+              <div className="nav-layout-preview">
+                <div className="nav-preview-header">
+                  <div className="nav-preview-left">
+                    <div className="nav-preview-brand">
+                      <img src="/icons/icon.svg" alt="" className="nav-preview-logo-icon" />
+                      <span className="nav-preview-logo">ONTOGRAPHIA</span>
+                    </div>
+                    <span className="nav-preview-divider" />
+                    <div className="nav-preview-switcher">
+                      <ExpandMoreIcon fontSize="small" style={{ color: '#9C9890' }} />
+                      <span>Enterprise Architecture</span>
+                    </div>
+                  </div>
+                  <div className="nav-preview-context">
+                    <span className="nav-preview-domain">Acme Corp</span>
+                    <NavigateNextIcon fontSize="small" style={{ color: '#6B6860' }} />
+                    <span className="nav-preview-project">Digital Platform</span>
+                  </div>
+                  <div className="nav-preview-actions">
+                    <SettingsIcon fontSize="small" style={{ color: '#9C9890' }} />
+                    <HelpOutlineIcon fontSize="small" style={{ color: '#9C9890' }} />
+                    <div className="nav-preview-avatar">PH</div>
+                  </div>
+                </div>
+                <div className="nav-preview-studio-bar">
+                  <div className="nav-preview-tabs">
+                    <button className="nav-preview-tab">Overview</button>
+                    <button className="nav-preview-tab active">Elements</button>
+                    <button className="nav-preview-tab">Decisions</button>
+                    <button className="nav-preview-tab">Roadmap</button>
+                    <button className="nav-preview-tab">Trace</button>
+                  </div>
+                  <button className="nav-preview-create">+ Create</button>
+                </div>
+                <div className="nav-preview-workspace">
+                  <span style={{ color: '#9C9A94', fontSize: '0.875rem' }}>Full-width workspace canvas</span>
+                </div>
+              </div>
+
+              {/* System Header (Level 1) */}
+              <h3>Level 1: System Header</h3>
+              <p className="sg-description">Dark graphite bar with logo, studio switcher, and user controls. Height: 44px.</p>
+
+              <div className="nav-system-header-demo">
+                <div className="system-header-demo">
+                  <div className="system-header-left">
+                    <div className="system-header-brand">
+                      <img src="/icons/icon.svg" alt="" className="system-header-logo-icon" />
+                      <span className="system-header-logo">ONTOGRAPHIA</span>
+                    </div>
+                    <span className="system-header-divider" />
+                    <button className="studio-switcher-demo">
+                      <ExpandMoreIcon fontSize="small" />
+                      <span>Enterprise Architecture</span>
+                    </button>
+                    <span className="system-header-divider" />
+                    <span className="system-header-context">Acme Corp</span>
+                  </div>
+                  <div className="system-header-right">
+                    <button className="system-header-icon-btn" title="Settings">
+                      <SettingsIcon fontSize="small" />
+                    </button>
+                    <button className="system-header-icon-btn" title="Help">
+                      <HelpOutlineIcon fontSize="small" />
+                    </button>
+                    <button className="system-header-user-btn">
+                      <span className="user-avatar-small">PH</span>
+                      <ExpandMoreIcon fontSize="small" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* User Menu */}
+              <h4 style={{ marginTop: '24px', marginBottom: '12px' }}>User Menu (Right-side dropdown)</h4>
+              <p className="sg-description">Contains profile, preferences, admin functions, and sign out.</p>
+              <div className="nav-user-menu-demo">
+                <div className="user-menu-dropdown">
+                  <div className="user-menu-header">
+                    <span className="user-avatar-medium">PH</span>
+                    <div className="user-menu-info">
+                      <span className="user-menu-name">Peter Hoopman</span>
+                      <span className="user-menu-email">peter@example.com</span>
+                    </div>
+                  </div>
+                  <div className="user-menu-divider" />
+                  <button className="user-menu-item">
+                    <PersonIcon fontSize="small" />
+                    <span>Profile & Preferences</span>
                   </button>
-                  <NavigateNextIcon fontSize="small" className="breadcrumb-separator" />
-                  <span className="breadcrumb-group">Capabilities</span>
-                  <NavigateNextIcon fontSize="small" className="breadcrumb-separator" />
-                  <span className="breadcrumb-current">List View</span>
+                  <button className="user-menu-item">
+                    <SettingsIcon fontSize="small" />
+                    <span>Settings</span>
+                  </button>
+                  <div className="user-menu-divider" />
+                  <span className="user-menu-section-label">Admin</span>
+                  <button className="user-menu-item">
+                    <AdminPanelSettingsIcon fontSize="small" />
+                    <span>Admin Console</span>
+                  </button>
+                  <button className="user-menu-item">
+                    <GroupIcon fontSize="small" />
+                    <span>User Management</span>
+                  </button>
+                  <button className="user-menu-item">
+                    <SecurityIcon fontSize="small" />
+                    <span>Roles & Permissions</span>
+                  </button>
+                  <div className="user-menu-divider" />
+                  <span className="user-menu-section-label">Help & Support</span>
+                  <button className="user-menu-item">
+                    <HelpOutlineIcon fontSize="small" />
+                    <span>Help Center</span>
+                  </button>
+                  <button className="user-menu-item">
+                    <ArticleIcon fontSize="small" />
+                    <span>Documentation</span>
+                  </button>
+                  <button className="user-menu-item">
+                    <FeedbackIcon fontSize="small" />
+                    <span>Send Feedback</span>
+                  </button>
+                  <div className="user-menu-divider" />
+                  <button className="user-menu-item user-menu-signout">
+                    <LogoutIcon fontSize="small" />
+                    <span>Sign Out</span>
+                  </button>
                 </div>
               </div>
-              <p className="sg-note">Breadcrumbs use <code>background: var(--panel)</code> to match the navigator sidebar.</p>
 
-              <h3>Sidebar Navigation</h3>
-              <div className="sg-demo-box" style={{ width: '260px', padding: 0 }}>
-                <div className="nav-demo" style={{ background: 'var(--panel)' }}>
-                  <div className="nav-home">
-                    <button className="nav-home-btn active">
+              {/* Studio Switcher Dropdown */}
+              <h3>Studio Switcher Dropdown</h3>
+              <p className="sg-description">Multi-column categorized grid of all studios. Auto-adapts columns based on group count (max 3-4 columns). Current studio marked with check.</p>
+
+              <div className="nav-dropdown-demo-wide">
+                <div className="studio-dropdown-demo-multi">
+                  <div className="studio-category-column">
+                    <span className="studio-category-label-demo">Design & Strategy</span>
+                    <button className="studio-option-demo active">
+                      <LayersIcon fontSize="small" />
+                      <span>Enterprise Architecture</span>
+                      <CheckIcon fontSize="small" className="studio-check" />
+                    </button>
+                    <button className="studio-option-demo">
+                      <CategoryIcon fontSize="small" />
+                      <span>Capability Studio</span>
+                    </button>
+                    <button className="studio-option-demo">
                       <DashboardIcon fontSize="small" />
-                      <span>Overview</span>
+                      <span>Portfolio Studio</span>
+                    </button>
+                    <button className="studio-option-demo">
+                      <LightbulbIcon fontSize="small" />
+                      <span>Product Design</span>
                     </button>
                   </div>
-                  <div className="nav-views-grouped">
-                    <div className="nav-group">
-                      <button className="nav-group-header expanded has-active" style={{ borderLeftColor: '#6366f1' }}>
-                        <ExpandMoreIcon fontSize="small" />
-                        <span className="group-name">Capabilities</span>
-                        <span className="group-count">24</span>
-                      </button>
-                      <div className="nav-group-views">
-                        <button className="nav-view-btn active">
-                          <CategoryIcon fontSize="small" />
-                          <span>Capability Map</span>
-                        </button>
-                        <button className="nav-view-btn">
-                          <CategoryIcon fontSize="small" />
-                          <span>List View</span>
-                        </button>
-                      </div>
-                    </div>
-                    <div className="nav-group">
-                      <button className="nav-group-header" style={{ borderLeftColor: '#059669' }}>
-                        <ChevronRightIcon fontSize="small" />
-                        <span className="group-name">Forums</span>
-                        <span className="group-count">8</span>
-                      </button>
-                    </div>
+                  <div className="studio-category-column">
+                    <span className="studio-category-label-demo">Delivery</span>
+                    <button className="studio-option-demo">
+                      <DescriptionIcon fontSize="small" />
+                      <span>Business Analysis</span>
+                    </button>
+                    <button className="studio-option-demo">
+                      <TimelineIcon fontSize="small" />
+                      <span>Project Design</span>
+                    </button>
+                    <button className="studio-option-demo">
+                      <SyncAltIcon fontSize="small" />
+                      <span>Change Management</span>
+                    </button>
                   </div>
-                  <div className="nav-footer">
-                    <button className="nav-create-btn">
-                      <AddIcon fontSize="small" />
-                      <span>New Artefact</span>
+                  <div className="studio-category-column">
+                    <span className="studio-category-label-demo">Reasoning</span>
+                    <button className="studio-option-demo">
+                      <AccountTreeIcon fontSize="small" />
+                      <span>Strategic Reasoning</span>
+                    </button>
+                    <button className="studio-option-demo">
+                      <LoopIcon fontSize="small" />
+                      <span>System Dynamics</span>
+                    </button>
+                    <button className="studio-option-demo">
+                      <PsychologyIcon fontSize="small" />
+                      <span>Sensemaking</span>
+                    </button>
+                    <button className="studio-option-demo">
+                      <HandshakeIcon fontSize="small" />
+                      <span>Negotiation</span>
+                    </button>
+                    <button className="studio-option-demo">
+                      <SchoolIcon fontSize="small" />
+                      <span>Learning</span>
+                    </button>
+                  </div>
+                  <div className="studio-category-column">
+                    <span className="studio-category-label-demo">Knowledge</span>
+                    <button className="studio-option-demo">
+                      <MenuBookIcon fontSize="small" />
+                      <span>Knowledge Studio</span>
+                    </button>
+                    <button className="studio-option-demo">
+                      <AutoStoriesIcon fontSize="small" />
+                      <span>Philosophy</span>
+                    </button>
+                    <div style={{ height: '16px' }} />
+                    <span className="studio-category-label-demo">Tools</span>
+                    <button className="studio-option-demo">
+                      <AccountTreeIcon fontSize="small" />
+                      <span>Diagram Studio</span>
+                    </button>
+                    <button className="studio-option-demo">
+                      <WorkIcon fontSize="small" />
+                      <span>Dynamic Work Design</span>
                     </button>
                   </div>
                 </div>
               </div>
-              <p className="sg-note">Navigator uses <code>background: var(--panel)</code> with <code>border-right: 1px solid var(--border)</code>.</p>
+
+              {/* Studio Navigation Bar (Level 2) */}
+              <h3>Level 2: Studio Navigation Bar</h3>
+              <p className="sg-description">Horizontal view tabs specific to the current studio. Height: 40px.</p>
+
+              <div className="nav-studio-bar-demo">
+                <div className="studio-bar-demo">
+                  <div className="studio-tabs-demo">
+                    <button className="studio-tab-demo">Overview</button>
+                    <button className="studio-tab-demo active">Elements</button>
+                    <button className="studio-tab-demo">Relationships</button>
+                    <button className="studio-tab-demo">Decisions</button>
+                    <button className="studio-tab-demo">Roadmap</button>
+                  </div>
+                  <button className="studio-create-demo">
+                    <AddIcon fontSize="small" />
+                    Create
+                  </button>
+                </div>
+              </div>
+
+              {/* Studio Categories */}
+              <h3>Studio Categories</h3>
+              <div className="sg-table" style={{ marginBottom: '32px' }}>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Category</th>
+                      <th>Studios</th>
+                      <th>Purpose</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><strong>Design & Strategy</strong></td>
+                      <td>EA, Organisation, Portfolio, Product Design</td>
+                      <td>Understanding and shaping the organization</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Delivery</strong></td>
+                      <td>Business Analysis, Project Design, Change Management</td>
+                      <td>Executing and delivering work</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Reasoning</strong></td>
+                      <td>SRS, System Dynamics, Sensemaking, Negotiation, Learning</td>
+                      <td>Thinking and decision-making</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Knowledge</strong></td>
+                      <td>Knowledge Studio, Philosophy</td>
+                      <td>Managing and exploring knowledge</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Tools</strong></td>
+                      <td>Diagram Studio, Dynamic Work Design</td>
+                      <td>Specialized utilities</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Keyboard Shortcuts */}
+              <h3>Keyboard Navigation</h3>
+              <div className="sg-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Shortcut</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><code>Cmd+K</code></td>
+                      <td>Open command palette (search everything)</td>
+                    </tr>
+                    <tr>
+                      <td><code>Cmd+1-9</code></td>
+                      <td>Switch to view 1-9 in current studio</td>
+                    </tr>
+                    <tr>
+                      <td><code>Cmd+Shift+S</code></td>
+                      <td>Open studio switcher</td>
+                    </tr>
+                    <tr>
+                      <td><code>Cmd+N</code></td>
+                      <td>Create new (context-aware)</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Panel Navigation Pattern */}
+              <h3>Alternative: Panel Navigation (Left Sidebar)</h3>
+              <p className="sg-description">
+                For documentation, guides, and tools with many sections, use a left sidebar panel.
+                This pattern is used by this style guide itself.
+              </p>
+
+              <div className="sg-doctrine" style={{ marginBottom: '24px' }}>
+                <p style={{ margin: 0, fontSize: '0.875rem', color: '#5C5A54' }}>
+                  <strong style={{ color: '#47453F' }}>When to use:</strong> Reference documentation, admin tools, settings pages, or any context with 8+ navigation items that need persistent visibility.
+                </p>
+              </div>
+
+              <div className="nav-panel-demo">
+                <div className="panel-nav-demo">
+                  <div className="panel-nav-header">MODULES</div>
+                  <button className="panel-nav-item">Design Philosophy</button>
+                  <button className="panel-nav-item">Development Guide</button>
+                  <button className="panel-nav-item active">Navigation</button>
+                  <button className="panel-nav-item">Colors</button>
+                  <button className="panel-nav-item">Buttons</button>
+                  <button className="panel-nav-item">Cards</button>
+                </div>
+                <div className="panel-content-demo">
+                  <span style={{ color: '#9C9A94', fontSize: '0.8125rem' }}>Content area</span>
+                </div>
+              </div>
+
+              <div className="sg-table" style={{ marginTop: '24px' }}>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Pattern</th>
+                      <th>Use For</th>
+                      <th>Example</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><strong>Top Bar + Horizontal Tabs</strong></td>
+                      <td>Studios with 3-7 views, workspace-centric</td>
+                      <td>EA Studio, Project Design, Portfolio</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Left Sidebar Panel</strong></td>
+                      <td>8+ sections, reference/documentation</td>
+                      <td>Style Guide, Settings, Admin Tools</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Panel Nav Specifications */}
+              <h3>Panel Navigation Specifications</h3>
+              <div className="sg-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Element</th>
+                      <th>Specification</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Panel width</td>
+                      <td><code>220px</code></td>
+                    </tr>
+                    <tr>
+                      <td>Background</td>
+                      <td><code>#F0EFEC</code> (slightly darker than canvas)</td>
+                    </tr>
+                    <tr>
+                      <td>Item padding</td>
+                      <td><code>9px 16px 9px 20px</code></td>
+                    </tr>
+                    <tr>
+                      <td>Active indicator</td>
+                      <td>2px left accent line, <code>#47453F</code></td>
+                    </tr>
+                    <tr>
+                      <td>Active background</td>
+                      <td><code>rgba(0, 0, 0, 0.05)</code></td>
+                    </tr>
+                    <tr>
+                      <td>Transition</td>
+                      <td><code>100ms ease-out</code></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile Behavior */}
+              <h3>Mobile Responsive</h3>
+              <p className="sg-description">On screens &lt; 768px, navigation collapses to hamburger menu.</p>
+              <div className="nav-mobile-demo">
+                <div className="mobile-header-demo">
+                  <span className="mobile-hamburger">≡</span>
+                  <span className="mobile-studio-name">EA Studio</span>
+                  <span className="mobile-user">👤</span>
+                </div>
+                <div className="mobile-tabs-demo">
+                  <button className="mobile-tab">Overview</button>
+                  <button className="mobile-tab active">Elements</button>
+                  <button className="mobile-tab">ADRs</button>
+                  <button className="mobile-tab">+</button>
+                </div>
+              </div>
+
             </section>
           )}
 
@@ -1565,7 +2508,7 @@ sx={{
 
               <h3>Wizard Progress</h3>
               <div className="sg-demo-box" style={{ padding: 0 }}>
-                <div className="wizard-progress" style={{ background: 'var(--panel)' }}>
+                <div className="wizard-progress" style={{ background: '#FAF9F7' }}>
                   <div className="progress-step completed">
                     <div className="step-indicator"><CheckIcon fontSize="small" /></div>
                     <span className="step-title">Understand</span>
@@ -1591,28 +2534,28 @@ sx={{
 
               <h3>Alert Cards</h3>
               <div className="sg-demo-form">
-                <div className="alert-card" style={{ borderLeftColor: '#ef4444', background: 'var(--panel)' }}>
+                <div className="alert-card" style={{ background: 'rgba(239, 68, 68, 0.04)' }}>
                   <div className="alert-header">
-                    <WarningIcon fontSize="small" style={{ color: '#ef4444' }} />
-                    <span className="alert-severity" style={{ color: '#ef4444' }}>High</span>
+                    <WarningIcon fontSize="small" style={{ color: '#EF4444' }} />
+                    <span className="alert-severity" style={{ color: '#EF4444', background: 'rgba(239, 68, 68, 0.1)' }}>High</span>
                   </div>
                   <p className="alert-message">No decision types defined</p>
                   <p className="alert-recommendation">Define the types of decisions your organization makes</p>
                 </div>
 
-                <div className="alert-card" style={{ borderLeftColor: '#f59e0b', background: 'var(--panel)' }}>
+                <div className="alert-card" style={{ background: 'rgba(201, 162, 39, 0.04)' }}>
                   <div className="alert-header">
-                    <WarningIcon fontSize="small" style={{ color: '#f59e0b' }} />
-                    <span className="alert-severity" style={{ color: '#f59e0b' }}>Medium</span>
+                    <WarningIcon fontSize="small" style={{ color: '#C9A227' }} />
+                    <span className="alert-severity" style={{ color: '#A68820', background: 'rgba(201, 162, 39, 0.1)' }}>Medium</span>
                   </div>
                   <p className="alert-message">Only 50% of decision types have assigned rights</p>
                   <p className="alert-recommendation">Assign decision rights for remaining decision types</p>
                 </div>
 
-                <div className="alert-card" style={{ borderLeftColor: '#22c55e', background: 'var(--panel)' }}>
+                <div className="alert-card" style={{ background: 'rgba(91, 138, 106, 0.04)' }}>
                   <div className="alert-header">
-                    <InfoIcon fontSize="small" style={{ color: '#22c55e' }} />
-                    <span className="alert-severity" style={{ color: '#22c55e' }}>Info</span>
+                    <InfoIcon fontSize="small" style={{ color: '#5B8A6A' }} />
+                    <span className="alert-severity" style={{ color: '#4A7358', background: 'rgba(91, 138, 106, 0.1)' }}>Info</span>
                   </div>
                   <p className="alert-message">Consider defining governance principles</p>
                   <p className="alert-recommendation">Principles provide guidance for consistent governance decisions</p>
@@ -1644,7 +2587,7 @@ sx={{
               <h3>Standard Empty State</h3>
               <div className="sg-demo-box">
                 <div className="empty-state">
-                  <CategoryIcon className="empty-state-icon" style={{ fontSize: 48, color: 'var(--text-muted)' }} />
+                  <CategoryIcon className="empty-state-icon" style={{ fontSize: 48, color: '#A8A29E' }} />
                   <p>No artefacts found</p>
                   <button className="btn-primary">
                     <AddIcon fontSize="small" />
@@ -1660,9 +2603,9 @@ sx={{
             <section className="sg-section">
               <h2>Portfolio Studio Components</h2>
 
-              <div className="sg-info-box" style={{ marginBottom: '24px', background: 'var(--info-soft)', border: '1px solid var(--info)', borderRadius: '8px', padding: '16px' }}>
-                <h4 style={{ margin: '0 0 8px', color: 'var(--info)' }}>Investment Portfolio Management</h4>
-                <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+              <div className="sg-info-box" style={{ marginBottom: '24px', background: 'rgba(99, 102, 241, 0.06)', border: 'none', borderRadius: '14px', padding: '18px 22px', boxShadow: '0 2px 6px rgba(99, 102, 241, 0.1)' }}>
+                <h4 style={{ margin: '0 0 8px', color: '#4338CA' }}>Investment Portfolio Management</h4>
+                <p style={{ margin: 0, fontSize: '0.9375rem', color: '#57534E' }}>
                   Portfolio Studio provides visual prioritization, scoring models, and governance tools for managing investment decisions.
                 </p>
               </div>
@@ -1670,48 +2613,48 @@ sx={{
               <h3>Priority Matrix</h3>
               <p className="sg-description">2x2 quadrant visualization for plotting initiatives by Value vs Effort. Supports drag-and-drop, pan/zoom, and SVG/PNG export.</p>
               <div className="sg-demo-row" style={{ gap: '24px', marginBottom: '16px' }}>
-                <div style={{ padding: '16px', background: '#dcfce7', border: '1px solid #22c55e', borderRadius: '8px', textAlign: 'center', flex: 1 }}>
+                <div style={{ padding: '16px', background: '#DCFCE7', border: 'none', borderRadius: '12px', textAlign: 'center', flex: 1, boxShadow: '0 2px 6px rgba(34, 197, 94, 0.15)' }}>
                   <strong style={{ color: '#166534' }}>Quick Wins</strong>
                   <p style={{ margin: '4px 0 0', fontSize: '0.75rem', color: '#166534' }}>High Value / Low Effort</p>
                 </div>
-                <div style={{ padding: '16px', background: '#dbeafe', border: '1px solid #3b82f6', borderRadius: '8px', textAlign: 'center', flex: 1 }}>
-                  <strong style={{ color: '#1e40af' }}>Big Bets</strong>
-                  <p style={{ margin: '4px 0 0', fontSize: '0.75rem', color: '#1e40af' }}>High Value / High Effort</p>
+                <div style={{ padding: '16px', background: '#E0E7FF', border: 'none', borderRadius: '12px', textAlign: 'center', flex: 1, boxShadow: '0 2px 6px rgba(99, 102, 241, 0.15)' }}>
+                  <strong style={{ color: '#4338CA' }}>Big Bets</strong>
+                  <p style={{ margin: '4px 0 0', fontSize: '0.75rem', color: '#4338CA' }}>High Value / High Effort</p>
                 </div>
               </div>
               <div className="sg-demo-row" style={{ gap: '24px' }}>
-                <div style={{ padding: '16px', background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: '8px', textAlign: 'center', flex: 1 }}>
-                  <strong style={{ color: 'var(--text-muted)' }}>Fill-ins</strong>
-                  <p style={{ margin: '4px 0 0', fontSize: '0.75rem', color: 'var(--text-muted)' }}>Low Value / Low Effort</p>
+                <div style={{ padding: '16px', background: '#F5F4F2', border: 'none', borderRadius: '12px', textAlign: 'center', flex: 1, boxShadow: '0 2px 6px rgba(28, 25, 23, 0.06)' }}>
+                  <strong style={{ color: '#A8A29E' }}>Fill-ins</strong>
+                  <p style={{ margin: '4px 0 0', fontSize: '0.75rem', color: '#A8A29E' }}>Low Value / Low Effort</p>
                 </div>
-                <div style={{ padding: '16px', background: '#fef2f2', border: '1px solid #ef4444', borderRadius: '8px', textAlign: 'center', flex: 1 }}>
-                  <strong style={{ color: '#991b1b' }}>Money Pits</strong>
-                  <p style={{ margin: '4px 0 0', fontSize: '0.75rem', color: '#991b1b' }}>Low Value / High Effort</p>
+                <div style={{ padding: '16px', background: '#FEF2F2', border: 'none', borderRadius: '12px', textAlign: 'center', flex: 1, boxShadow: '0 2px 6px rgba(239, 68, 68, 0.12)' }}>
+                  <strong style={{ color: '#991B1B' }}>Money Pits</strong>
+                  <p style={{ margin: '4px 0 0', fontSize: '0.75rem', color: '#991B1B' }}>Low Value / High Effort</p>
                 </div>
               </div>
 
               <h3>Stack Rank</h3>
               <p className="sg-description">Ordered priority list with drag-and-drop reordering and cut-line functionality.</p>
               <div className="sg-demo-form">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: '8px', marginBottom: '8px' }}>
-                  <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>≡</span>
-                  <span style={{ fontWeight: 600, color: '#334155' }}>1</span>
-                  <span style={{ flex: 1, color: 'var(--text)' }}>Initiative Alpha</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 16px', background: '#FEFDFB', border: 'none', borderRadius: '12px', marginBottom: '8px', boxShadow: '0 2px 4px rgba(28, 25, 23, 0.06)' }}>
+                  <span style={{ color: '#A8A29E', fontSize: '0.85rem' }}>≡</span>
+                  <span style={{ fontWeight: 600, color: '#1C1917' }}>1</span>
+                  <span style={{ flex: 1, color: '#1C1917' }}>Initiative Alpha</span>
                   <span className="badge badge-success">Score: 42</span>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: '8px', marginBottom: '8px' }}>
-                  <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>≡</span>
-                  <span style={{ fontWeight: 600, color: '#334155' }}>2</span>
-                  <span style={{ flex: 1, color: 'var(--text)' }}>Initiative Beta</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 16px', background: '#FEFDFB', border: 'none', borderRadius: '12px', marginBottom: '8px', boxShadow: '0 2px 4px rgba(28, 25, 23, 0.06)' }}>
+                  <span style={{ color: '#A8A29E', fontSize: '0.85rem' }}>≡</span>
+                  <span style={{ fontWeight: 600, color: '#1C1917' }}>2</span>
+                  <span style={{ flex: 1, color: '#1C1917' }}>Initiative Beta</span>
                   <span className="badge badge-info">Score: 38</span>
                 </div>
-                <div style={{ borderTop: '2px dashed var(--danger)', margin: '16px 0', position: 'relative' }}>
-                  <span style={{ position: 'absolute', top: '-10px', left: '50%', transform: 'translateX(-50%)', background: 'var(--bg)', padding: '0 8px', fontSize: '0.75rem', color: 'var(--danger)' }}>Cut Line</span>
+                <div style={{ borderTop: '2px dashed #EF4444', margin: '16px 0', position: 'relative' }}>
+                  <span style={{ position: 'absolute', top: '-10px', left: '50%', transform: 'translateX(-50%)', background: '#FEFDFB', padding: '0 10px', fontSize: '0.75rem', color: '#EF4444', fontWeight: 500 }}>Cut Line</span>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'var(--bg)', border: '1px dashed var(--border)', borderRadius: '8px', opacity: 0.6 }}>
-                  <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>≡</span>
-                  <span style={{ fontWeight: 600, color: 'var(--text-muted)' }}>3</span>
-                  <span style={{ flex: 1, color: 'var(--text-muted)' }}>Initiative Gamma</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 16px', background: '#FAF9F7', border: '1px dashed #E7E5E4', borderRadius: '12px', opacity: 0.7 }}>
+                  <span style={{ color: '#A8A29E', fontSize: '0.85rem' }}>≡</span>
+                  <span style={{ fontWeight: 600, color: '#A8A29E' }}>3</span>
+                  <span style={{ flex: 1, color: '#A8A29E' }}>Initiative Gamma</span>
                   <span className="badge badge-neutral">Score: 28</span>
                 </div>
               </div>
@@ -1745,7 +2688,7 @@ sx={{
               <h3>Committee Voting</h3>
               <p className="sg-description">Collaborative decision-making with vote tracking and threaded discussions.</p>
               <div className="sg-demo-row" style={{ gap: '16px' }}>
-                <button className="btn-primary" style={{ background: '#22c55e' }}>
+                <button className="btn-primary" style={{ background: '#5B8A6A' }}>
                   <CheckIcon fontSize="small" /> Approve
                 </button>
                 <button className="btn-danger">
@@ -1760,25 +2703,25 @@ sx={{
               <div className="sg-demo-form">
                 <div style={{ marginBottom: '12px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                    <span style={{ fontSize: '0.85rem', color: 'var(--text)' }}>Approval Rate</span>
-                    <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#22c55e' }}>78%</span>
+                    <span style={{ fontSize: '0.875rem', color: '#1C1917' }}>Approval Rate</span>
+                    <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#5B8A6A' }}>78%</span>
                   </div>
                   <div className="progress-bar">
-                    <div className="progress-bar-fill" style={{ width: '78%', background: '#22c55e' }} />
+                    <div className="progress-bar-fill" style={{ width: '78%', background: '#5B8A6A' }} />
                   </div>
                 </div>
                 <div className="sg-demo-row" style={{ gap: '24px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#22c55e' }} />
-                    <span style={{ fontSize: '0.85rem', color: 'var(--text)' }}>Approve: 7</span>
+                    <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#5B8A6A' }} />
+                    <span style={{ fontSize: '0.875rem', color: '#1C1917' }}>Approve: 7</span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#ef4444' }} />
-                    <span style={{ fontSize: '0.85rem', color: 'var(--text)' }}>Reject: 2</span>
+                    <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#EF4444' }} />
+                    <span style={{ fontSize: '0.875rem', color: '#1C1917' }}>Reject: 2</span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: 'var(--border)' }} />
-                    <span style={{ fontSize: '0.85rem', color: 'var(--text)' }}>Abstain: 1</span>
+                    <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#E7E5E4' }} />
+                    <span style={{ fontSize: '0.875rem', color: '#1C1917' }}>Abstain: 1</span>
                   </div>
                 </div>
               </div>
@@ -1786,25 +2729,25 @@ sx={{
               <h3>Budget Envelopes</h3>
               <p className="sg-description">Track investment allocation by theme with visual progress bars.</p>
               <div className="sg-demo-form">
-                <div style={{ padding: '16px', background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: '8px', marginBottom: '12px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                    <span style={{ fontWeight: 600, color: 'var(--text)' }}>Digital Transformation</span>
-                    <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>$1.2M / $2.0M</span>
+                <div style={{ padding: '18px 20px', background: '#FEFDFB', border: 'none', borderRadius: '14px', marginBottom: '12px', boxShadow: '0 2px 6px rgba(28, 25, 23, 0.06)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                    <span style={{ fontWeight: 600, color: '#1C1917' }}>Digital Transformation</span>
+                    <span style={{ fontSize: '0.875rem', color: '#57534E' }}>$1.2M / $2.0M</span>
                   </div>
                   <div className="progress-bar">
-                    <div className="progress-bar-fill" style={{ width: '60%', background: '#475569' }} />
+                    <div className="progress-bar-fill" style={{ width: '60%', background: '#57534E' }} />
                   </div>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px', display: 'block' }}>4 initiatives committed</span>
+                  <span style={{ fontSize: '0.8125rem', color: '#A8A29E', marginTop: '6px', display: 'block' }}>4 initiatives committed</span>
                 </div>
-                <div style={{ padding: '16px', background: '#fef2f2', border: '1px solid #ef4444', borderRadius: '8px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                    <span style={{ fontWeight: 600, color: 'var(--text)' }}>Customer Experience</span>
-                    <span style={{ fontSize: '0.85rem', color: '#ef4444', fontWeight: 600 }}>$0.85M / $0.8M</span>
+                <div style={{ padding: '18px 20px', background: 'rgba(239, 68, 68, 0.04)', border: 'none', borderRadius: '14px', boxShadow: '0 2px 6px rgba(239, 68, 68, 0.1)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                    <span style={{ fontWeight: 600, color: '#1C1917' }}>Customer Experience</span>
+                    <span style={{ fontSize: '0.875rem', color: '#EF4444', fontWeight: 600 }}>$0.85M / $0.8M</span>
                   </div>
                   <div className="progress-bar">
-                    <div className="progress-bar-fill" style={{ width: '100%', background: '#ef4444' }} />
+                    <div className="progress-bar-fill" style={{ width: '100%', background: '#EF4444' }} />
                   </div>
-                  <span style={{ fontSize: '0.75rem', color: '#ef4444', marginTop: '4px', display: 'block' }}>⚠ Over budget by $50K</span>
+                  <span style={{ fontSize: '0.8125rem', color: '#EF4444', marginTop: '6px', display: 'block' }}>⚠ Over budget by $50K</span>
                 </div>
               </div>
 
@@ -1843,11 +2786,30 @@ sx={{
       </div>
 
       <style jsx>{`
+        /* ============================================
+           ONTOGRAPHIA STYLE GUIDE
+           Phozart System Design
+
+           Design Philosophy:
+           - Professional instrument aesthetic
+           - Dark system shell, light editorial workspace
+           - Architectural precision, not soft roundness
+           - 100-200ms quiet, functional motion
+        */
+
+        /* ============================================
+           FOUNDATIONS - Phozart System Palette
+        */
+
         .style-guide {
           display: flex;
           flex-direction: column;
           height: 100vh;
-          background: var(--bg);
+          background: #35332F;
+          color: #1F1E1B;
+          font-family: "SF Pro Text", "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
         }
 
         .access-denied {
@@ -1857,24 +2819,71 @@ sx={{
           justify-content: center;
           min-height: 100vh;
           text-align: center;
+          color: #9C9890;
+          background: #35332F;
         }
 
+        /* ============================================
+           HEADER - System Shell Top Bar
+           Dark grey, compact, structural
+        */
         .sg-header {
-          padding: 20px 24px;
-          background: var(--panel);
-          border-bottom: 1px solid var(--border);
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          height: 44px;
+          padding: 0 16px;
+          background: #35332F;
+          border-bottom: 1px solid #47453F;
           flex-shrink: 0;
+          z-index: 10;
         }
 
-        .sg-header h1 {
-          margin: 0 0 8px;
-          font-size: 1.75rem;
-          color: var(--text);
+        .sg-header-left {
+          display: flex;
+          align-items: center;
+          gap: 0;
         }
 
-        .sg-header p {
-          margin: 0;
-          color: var(--text-muted);
+        .sg-system-label {
+          font-size: 0.8125rem;
+          font-weight: 600;
+          letter-spacing: 0.02em;
+          color: #E8E6E3;
+        }
+
+        .sg-header-divider {
+          width: 1px;
+          height: 16px;
+          background: #5C5A54;
+          margin: 0 12px;
+        }
+
+        .sg-module-label {
+          font-size: 0.8125rem;
+          font-weight: 400;
+          color: #9C9890;
+        }
+
+        .sg-header-right {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .sg-status-indicator {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: #4AA66D;
+        }
+
+        .sg-status-text {
+          font-size: 0.6875rem;
+          font-weight: 500;
+          letter-spacing: 0.02em;
+          color: #9C9890;
+          text-transform: uppercase;
         }
 
         .sg-layout {
@@ -1884,67 +2893,124 @@ sx={{
           overflow: hidden;
         }
 
+        /* ============================================
+           NAVIGATION - Integrated Sidebar
+           Seamless connection to content
+        */
         .sg-nav {
           width: 220px;
           flex-shrink: 0;
-          background: var(--panel);
-          border-right: 1px solid var(--border);
-          padding: 16px 8px;
+          background: #F0EFEC;
+          display: flex;
+          flex-direction: column;
           overflow-y: auto;
+          padding-top: 8px;
+        }
+
+        .sg-nav-header {
+          padding: 16px 20px 12px;
+          font-size: 0.6875rem;
+          font-weight: 600;
+          letter-spacing: 0.05em;
+          color: #9C9A94;
+          text-transform: uppercase;
         }
 
         .sg-nav-item {
-          display: block;
+          position: relative;
+          display: flex;
+          align-items: center;
           width: 100%;
-          padding: 10px 16px;
-          background: none;
+          margin: 0;
+          padding: 9px 16px 9px 20px;
+          background: transparent;
           border: none;
-          border-radius: 6px;
+          border-radius: 0;
           text-align: left;
-          color: var(--text-muted);
+          color: #6B6965;
           cursor: pointer;
-          font-size: 0.9rem;
-          transition: all 0.2s;
+          font-size: 0.8125rem;
+          font-weight: 400;
+          transition: all 100ms ease-out;
+          gap: 8px;
+        }
+
+        .sg-nav-indicator {
+          display: none;
         }
 
         .sg-nav-item:hover {
-          background: var(--bg);
-          color: var(--text);
+          background: rgba(0, 0, 0, 0.03);
+          color: #47453F;
         }
 
         .sg-nav-item.active {
-          background: var(--accent-soft);
-          color: var(--accent);
+          background: rgba(0, 0, 0, 0.05);
+          color: #1F1E1B;
           font-weight: 500;
         }
 
-        .sg-content {
-          flex: 1;
-          padding: 32px;
-          overflow-y: auto;
-          background: var(--panel);
+        .sg-nav-item.active::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 4px;
+          bottom: 4px;
+          width: 2px;
+          background: #47453F;
+          border-radius: 0 1px 1px 0;
         }
 
+        /* ============================================
+           MAIN CONTENT - Warm Editorial Canvas
+           Clean workspace, no heavy boxing
+        */
+        .sg-content {
+          flex: 1;
+          padding: 32px 48px;
+          overflow-y: auto;
+          background: #FDFCFA;
+        }
+
+        .sg-section {
+          /* No boxing - content lives directly on warm canvas */
+        }
+
+        /* ============================================
+           TYPOGRAPHY - Editorial Precision
+        */
         .sg-section h2 {
-          margin: 0 0 24px;
-          font-size: 1.5rem;
-          color: var(--text);
-          padding-bottom: 12px;
-          border-bottom: 2px solid var(--border);
+          margin: 0 0 20px;
+          font-size: 2rem;
+          font-weight: 600;
+          color: #1F1E1B;
+          letter-spacing: -0.01em;
+          line-height: 1.3;
         }
 
         .sg-section h3 {
-          margin: 32px 0 12px;
-          font-size: 1rem;
-          color: var(--text);
+          margin: 32px 0 10px;
+          font-size: 1.0625rem;
+          font-weight: 600;
+          color: #1F1E1B;
+          letter-spacing: 0;
+        }
+
+        .sg-section h3:first-of-type {
+          margin-top: 0;
         }
 
         .sg-description {
           margin: 0 0 16px;
-          color: var(--text-muted);
-          font-size: 0.9rem;
+          color: #5C5A54;
+          font-size: 0.9375rem;
+          line-height: 1.55;
         }
 
+        /* ============================================
+           LAYOUT HELPERS
+           4px grid, architectural spacing
+        */
         .sg-demo-row {
           display: flex;
           flex-wrap: wrap;
@@ -1955,228 +3021,370 @@ sx={{
         .sg-demo-grid {
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-          gap: 16px;
+          gap: 20px;
         }
 
         .sg-demo-grid.cols-4 {
-          grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
         }
 
         .sg-demo-form {
           max-width: 400px;
         }
 
+        /* Demo boxes - subtle elevation */
         .sg-demo-box {
-          background: var(--bg);
-          border: 1px solid var(--border);
-          border-radius: 12px;
+          background: white;
+          border-radius: 8px;
           overflow: hidden;
-          padding: 16px;
+          padding: 20px;
+          border: 1px solid #E8E6E1;
+          box-shadow: 0 4px 12px rgba(31, 30, 27, 0.08), 0 2px 4px rgba(31, 30, 27, 0.04);
+          transition: box-shadow 200ms ease-out;
         }
 
-        /* Color Swatches */
+        .sg-demo-box:hover {
+          box-shadow: 0 8px 24px rgba(31, 30, 27, 0.12), 0 4px 8px rgba(31, 30, 27, 0.06);
+        }
+
+        /* ============================================
+           COLOR SWATCHES
+        */
         .color-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-          gap: 16px;
+          grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+          gap: 12px;
         }
 
         .color-swatch {
           display: flex;
           flex-direction: column;
-          gap: 8px;
+          gap: 6px;
         }
 
         .swatch {
           width: 100%;
-          height: 64px;
-          border-radius: 8px;
-          border: 1px solid var(--border);
+          height: 48px;
+          border-radius: 6px;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-weight: 600;
+          font-weight: 500;
+          font-size: 0.6875rem;
+          border: 1px solid rgba(0,0,0,0.05);
         }
 
         .swatch-name {
-          font-size: 0.8rem;
-          font-family: monospace;
-          color: var(--text);
+          font-size: 0.6875rem;
+          font-family: 'SF Mono', 'JetBrains Mono', ui-monospace, monospace;
+          color: #1F1E1B;
         }
 
         .swatch-use {
-          font-size: 0.75rem;
-          color: var(--text-muted);
+          font-size: 0.6875rem;
+          color: #9C9A94;
         }
 
-        /* Demo Navigation */
+        /* Demo Navigation Container */
         .nav-demo {
           display: flex;
           flex-direction: column;
-          height: 300px;
+          height: 320px;
         }
 
-        /* Button Styles */
+        /* ============================================
+           BUTTONS - Phozart System Buttons
+           36px height, 6px radius, quiet motion
+           Primary uses shell-inspired dark grey
+        */
         .btn-primary {
           display: inline-flex;
           align-items: center;
+          justify-content: center;
           gap: 6px;
-          padding: 10px 16px;
-          background: var(--accent);
-          color: white;
+          height: 36px;
+          padding: 0 16px;
+          background: #47453F !important;
+          color: #F0EFEC !important;
           border: none;
-          border-radius: 8px;
-          font-size: 0.9rem;
+          border-radius: 4px;
+          font-size: 0.8125rem;
           font-weight: 500;
           cursor: pointer;
+          transition: all 150ms ease-out;
         }
 
-        .btn-primary:hover:not(:disabled) { opacity: 0.9; }
+        .btn-primary:hover:not(:disabled) {
+          background: #35332F !important;
+          transform: translateY(-1px);
+          box-shadow: 0 2px 8px rgba(31, 30, 27, 0.15);
+        }
+
+        .btn-primary:focus {
+          outline: none;
+          box-shadow: 0 0 0 2px rgba(71, 69, 63, 0.25);
+        }
         .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 
         .btn-secondary {
           display: inline-flex;
           align-items: center;
+          justify-content: center;
           gap: 6px;
-          padding: 10px 16px;
-          background: var(--bg);
-          color: var(--text);
-          border: 1px solid var(--border);
-          border-radius: 8px;
-          font-size: 0.9rem;
+          height: 36px;
+          padding: 0 16px;
+          background: transparent;
+          color: #5C5A54;
+          border: 1px solid #D6D4CE;
+          border-radius: 4px;
+          font-size: 0.8125rem;
           font-weight: 500;
           cursor: pointer;
+          transition: all 100ms ease-out;
         }
 
-        .btn-secondary:hover:not(:disabled) { background: var(--border); }
+        .btn-secondary:hover:not(:disabled) {
+          background: #F0EFEC;
+          border-color: #BFBDB7;
+          transform: translateY(-1px);
+          box-shadow: 0 2px 8px rgba(31, 30, 27, 0.08);
+        }
         .btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .btn-tertiary {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          height: 36px;
+          padding: 0 16px;
+          background: transparent;
+          color: #6B6965;
+          border: none;
+          border-radius: 4px;
+          font-size: 0.8125rem;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 100ms ease-out;
+        }
+
+        .btn-tertiary:hover {
+          background: #F0EFEC;
+          color: #47453F;
+          transform: translateY(-1px);
+        }
 
         .btn-danger {
           display: inline-flex;
           align-items: center;
+          justify-content: center;
           gap: 6px;
-          padding: 10px 16px;
-          background: transparent;
-          color: #ef4444;
-          border: 1px solid #ef4444;
-          border-radius: 8px;
-          font-size: 0.9rem;
+          height: 36px;
+          padding: 0 16px;
+          background: #A54D4D;
+          color: #FAF9F7;
+          border: none;
+          border-radius: 4px;
+          font-size: 0.8125rem;
           font-weight: 500;
           cursor: pointer;
+          transition: all 150ms ease-out;
         }
 
-        .btn-danger:hover { background: #fef2f2; }
+        .btn-danger:hover {
+          background: #8F4343;
+          transform: translateY(-1px);
+          box-shadow: 0 2px 8px rgba(165, 77, 77, 0.2);
+        }
 
         .btn-ghost {
           display: inline-flex;
           align-items: center;
           gap: 6px;
-          padding: 8px 12px;
+          height: 32px;
+          padding: 0 12px;
           background: transparent;
-          color: var(--text-muted);
+          color: #9C9A94;
           border: none;
-          border-radius: 6px;
-          font-size: 0.85rem;
+          border-radius: 4px;
+          font-size: 0.8125rem;
           cursor: pointer;
+          transition: all 150ms ease-out;
         }
 
-        .btn-ghost:hover { background: var(--bg); color: var(--text); }
+        .btn-ghost:hover {
+          background: #F3F2EF;
+          color: #1F1E1B;
+          transform: translateY(-1px);
+        }
 
-        .btn-sm { padding: 6px 12px; font-size: 0.8rem; }
-        .btn-lg { padding: 12px 20px; font-size: 1rem; }
+        .btn-sm { height: 32px; padding: 0 12px; font-size: 0.8125rem; }
+        .btn-lg { height: 44px; padding: 0 24px; font-size: 0.9375rem; }
 
-        /* Cards */
+        /* ============================================
+           CARDS - Specimen Cards
+           Neutral containment, diagram-like
+        */
         .card {
-          background: var(--panel);
-          border: 1px solid var(--border);
-          border-radius: 10px;
-          padding: 16px;
+          background: #FDFCFA;
+          border-radius: 4px;
+          padding: 20px;
+          border: 1px solid #E2E0DB;
+          box-shadow: none;
+          transition: all 150ms ease-out;
         }
 
-        .card:hover { border-color: var(--accent); }
-        .card.selected { border-color: var(--accent); background: var(--accent-soft); }
+        .card:hover {
+          border-color: #D0CEC8;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(31, 30, 27, 0.08);
+        }
 
-        .card h4 { margin: 0 0 8px; color: var(--text); }
-        .card p { margin: 0; color: var(--text-muted); font-size: 0.9rem; }
+        .card.selected {
+          background: #FDFCFA;
+          border-color: #47453F;
+          box-shadow: none;
+        }
+
+        .card h4 {
+          margin: 0 0 6px;
+          color: #1F1E1B;
+          font-weight: 600;
+          font-size: 0.9375rem;
+        }
+
+        .card p {
+          margin: 0;
+          color: #5C5A54;
+          font-size: 0.8125rem;
+          line-height: 1.55;
+        }
 
         .card-with-icon {
           display: flex;
           align-items: flex-start;
-          gap: 16px;
+          gap: 12px;
         }
 
         .card-icon {
-          width: 44px;
-          height: 44px;
+          width: 40px;
+          height: 40px;
           display: flex;
           align-items: center;
           justify-content: center;
-          border-radius: 10px;
+          border-radius: 8px;
           flex-shrink: 0;
         }
 
         .card-content { flex: 1; }
-        .card-type { font-size: 0.8rem; color: var(--text-muted); margin: 4px 0; }
+
+        .card-type {
+          font-size: 0.6875rem;
+          color: #9C9A94;
+          margin: 4px 0;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          font-weight: 600;
+        }
 
         /* Stat Card */
         .stat-card {
           display: flex;
           align-items: center;
           gap: 12px;
-          padding: 16px;
-          background: var(--panel);
-          border: 1px solid var(--border);
-          border-radius: 10px;
+          padding: 16px 20px;
+          background: white;
+          border-radius: 8px;
+          border: 1px solid #E8E6E1;
+          box-shadow: 0 2px 4px rgba(31, 30, 27, 0.04);
         }
 
         .stat-content { display: flex; flex-direction: column; }
-        .stat-value { font-size: 1.5rem; font-weight: 700; color: var(--text); }
-        .stat-label { font-size: 0.8rem; color: var(--text-muted); }
+        .stat-value {
+          font-size: 1.5rem;
+          font-weight: 600;
+          color: #1F1E1B;
+          letter-spacing: -0.01em;
+          font-family: 'SF Mono', 'JetBrains Mono', ui-monospace, monospace;
+        }
+        .stat-label {
+          font-size: 0.8125rem;
+          color: #9C9A94;
+          margin-top: 2px;
+        }
 
-        /* Module Card */
+        /* Module Card - Specimen */
         .module-card {
           display: flex;
           align-items: flex-start;
-          gap: 16px;
-          padding: 20px;
-          background: var(--panel);
-          border: 1px solid var(--border);
-          border-radius: 12px;
+          gap: 12px;
+          padding: 16px;
+          background: #FDFCFA;
+          border-radius: 4px;
           cursor: pointer;
           text-align: left;
           width: 100%;
+          border: 1px solid #E2E0DB;
+          box-shadow: none;
+          transition: border-color 150ms ease-out;
         }
 
-        .module-card:hover { border-color: var(--accent); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .module-card:hover {
+          border-color: #BFBDB7;
+        }
 
         .module-card-icon {
-          width: 48px;
-          height: 48px;
+          width: 40px;
+          height: 40px;
           display: flex;
           align-items: center;
           justify-content: center;
-          border-radius: 10px;
+          border-radius: 4px;
         }
 
-        .module-card-content h4 { margin: 0 0 4px; color: var(--text); }
-        .module-card-content p { margin: 0 0 8px; font-size: 0.8rem; color: var(--text-muted); }
-        .module-count { font-size: 0.75rem; padding: 2px 8px; background: var(--border); border-radius: 4px; color: var(--text-muted); }
+        .module-card-content h4 {
+          margin: 0 0 4px;
+          color: #1F1E1B;
+          font-weight: 600;
+          font-size: 0.9375rem;
+        }
+
+        .module-card-content p {
+          margin: 0 0 10px;
+          font-size: 0.8125rem;
+          color: #5C5A54;
+          line-height: 1.55;
+        }
+
+        .module-count {
+          font-size: 0.6875rem;
+          padding: 3px 8px;
+          background: #F5F4F2;
+          border-radius: 8px;
+          color: #57534E;
+          font-weight: 500;
+        }
 
         /* Quick Action Card */
         .quick-action-card {
           display: flex;
           align-items: center;
           gap: 12px;
-          padding: 12px;
-          background: var(--bg);
-          border: 1px solid var(--border);
-          border-radius: 8px;
+          padding: 16px 20px;
+          background: #FEFDFB;
+          border-radius: 12px;
           cursor: pointer;
           text-align: left;
           width: 100%;
+          box-shadow: 0 1px 2px rgba(28, 25, 23, 0.04);
+          transition: transform 300ms cubic-bezier(0.0, 0.0, 0.2, 1), box-shadow 300ms cubic-bezier(0.0, 0.0, 0.2, 1);
+          border: none;
         }
 
-        .quick-action-card:hover { border-color: var(--accent); }
+        .quick-action-card:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(28, 25, 23, 0.10), 0 2px 4px rgba(28, 25, 23, 0.04);
+        }
 
         .action-icon {
           width: 40px;
@@ -2184,92 +3392,128 @@ sx={{
           display: flex;
           align-items: center;
           justify-content: center;
-          border-radius: 8px;
+          border-radius: 10px;
         }
 
         .action-content { flex: 1; }
-        .action-content h4 { margin: 0; font-size: 0.9rem; color: var(--text); }
-        .action-content p { margin: 4px 0 0; font-size: 0.75rem; color: var(--text-muted); }
-        .action-arrow { color: var(--text-muted); }
+        .action-content h4 {
+          margin: 0;
+          font-size: 0.9375rem;
+          color: #1C1917;
+          font-weight: 500;
+        }
+        .action-content p {
+          margin: 4px 0 0;
+          font-size: 0.8125rem;
+          color: #A8A29E;
+        }
+        .action-arrow {
+          color: #D6D3D1;
+        }
 
-        /* Form Elements */
-        .field-group { margin-bottom: 16px; }
+        /* ============================================
+           FORM ELEMENTS - Clean, 12px radius inputs
+           Focus ring for accessibility (WCAG 2.2)
+        */
+        .field-group { margin-bottom: 24px; }
 
         .form-label {
           display: block;
-          margin-bottom: 6px;
-          font-size: 0.85rem;
+          margin-bottom: 8px;
+          font-size: 0.875rem;
           font-weight: 500;
-          color: var(--text);
+          color: #1C1917;
         }
 
-        .form-label.required::after { content: ' *'; color: #ef4444; }
+        .form-label.required::after {
+          content: ' *';
+          color: #EF4444;
+        }
 
         .form-input, .form-textarea, .form-select {
           width: 100%;
-          padding: 10px 12px;
-          background: var(--bg);
-          border: 1px solid var(--border);
-          border-radius: 8px;
-          font-size: 0.9rem;
-          color: var(--text);
+          padding: 12px 16px;
+          background: #FEFDFB;
+          border: 1.5px solid #E7E5E4;
+          border-radius: 12px;
+          font-size: 1rem;
+          color: #1C1917;
+          transition: border-color 200ms, box-shadow 200ms;
+        }
+
+        .form-input:hover, .form-textarea:hover, .form-select:hover {
+          border-color: #D6D3D1;
         }
 
         .form-input:focus, .form-textarea:focus, .form-select:focus {
           outline: none;
-          border-color: var(--accent);
+          border-color: #EF4444;
+          box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
         }
 
         .search-box {
           display: flex;
           align-items: center;
-          gap: 8px;
-          padding: 8px 12px;
-          background: var(--bg);
-          border: 1px solid var(--border);
-          border-radius: 8px;
-          color: var(--text-muted);
+          gap: 12px;
+          padding: 12px 16px;
+          background: #FEFDFB;
+          border-radius: 12px;
+          color: #A8A29E;
+          border: 1.5px solid #E7E5E4;
+          transition: border-color 200ms, box-shadow 200ms;
+        }
+
+        .search-box:focus-within {
+          border-color: #EF4444;
+          box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
         }
 
         .search-box input {
           border: none;
           background: none;
-          color: var(--text);
-          font-size: 0.9rem;
+          color: #1C1917;
+          font-size: 1rem;
           flex: 1;
         }
 
         .search-box input:focus { outline: none; }
+        .search-box input::placeholder { color: #A8A29E; }
 
-        /* Badges */
+        /* ============================================
+           BADGES - Semantic, with generous radii
+        */
         .badge {
           display: inline-flex;
           align-items: center;
-          padding: 2px 8px;
-          font-size: 0.7rem;
-          font-weight: 500;
-          border-radius: 4px;
+          padding: 6px 12px;
+          font-size: 0.75rem;
+          font-weight: 600;
+          border-radius: 8px;
           text-transform: uppercase;
+          letter-spacing: 0.03em;
         }
 
-        .badge-success { background: #dcfce7; color: #166534; }
-        .badge-warning { background: #fef3c7; color: #92400e; }
-        .badge-danger { background: #fee2e2; color: #991b1b; }
-        .badge-info { background: #dbeafe; color: #1e40af; }
-        .badge-neutral { background: var(--border); color: var(--text-muted); }
+        .badge-success { background: #F0FDF4; color: #16A34A; }
+        .badge-warning { background: #FFFBEB; color: #D97706; }
+        .badge-danger { background: #FEF2F2; color: #DC2626; }
+        .badge-info { background: #F0EFEC; color: #47453F; }
+        .badge-neutral { background: #F5F4F2; color: #57534E; }
 
         .count-badge {
           font-size: 0.75rem;
-          padding: 2px 8px;
-          background: var(--border);
-          border-radius: 10px;
-          color: var(--text-muted);
+          padding: 4px 10px;
+          background: #F5F4F2;
+          border-radius: 8px;
+          color: #57534E;
+          font-weight: 500;
         }
 
-        /* Progress Elements */
+        /* ============================================
+           PROGRESS ELEMENTS - Smooth with round ends
+        */
         .progress-bar {
           height: 8px;
-          background: var(--border);
+          background: #EFEEE9;
           border-radius: 4px;
           overflow: hidden;
         }
@@ -2277,39 +3521,42 @@ sx={{
         .progress-bar-fill {
           height: 100%;
           border-radius: 4px;
-          transition: width 0.3s ease;
+          transition: width 300ms cubic-bezier(0.0, 0.0, 0.2, 1);
         }
 
         .status-bar {
           display: flex;
-          height: 12px;
-          border-radius: 6px;
+          height: 8px;
+          border-radius: 4px;
           overflow: hidden;
         }
 
-        .status-bar-segment { transition: width 0.3s ease; }
+        .status-bar-segment { transition: width 300ms cubic-bezier(0.0, 0.0, 0.2, 1); }
 
         .status-legend {
           display: flex;
           flex-wrap: wrap;
-          gap: 16px;
-          margin-top: 12px;
+          gap: 20px;
+          margin-top: 16px;
         }
 
-        .legend-item { display: flex; align-items: center; gap: 6px; }
+        .legend-item { display: flex; align-items: center; gap: 8px; }
         .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
-        .legend-label { font-size: 0.8rem; color: var(--text-muted); }
-        .legend-count { font-size: 0.8rem; font-weight: 600; color: var(--text); }
+        .legend-label { font-size: 0.875rem; color: #57534E; }
+        .legend-count { font-size: 0.875rem; font-weight: 600; color: #1C1917; }
 
-        /* Navigation Elements */
+        /* ============================================
+           NAVIGATION ELEMENTS
+           Warm, floating with subtle shadows
+        */
         .studio-breadcrumbs {
           display: flex;
           align-items: center;
           gap: 8px;
-          padding: 12px 20px;
-          background: var(--bg);
-          border-bottom: 1px solid var(--border);
-          font-size: 0.85rem;
+          padding: 12px 24px;
+          background: #FEFDFB;
+          font-size: 0.875rem;
+          box-shadow: 0 1px 2px rgba(28, 25, 23, 0.04);
         }
 
         .breadcrumb-item {
@@ -2318,34 +3565,40 @@ sx={{
           gap: 6px;
           background: none;
           border: none;
-          color: var(--text-muted);
+          color: #A8A29E;
           cursor: pointer;
-          padding: 4px 8px;
-          border-radius: 4px;
+          padding: 6px 10px;
+          border-radius: 8px;
+          transition: all 200ms cubic-bezier(0.0, 0.0, 0.2, 1);
         }
 
-        .breadcrumb-item:hover { color: var(--accent); background: var(--accent-soft); }
-        .breadcrumb-separator { color: var(--text-muted); }
-        .breadcrumb-current { color: var(--text); font-weight: 500; }
+        .breadcrumb-item:hover {
+          color: #47453F;
+          background: rgba(71, 69, 63, 0.06);
+        }
 
-        .nav-home { padding: 12px; border-bottom: 1px solid var(--border); }
+        .breadcrumb-separator { color: #D6D3D1; }
+        .breadcrumb-current { color: #1C1917; font-weight: 500; }
+
+        .nav-home { padding: 16px; }
 
         .nav-home-btn {
           display: flex;
           align-items: center;
-          gap: 10px;
+          gap: 12px;
           width: 100%;
-          padding: 10px 12px;
+          padding: 12px 16px;
           background: transparent;
           border: none;
-          border-radius: 8px;
-          color: var(--text);
-          font-size: 0.9rem;
+          border-radius: 12px;
+          color: #1C1917;
+          font-size: 0.9375rem;
           cursor: pointer;
+          transition: all 300ms cubic-bezier(0.0, 0.0, 0.2, 1);
         }
 
-        .nav-home-btn:hover { background: var(--bg); }
-        .nav-home-btn.active { background: var(--accent-soft); color: var(--accent); }
+        .nav-home-btn:hover { background: #F5F4F2; }
+        .nav-home-btn.active { background: #EFEEE9; color: #1C1917; }
 
         .nav-views-grouped { flex: 1; overflow-y: auto; padding: 8px 0; }
         .nav-group { margin-bottom: 4px; }
@@ -2353,65 +3606,87 @@ sx={{
         .nav-group-header {
           display: flex;
           align-items: center;
-          gap: 6px;
+          gap: 8px;
           width: 100%;
-          padding: 8px 12px;
+          padding: 10px 16px;
           background: transparent;
           border: none;
-          border-left: 3px solid transparent;
-          color: var(--text);
-          font-size: 0.85rem;
+          border-radius: 10px;
+          color: #1C1917;
+          font-size: 0.8125rem;
+          font-weight: 500;
           cursor: pointer;
           text-align: left;
+          transition: all 300ms cubic-bezier(0.0, 0.0, 0.2, 1);
         }
 
-        .nav-group-header:hover { background: var(--bg); }
-        .nav-group-header.has-active { border-left-color: var(--accent); }
+        .nav-group-header:hover { background: #F5F4F2; }
+        .nav-group-header.has-active { background: rgba(71, 69, 63, 0.05); color: #47453F; }
         .group-name { flex: 1; }
-        .group-count { font-size: 0.75rem; padding: 2px 8px; background: var(--border); border-radius: 10px; color: var(--text-muted); }
+        .group-count {
+          font-size: 0.6875rem;
+          padding: 3px 8px;
+          background: #EFEEE9;
+          border-radius: 8px;
+          color: #57534E;
+          font-weight: 500;
+        }
 
-        .nav-group-views { padding-left: 24px; }
+        .nav-group-views { padding-left: 16px; }
 
         .nav-view-btn {
           display: flex;
           align-items: center;
           gap: 8px;
           width: 100%;
-          padding: 8px 12px;
+          padding: 10px 14px;
           background: transparent;
           border: none;
-          border-radius: 6px;
-          color: var(--text-muted);
-          font-size: 0.8rem;
+          border-radius: 10px;
+          color: #57534E;
+          font-size: 0.8125rem;
           cursor: pointer;
           text-align: left;
+          transition: all 300ms cubic-bezier(0.0, 0.0, 0.2, 1);
         }
 
-        .nav-view-btn:hover { background: var(--bg); color: var(--text); }
-        .nav-view-btn.active { background: var(--accent-soft); color: var(--accent); }
+        .nav-view-btn:hover { background: #F5F4F2; color: #1C1917; }
+        .nav-view-btn.active { background: rgba(71, 69, 63, 0.06); color: #47453F; font-weight: 500; }
 
-        .nav-footer { padding: 12px; border-top: 1px solid var(--border); }
+        .nav-footer { padding: 16px; }
 
         .nav-create-btn {
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 6px;
+          gap: 8px;
           width: 100%;
-          padding: 10px;
-          background: var(--accent);
-          color: white;
+          padding: 12px 16px;
+          min-height: 44px;
+          background: #47453F;
+          color: #F0EFEC;
           border: none;
-          border-radius: 8px;
-          font-size: 0.85rem;
+          border-radius: 4px;
+          font-size: 0.875rem;
+          font-weight: 500;
           cursor: pointer;
+          transition: all 100ms ease-out;
+          box-shadow: none;
         }
 
-        /* Modal */
+        .nav-create-btn:hover {
+          background: #35332F;
+        }
+
+        /* ============================================
+           MODALS - Phozart System Dialogs
+           12px radius, architectural, subtle shadows
+        */
         .modal-overlay {
           position: fixed;
           inset: 0;
-          background: rgba(0, 0, 0, 0.5);
+          background: rgba(31, 30, 27, 0.5);
+          backdrop-filter: blur(2px);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -2419,234 +3694,1177 @@ sx={{
         }
 
         .modal-content {
-          background: var(--panel);
+          background: #FDFCFA;
           border-radius: 12px;
           width: 90%;
-          max-width: 500px;
-          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+          max-width: 480px;
+          box-shadow: 0 16px 32px rgba(31, 30, 27, 0.16), 0 8px 16px rgba(31, 30, 27, 0.08);
+          border: 1px solid #E8E6E1;
+          overflow: hidden;
         }
 
         .modal-header {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          padding: 20px 24px;
-          border-bottom: 1px solid var(--border);
+          padding: 16px 20px;
+          border-bottom: 1px solid #E8E6E1;
         }
 
-        .modal-header h3 { margin: 0; font-size: 1.1rem; color: var(--text); }
+        .modal-header h3 {
+          margin: 0;
+          font-size: 0.9375rem;
+          font-weight: 600;
+          color: #1F1E1B;
+        }
 
         .modal-close-btn {
           padding: 8px;
-          background: none;
+          background: transparent;
           border: none;
           cursor: pointer;
-          color: var(--text-muted);
+          color: #9C9A94;
           border-radius: 6px;
+          transition: all 150ms ease-out;
         }
 
-        .modal-close-btn:hover { background: var(--bg); color: var(--text); }
+        .modal-close-btn:hover {
+          background: #F3F2EF;
+          color: #1F1E1B;
+        }
 
-        .modal-body { padding: 24px; }
-        .modal-body p { margin: 0 0 16px; color: var(--text-muted); }
+        .modal-body { padding: 20px; }
+        .modal-body p {
+          margin: 0 0 16px;
+          color: #5C5A54;
+          font-size: 0.9375rem;
+          line-height: 1.55;
+        }
 
         .modal-footer {
           display: flex;
           justify-content: flex-end;
-          gap: 12px;
-          padding: 16px 24px;
-          border-top: 1px solid var(--border);
+          gap: 8px;
+          padding: 16px 20px;
+          background: #F8F7F5;
+          border-top: 1px solid #E8E6E1;
         }
 
-        /* Wizard Progress */
+        /* Wizard Progress - Phozart smooth steps */
         .wizard-progress {
           display: flex;
           justify-content: center;
           gap: 8px;
-          padding: 16px 24px;
-          background: var(--bg);
+          padding: 20px 24px;
+          background: #FAF9F7;
         }
 
         .progress-step {
           display: flex;
           align-items: center;
-          gap: 8px;
+          gap: 10px;
         }
 
         .progress-step:not(:last-child)::after {
           content: '';
-          width: 24px;
-          height: 1px;
-          background: var(--border);
-          margin-left: 8px;
+          width: 32px;
+          height: 2px;
+          background: #EFEEE9;
+          margin-left: 10px;
+          border-radius: 1px;
         }
 
         .step-indicator {
-          width: 24px;
-          height: 24px;
+          width: 28px;
+          height: 28px;
           display: flex;
           align-items: center;
           justify-content: center;
           border-radius: 50%;
-          background: var(--border);
-          color: var(--text-muted);
-          font-size: 0.75rem;
+          background: #F5F4F2;
+          color: #A8A29E;
+          font-size: 0.8125rem;
           font-weight: 600;
+          transition: all 300ms cubic-bezier(0.0, 0.0, 0.2, 1);
         }
 
-        .progress-step.active .step-indicator { background: var(--accent); color: white; }
-        .progress-step.completed .step-indicator { background: #22c55e; color: white; }
-        .step-title { font-size: 0.8rem; color: var(--text-muted); }
-        .progress-step.active .step-title { color: var(--text); font-weight: 500; }
+        .progress-step.active .step-indicator {
+          background: #47453F;
+          color: #F0EFEC;
+          box-shadow: none;
+        }
+        .progress-step.completed .step-indicator {
+          background: #5B8A6A;
+          color: #F0EFEC;
+          box-shadow: none;
+        }
+        .step-title { font-size: 0.8125rem; color: #A8A29E; }
+        .progress-step.active .step-title { color: #1C1917; font-weight: 500; }
 
-        /* Alerts */
+        /* ============================================
+           ALERTS - Phozart floating semantic cards
+        */
         .alert-card {
-          padding: 12px;
-          background: var(--bg);
-          border-radius: 8px;
-          border-left: 4px solid;
+          padding: 16px 20px;
+          background: #FEFDFB;
+          border-radius: 14px;
+          border: none;
           margin-bottom: 12px;
+          box-shadow: 0 2px 6px rgba(28, 25, 23, 0.06), 0 1px 2px rgba(28, 25, 23, 0.04);
+          transition: all 300ms cubic-bezier(0.0, 0.0, 0.2, 1);
         }
 
-        .alert-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-        .alert-severity { font-size: 0.75rem; text-transform: uppercase; font-weight: 600; }
-        .alert-message { margin: 0 0 4px; font-size: 0.9rem; color: var(--text); }
-        .alert-recommendation { margin: 0; font-size: 0.8rem; color: var(--text-muted); }
+        .alert-card:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(28, 25, 23, 0.08), 0 2px 4px rgba(28, 25, 23, 0.04);
+        }
 
-        /* Empty State */
+        .alert-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+        .alert-severity {
+          font-size: 0.75rem;
+          text-transform: uppercase;
+          font-weight: 600;
+          letter-spacing: 0.04em;
+          padding: 4px 10px;
+          border-radius: 8px;
+          background: #F5F4F2;
+        }
+        .alert-message {
+          margin: 0 0 6px;
+          font-size: 0.9375rem;
+          color: #1C1917;
+          line-height: 1.5;
+        }
+        .alert-recommendation {
+          margin: 0;
+          font-size: 0.8125rem;
+          color: #57534E;
+        }
+
+        /* Empty State - Phozart welcoming */
         .empty-state {
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          padding: 48px;
+          padding: 64px 32px;
           text-align: center;
+          background: #FAF9F7;
+          border-radius: 16px;
         }
 
-        .empty-state p { margin: 16px 0; color: var(--text-muted); }
-
-        /* Development Guide Styles */
-        .sg-code-block {
-          background: #1e293b;
-          border-radius: 8px;
-          padding: 16px;
-          overflow-x: auto;
-          margin-bottom: 24px;
-        }
-
-        .sg-code-block pre {
-          margin: 0;
-          color: #e2e8f0;
-          font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-          font-size: 0.8rem;
+        .empty-state p {
+          margin: 20px 0;
+          color: #57534E;
+          font-size: 0.9375rem;
           line-height: 1.6;
-          white-space: pre;
         }
 
+        /* ============================================
+           SECTION COLOR IDENTITY SYSTEM
+
+           Each major section has a subtle tint:
+           - Philosophy: cool slate-blue
+           - Development: neutral graphite
+           - Colors: warm cream
+           - Buttons: accent blue-soft
+           - Navigation: cool teal-grey
+           - etc.
+
+           This anchors sections without being decorative.
+        */
+
+        .sg-section {
+          /* Default: neutral canvas */
+        }
+
+        /* Philosophy section - cool intellectual slate */
+        .sg-section[data-section="philosophy"] {
+          --section-tint: rgba(71, 85, 105, 0.03);
+          --section-accent: #475569;
+        }
+
+        /* Development section - professional graphite */
+        .sg-section[data-section="development"] {
+          --section-tint: rgba(30, 41, 59, 0.03);
+          --section-accent: #334155;
+        }
+
+        /* Colors section - warm cream */
+        .sg-section[data-section="colors"] {
+          --section-tint: rgba(180, 160, 130, 0.04);
+          --section-accent: #78716c;
+        }
+
+        /* Buttons section - active coral */
+        .sg-section[data-section="buttons"] {
+          --section-tint: rgba(239, 68, 68, 0.025);
+          --section-accent: #EF4444;
+        }
+
+        /* Navigation section - cool teal */
+        .sg-section[data-section="navigation"] {
+          --section-tint: rgba(13, 148, 136, 0.03);
+          --section-accent: #0d9488;
+        }
+
+        /* ============================================
+           DEVELOPMENT GUIDE STYLES
+           Clean, readable code blocks and tables
+        */
+
+        /* Code blocks - Dark console with high contrast
+           Use :global() to override global base.css pre styles */
+        :global(.sg-code-block) {
+          background: #1E293B !important;
+          border-radius: 12px !important;
+          padding: 0 !important;
+          overflow-x: auto;
+          margin-bottom: 20px;
+          border: none !important;
+          box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05), 0 4px 12px rgba(15, 23, 42, 0.25);
+        }
+
+        :global(.sg-code-block pre) {
+          margin: 0 !important;
+          padding: 20px 24px !important;
+          color: #E2E8F0 !important;
+          background: #1E293B !important;
+          font-family: 'SF Mono', 'Monaco', 'Menlo', 'Consolas', monospace !important;
+          font-size: 0.8125rem !important;
+          line-height: 1.7 !important;
+          white-space: pre !important;
+          border-radius: 12px !important;
+        }
+
+        :global(.sg-code-block code),
+        :global(.sg-code-block pre code) {
+          color: #E2E8F0 !important;
+          background: transparent !important;
+          padding: 0 !important;
+        }
+
+        /* Tables - Phozart floating data cards */
         .sg-table {
           overflow-x: auto;
-          margin-bottom: 24px;
+          margin-bottom: 20px;
+          background: #FEFDFB;
+          border-radius: 14px;
+          border: none;
+          box-shadow: 0 2px 6px rgba(28, 25, 23, 0.06), 0 1px 2px rgba(28, 25, 23, 0.04);
         }
 
         .sg-table table {
           width: 100%;
           border-collapse: collapse;
-          font-size: 0.9rem;
+          font-size: 0.8125rem;
         }
 
         .sg-table th,
         .sg-table td {
-          padding: 12px 16px;
+          padding: 14px 18px;
           text-align: left;
-          border-bottom: 1px solid var(--border);
         }
 
         .sg-table th {
-          background: var(--bg);
           font-weight: 600;
-          color: var(--text);
+          color: #57534E;
+          font-size: 0.6875rem;
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+          background: #FAF9F7;
+          border-bottom: 1px solid #EFEEE9;
         }
 
         .sg-table td {
-          color: var(--text);
+          color: #1C1917;
+          border-bottom: 1px solid #F5F4F2;
+        }
+
+        .sg-table tr:last-child td {
+          border-bottom: none;
+        }
+
+        .sg-table tr:hover td {
+          background: #FAF9F7;
         }
 
         .sg-table code {
-          background: var(--accent-soft);
-          color: var(--accent);
-          padding: 2px 6px;
-          border-radius: 4px;
-          font-size: 0.8rem;
+          background: rgba(239, 68, 68, 0.08);
+          color: #DC2626;
+          padding: 3px 8px;
+          border-radius: 6px;
+          font-size: 0.75rem;
+          font-family: 'SF Mono', 'Monaco', 'Menlo', monospace;
         }
 
+        /* Checklists - Phozart floating list cards */
         .sg-checklist {
           display: flex;
           flex-direction: column;
-          gap: 12px;
-          margin-bottom: 24px;
+          gap: 0;
+          margin-bottom: 20px;
+          background: #FEFDFB;
+          border-radius: 14px;
+          padding: 0;
+          border: none;
+          box-shadow: 0 2px 6px rgba(28, 25, 23, 0.06), 0 1px 2px rgba(28, 25, 23, 0.04);
+          overflow: hidden;
         }
 
         .checklist-item {
           display: flex;
           align-items: center;
           gap: 12px;
-          padding: 12px 16px;
-          background: var(--panel);
-          border: 1px solid var(--border);
-          border-radius: 8px;
+          padding: 14px 18px;
+          background: transparent;
+          border-bottom: 1px solid #F5F4F2;
+          transition: all 200ms cubic-bezier(0.0, 0.0, 0.2, 1);
+        }
+
+        .checklist-item:last-child {
+          border-bottom: none;
+        }
+
+        .checklist-item:hover {
+          background: #FAF9F7;
         }
 
         .checklist-item .check-icon {
-          color: #22c55e;
+          color: #5B8A6A;
           flex-shrink: 0;
         }
 
         .checklist-item span {
-          color: var(--text);
-          font-size: 0.9rem;
+          color: #1C1917;
+          font-size: 0.9375rem;
+          line-height: 1.5;
         }
 
         .checklist-item code {
-          background: var(--accent-soft);
-          color: var(--accent);
-          padding: 2px 6px;
-          border-radius: 4px;
-          font-size: 0.8rem;
+          background: rgba(239, 68, 68, 0.08);
+          color: #DC2626;
+          padding: 3px 8px;
+          border-radius: 6px;
+          font-size: 0.8125rem;
+          font-family: 'SF Mono', 'Monaco', 'Menlo', monospace;
         }
 
+        /* Info boxes - Phozart subtle floating */
+        .sg-info-box {
+          border-radius: 14px;
+          padding: 18px 22px;
+          background: #FEFDFB;
+          border: none;
+          margin-bottom: 20px;
+          box-shadow: 0 2px 6px rgba(28, 25, 23, 0.06), 0 1px 2px rgba(28, 25, 23, 0.04);
+        }
+
+        .sg-info-box h4 {
+          margin: 0 0 10px;
+          font-size: 0.9375rem;
+          font-weight: 600;
+          color: #1C1917;
+        }
+
+        .sg-info-box p {
+          margin: 0;
+          font-size: 0.9375rem;
+          color: #57534E;
+          line-height: 1.6;
+        }
+
+        .sg-note {
+          margin: 0 0 12px;
+          font-size: 0.8125rem;
+          color: #A8A29E;
+        }
+
+        /* Wizard step cards - Phozart floating */
         .wizard-step-card {
           flex: 1;
-          padding: 20px;
-          background: var(--panel);
-          border: 1px solid var(--border);
-          border-radius: 10px;
+          padding: 24px;
+          background: #FEFDFB;
+          border-radius: 16px;
           text-align: center;
+          border: none;
+          box-shadow: 0 2px 6px rgba(28, 25, 23, 0.06), 0 1px 2px rgba(28, 25, 23, 0.04);
+          transition: all 300ms cubic-bezier(0.0, 0.0, 0.2, 1);
+        }
+
+        .wizard-step-card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 8px 24px rgba(28, 25, 23, 0.10), 0 4px 8px rgba(28, 25, 23, 0.06);
         }
 
         .wizard-step-card .step-number {
-          width: 36px;
-          height: 36px;
+          width: 32px;
+          height: 32px;
           display: flex;
           align-items: center;
           justify-content: center;
-          background: var(--accent);
-          color: white;
+          background: #47453F;
+          color: #F0EFEC;
           border-radius: 50%;
-          font-weight: 600;
-          margin: 0 auto 12px;
+          font-weight: 500;
+          font-size: 0.875rem;
+          margin: 0 auto 14px;
+          box-shadow: none;
         }
 
         .wizard-step-card h4 {
           margin: 0 0 8px;
-          color: var(--text);
+          color: #1C1917;
           font-size: 1rem;
+          font-weight: 600;
         }
 
         .wizard-step-card p {
           margin: 0;
-          color: var(--text-muted);
-          font-size: 0.85rem;
-          line-height: 1.4;
+          color: #57534E;
+          font-size: 0.875rem;
+          line-height: 1.6;
+        }
+
+        /* ============================================
+           DOCTRINE & RULE BOXES - Specimen emphasis
+           Structural, neutral, diagram-like
+        */
+        .sg-doctrine {
+          background: transparent;
+          border-left: 2px solid #BFBDB7;
+          border-radius: 0;
+          padding: 12px 16px;
+          margin-left: 2px;
+        }
+
+        .sg-doctrine p {
+          margin: 0;
+          font-size: 0.875rem;
+          color: #5C5A54;
+          line-height: 1.55;
+        }
+
+        .sg-doctrine strong {
+          color: #47453F;
+          font-weight: 500;
+        }
+
+        .sg-rule-box {
+          background: transparent;
+          border-radius: 0;
+          padding: 10px 14px;
+          border-left: 2px solid #D6D4CE;
+        }
+
+        .sg-rule-box p {
+          margin: 0;
+          font-size: 0.8125rem;
+          color: #6B6965;
+          line-height: 1.55;
+        }
+
+        .sg-rule-box strong {
+          color: #47453F;
+        }
+
+        /* Intro box - specimen description */
+        .sg-intro-box {
+          background: transparent;
+          border-radius: 0;
+          padding: 14px 18px;
+          border-left: 2px solid #47453F;
+          margin-left: 2px;
+        }
+
+        .sg-intro-box p {
+          line-height: 1.55;
+        }
+
+        .sg-intro-box p:first-child {
+          font-size: 0.9375rem;
+          color: #1F1E1B;
+        }
+
+        .sg-intro-box p:last-child {
+          margin-top: 6px;
+          font-size: 0.8125rem;
+          color: #6B6965;
+        }
+
+        /* ============================================
+           NAVIGATION DEMOS - Architecture specimens
+        */
+
+        /* Hierarchy Diagram */
+        .nav-hierarchy-diagram {
+          display: flex;
+          flex-direction: column;
+          gap: 0;
+          margin-bottom: 32px;
+        }
+
+        .nav-level {
+          padding: 14px 18px;
+          background: #FDFCFA;
+          border: 1px solid #E2E0DB;
+          border-radius: 4px;
+        }
+
+        .nav-level-label {
+          font-size: 0.6875rem;
+          font-weight: 600;
+          letter-spacing: 0.05em;
+          color: #9C9A94;
+          text-transform: uppercase;
+          margin-bottom: 4px;
+        }
+
+        .nav-level-name {
+          font-size: 0.9375rem;
+          font-weight: 500;
+          color: #1F1E1B;
+          margin-bottom: 2px;
+        }
+
+        .nav-level-desc {
+          font-size: 0.8125rem;
+          color: #6B6965;
+        }
+
+        .nav-level-connector {
+          width: 2px;
+          height: 16px;
+          background: #D6D4CE;
+          margin-left: 24px;
+        }
+
+        /* Full Layout Preview */
+        .nav-layout-preview {
+          border: 1px solid #E2E0DB;
+          border-radius: 4px;
+          overflow: hidden;
+          margin-bottom: 32px;
+        }
+
+        .nav-preview-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          height: 44px;
+          padding: 0 16px;
+          background: #35332F;
+        }
+
+        .nav-preview-left {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+
+        .nav-preview-brand {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .nav-preview-logo-icon {
+          width: 28px;
+          height: 28px;
+          border-radius: 6px;
+        }
+
+        .nav-preview-logo {
+          font-size: 0.8125rem;
+          font-weight: 700;
+          letter-spacing: 0.04em;
+          color: #F0EFEC;
+        }
+
+        .nav-preview-divider {
+          width: 1px;
+          height: 16px;
+          background: #5C5A54;
+        }
+
+        .nav-preview-switcher {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          color: #F0EFEC;
+          font-size: 0.875rem;
+          font-weight: 500;
+        }
+
+        .nav-preview-context {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 0.8125rem;
+        }
+
+        .nav-preview-domain {
+          color: #9C9890;
+        }
+
+        .nav-preview-project {
+          color: #F0EFEC;
+        }
+
+        .nav-preview-actions {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .nav-preview-avatar {
+          width: 28px;
+          height: 28px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: #5C5A54;
+          border-radius: 50%;
+          font-size: 0.6875rem;
+          font-weight: 600;
+          color: #F0EFEC;
+        }
+
+        .nav-preview-studio-bar {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          height: 40px;
+          padding: 0 16px;
+          background: #FDFCFA;
+          border-bottom: 1px solid #E8E6E1;
+        }
+
+        .nav-preview-tabs {
+          display: flex;
+          gap: 4px;
+        }
+
+        .nav-preview-tab {
+          padding: 6px 12px;
+          background: transparent;
+          border: none;
+          border-radius: 4px;
+          font-size: 0.8125rem;
+          color: #6B6965;
+          cursor: pointer;
+        }
+
+        .nav-preview-tab.active {
+          background: rgba(0, 0, 0, 0.05);
+          color: #1F1E1B;
+          font-weight: 500;
+        }
+
+        .nav-preview-create {
+          padding: 6px 12px;
+          background: #47453F;
+          border: none;
+          border-radius: 4px;
+          font-size: 0.8125rem;
+          font-weight: 500;
+          color: #F0EFEC;
+          cursor: pointer;
+        }
+
+        .nav-preview-workspace {
+          height: 120px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: #FDFCFA;
+        }
+
+        /* System Header Demo */
+        .nav-system-header-demo {
+          margin-bottom: 32px;
+        }
+
+        .system-header-demo {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          height: 44px;
+          padding: 0 16px;
+          background: #35332F;
+          border-radius: 4px;
+        }
+
+        .system-header-left {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+
+        .studio-switcher-demo {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 6px 10px;
+          background: transparent;
+          border: none;
+          border-radius: 4px;
+          color: #F0EFEC;
+          font-size: 0.875rem;
+          font-weight: 500;
+          cursor: pointer;
+        }
+
+        .studio-switcher-demo:hover {
+          background: rgba(255, 255, 255, 0.08);
+        }
+
+        .system-header-divider {
+          width: 1px;
+          height: 16px;
+          background: #5C5A54;
+        }
+
+        .system-header-context {
+          font-size: 0.8125rem;
+          color: #9C9890;
+        }
+
+        .system-header-brand {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .system-header-logo-icon {
+          width: 28px;
+          height: 28px;
+          border-radius: 6px;
+        }
+
+        .system-header-logo {
+          font-size: 0.8125rem;
+          font-weight: 700;
+          letter-spacing: 0.04em;
+          color: #F0EFEC;
+        }
+
+        .system-header-right {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+        }
+
+        .system-header-icon-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 32px;
+          height: 32px;
+          background: transparent;
+          border: none;
+          border-radius: 4px;
+          color: #9C9890;
+          cursor: pointer;
+          transition: all 100ms ease-out;
+        }
+
+        .system-header-icon-btn:hover {
+          background: rgba(255, 255, 255, 0.08);
+          color: #F0EFEC;
+        }
+
+        .system-header-user-btn {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          padding: 4px 8px 4px 4px;
+          background: transparent;
+          border: none;
+          border-radius: 4px;
+          color: #9C9890;
+          cursor: pointer;
+          transition: all 100ms ease-out;
+        }
+
+        .system-header-user-btn:hover {
+          background: rgba(255, 255, 255, 0.08);
+        }
+
+        .user-avatar-small {
+          width: 24px;
+          height: 24px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: #5C5A54;
+          border-radius: 50%;
+          font-size: 0.625rem;
+          font-weight: 600;
+          color: #F0EFEC;
+        }
+
+        /* User Menu Dropdown */
+        .nav-user-menu-demo {
+          margin-bottom: 32px;
+        }
+
+        .user-menu-dropdown {
+          width: 260px;
+          background: #FDFCFA;
+          border: 1px solid #E2E0DB;
+          border-radius: 8px;
+          box-shadow: 0 8px 24px rgba(31, 30, 27, 0.12);
+          overflow: hidden;
+        }
+
+        .user-menu-header {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 16px;
+          background: #F0EFEC;
+        }
+
+        .user-avatar-medium {
+          width: 40px;
+          height: 40px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: #47453F;
+          border-radius: 50%;
+          font-size: 0.875rem;
+          font-weight: 600;
+          color: #F0EFEC;
+        }
+
+        .user-menu-info {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+        }
+
+        .user-menu-name {
+          font-size: 0.875rem;
+          font-weight: 600;
+          color: #1F1E1B;
+        }
+
+        .user-menu-email {
+          font-size: 0.75rem;
+          color: #9C9A94;
+        }
+
+        .user-menu-divider {
+          height: 1px;
+          background: #E2E0DB;
+          margin: 4px 0;
+        }
+
+        .user-menu-section-label {
+          display: block;
+          padding: 8px 16px 4px;
+          font-size: 0.6875rem;
+          font-weight: 600;
+          letter-spacing: 0.05em;
+          color: #9C9A94;
+          text-transform: uppercase;
+        }
+
+        .user-menu-item {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          width: 100%;
+          padding: 10px 16px;
+          background: transparent;
+          border: none;
+          text-align: left;
+          color: #5C5A54;
+          font-size: 0.8125rem;
+          cursor: pointer;
+          transition: all 100ms ease-out;
+        }
+
+        .user-menu-item:hover {
+          background: #F0EFEC;
+          color: #1F1E1B;
+        }
+
+        .user-menu-signout {
+          color: #A54D4D;
+        }
+
+        .user-menu-signout:hover {
+          background: rgba(165, 77, 77, 0.08);
+          color: #8F4343;
+        }
+
+        /* Studio Dropdown Demo - Multi-column */
+        .nav-dropdown-demo-wide {
+          margin-bottom: 32px;
+        }
+
+        .studio-dropdown-demo-multi {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 0;
+          width: 100%;
+          max-width: 720px;
+          background: #FDFCFA;
+          border: 1px solid #E2E0DB;
+          border-radius: 8px;
+          padding: 12px 0;
+          box-shadow: 0 8px 24px rgba(31, 30, 27, 0.12);
+        }
+
+        .studio-category-column {
+          padding: 0 8px;
+          border-right: 1px solid #E8E6E1;
+        }
+
+        .studio-category-column:last-child {
+          border-right: none;
+        }
+
+        .studio-category-label-demo {
+          display: block;
+          padding: 4px 16px 8px;
+          font-size: 0.6875rem;
+          font-weight: 600;
+          letter-spacing: 0.05em;
+          color: #9C9A94;
+          text-transform: uppercase;
+        }
+
+        .studio-option-demo {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          width: 100%;
+          padding: 8px 16px;
+          background: transparent;
+          border: none;
+          text-align: left;
+          color: #5C5A54;
+          font-size: 0.8125rem;
+          cursor: pointer;
+          transition: all 100ms ease-out;
+        }
+
+        .studio-option-demo:hover {
+          background: #F0EFEC;
+          color: #1F1E1B;
+        }
+
+        .studio-option-demo.active {
+          background: rgba(71, 69, 63, 0.06);
+          color: #1F1E1B;
+          font-weight: 500;
+        }
+
+        .studio-option-demo .studio-check {
+          margin-left: auto;
+          color: #47453F;
+          width: 14px;
+          height: 14px;
+        }
+
+        /* Studio Bar Demo */
+        .nav-studio-bar-demo {
+          margin-bottom: 32px;
+        }
+
+        .studio-bar-demo {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          height: 40px;
+          padding: 0 16px;
+          background: #FDFCFA;
+          border: 1px solid #E2E0DB;
+          border-radius: 4px;
+        }
+
+        .studio-tabs-demo {
+          display: flex;
+          gap: 4px;
+        }
+
+        .studio-tab-demo {
+          position: relative;
+          padding: 8px 14px;
+          background: transparent;
+          border: none;
+          border-radius: 4px;
+          color: #6B6965;
+          font-size: 0.8125rem;
+          cursor: pointer;
+          transition: all 100ms ease-out;
+        }
+
+        .studio-tab-demo:hover {
+          background: rgba(0, 0, 0, 0.03);
+          color: #47453F;
+        }
+
+        .studio-tab-demo.active {
+          background: rgba(0, 0, 0, 0.05);
+          color: #1F1E1B;
+          font-weight: 500;
+        }
+
+        .studio-tab-demo.active::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 6px;
+          bottom: 6px;
+          width: 2px;
+          background: #47453F;
+          border-radius: 0 1px 1px 0;
+        }
+
+        .studio-create-demo {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          padding: 6px 12px;
+          background: #47453F;
+          border: none;
+          border-radius: 4px;
+          color: #F0EFEC;
+          font-size: 0.8125rem;
+          font-weight: 500;
+          cursor: pointer;
+        }
+
+        /* Panel Navigation Demo */
+        .nav-panel-demo {
+          display: flex;
+          height: 220px;
+          border: 1px solid #E2E0DB;
+          border-radius: 4px;
+          overflow: hidden;
+          margin-bottom: 24px;
+        }
+
+        .panel-nav-demo {
+          width: 180px;
+          background: #F0EFEC;
+          padding-top: 8px;
+          flex-shrink: 0;
+        }
+
+        .panel-nav-header {
+          padding: 12px 16px 8px;
+          font-size: 0.6875rem;
+          font-weight: 600;
+          letter-spacing: 0.05em;
+          color: #9C9A94;
+          text-transform: uppercase;
+        }
+
+        .panel-nav-item {
+          position: relative;
+          display: block;
+          width: 100%;
+          padding: 9px 16px 9px 20px;
+          background: transparent;
+          border: none;
+          text-align: left;
+          color: #6B6965;
+          font-size: 0.8125rem;
+          cursor: pointer;
+          transition: all 100ms ease-out;
+        }
+
+        .panel-nav-item:hover {
+          background: rgba(0, 0, 0, 0.03);
+          color: #47453F;
+        }
+
+        .panel-nav-item.active {
+          background: rgba(0, 0, 0, 0.05);
+          color: #1F1E1B;
+          font-weight: 500;
+        }
+
+        .panel-nav-item.active::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 4px;
+          bottom: 4px;
+          width: 2px;
+          background: #47453F;
+          border-radius: 0 1px 1px 0;
+        }
+
+        .panel-content-demo {
+          flex: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: #FDFCFA;
+        }
+
+        /* Mobile Demo */
+        .nav-mobile-demo {
+          width: 280px;
+          border: 1px solid #E2E0DB;
+          border-radius: 4px;
+          overflow: hidden;
+        }
+
+        .mobile-header-demo {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          height: 44px;
+          padding: 0 16px;
+          background: #35332F;
+        }
+
+        .mobile-hamburger {
+          font-size: 1.25rem;
+          color: #F0EFEC;
+        }
+
+        .mobile-studio-name {
+          font-size: 0.875rem;
+          font-weight: 500;
+          color: #F0EFEC;
+        }
+
+        .mobile-user {
+          font-size: 1rem;
+        }
+
+        .mobile-tabs-demo {
+          display: flex;
+          gap: 2px;
+          padding: 8px;
+          background: #FDFCFA;
+          overflow-x: auto;
+        }
+
+        .mobile-tab {
+          padding: 6px 12px;
+          background: transparent;
+          border: none;
+          border-radius: 4px;
+          color: #6B6965;
+          font-size: 0.8125rem;
+          white-space: nowrap;
+          cursor: pointer;
+        }
+
+        .mobile-tab.active {
+          background: rgba(0, 0, 0, 0.05);
+          color: #1F1E1B;
+          font-weight: 500;
         }
       `}</style>
     </div>
@@ -2654,7 +4872,7 @@ sx={{
 }
 
 // Circular Gauge Component
-function CircularGauge({ value, label, color = 'var(--accent)', size = 120 }) {
+function CircularGauge({ value, label, color = '#5C5A54', size = 120 }) {
   const radius = (size - 16) / 2;
   const circumference = 2 * Math.PI * radius;
   const progress = circumference - (value / 100) * circumference;
@@ -2667,7 +4885,7 @@ function CircularGauge({ value, label, color = 'var(--accent)', size = 120 }) {
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="var(--border)"
+          stroke="#E7E5E4"
           strokeWidth="8"
         />
         <circle
@@ -2691,8 +4909,8 @@ function CircularGauge({ value, label, color = 'var(--accent)', size = 120 }) {
         alignItems: 'center',
         justifyContent: 'center',
       }}>
-        <span style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text)' }}>{value}%</span>
-        <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{label}</span>
+        <span style={{ fontSize: '1.25rem', fontWeight: 700, color: '#1C1917' }}>{value}%</span>
+        <span style={{ fontSize: '0.75rem', color: '#A8A29E' }}>{label}</span>
       </div>
     </div>
   );

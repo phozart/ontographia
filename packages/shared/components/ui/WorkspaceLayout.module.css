@@ -1,0 +1,217 @@
+/* components/ui/WorkspaceLayout.module.css */
+/* Shared Workspace Layout Styles */
+
+/* ============================================================================
+   WORKSPACE CONTAINER
+   ============================================================================ */
+
+.workspace {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+/* ============================================================================
+   MAIN CONTENT AREA
+   ============================================================================ */
+
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0; /* Prevent flex item from overflowing */
+}
+
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ============================================================================
+   HEADER BAR (Breadcrumbs + Actions)
+   ============================================================================ */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 16px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  gap: 12px;
+  min-height: 36px;
+}
+
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* Action button styles */
+.actions :global(.workspace-action-btn) {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.actions :global(.workspace-action-btn):hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.actions :global(.workspace-action-btn--primary) {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+.actions :global(.workspace-action-btn--primary):hover {
+  opacity: 0.9;
+}
+
+.breadcrumbsNav {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.breadcrumbItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  background: transparent;
+  border: none;
+  border-radius: 3px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.breadcrumbItem:hover:not(.active) {
+  background: var(--bg);
+  color: var(--text);
+}
+
+.breadcrumbItem.active {
+  color: var(--text);
+  font-weight: 500;
+  cursor: default;
+}
+
+.breadcrumbSeparator {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  padding: 0 1px;
+  opacity: 0.6;
+}
+
+/* ============================================================================
+   NO PROJECT STATE
+   ============================================================================ */
+
+.noProject {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.noProject h2 {
+  margin: 0 0 8px;
+  color: var(--text);
+  font-size: 1.25rem;
+}
+
+.noProject p {
+  margin: 0;
+  font-size: 0.9375rem;
+  max-width: 400px;
+}
+
+.createProjectBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 20px;
+  padding: 10px 20px;
+  background: var(--accent);
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: white;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.createProjectBtn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.createProjectBtn:active {
+  transform: translateY(0);
+}
+
+/* ============================================================================
+   ERROR TOAST
+   ============================================================================ */
+
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: #ef4444;
+  color: white;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  animation: slideIn 0.2s ease;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

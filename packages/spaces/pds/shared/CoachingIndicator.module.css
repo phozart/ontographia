@@ -1,0 +1,382 @@
+/* CoachingIndicator.module.css */
+/* Inline coaching indicators and tooltips */
+
+/* Pulsing dot indicator */
+.indicator {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  background: var(--accent);
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.dot.small {
+  width: 6px;
+  height: 6px;
+}
+
+.dot.large {
+  width: 10px;
+  height: 10px;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.2);
+  }
+}
+
+.dotRing {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  opacity: 0;
+  animation: ring 2s ease-out infinite;
+}
+
+@keyframes ring {
+  0% {
+    opacity: 0.6;
+    transform: scale(0.5);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.5);
+  }
+}
+
+/* Coaching tooltip */
+.tooltip {
+  position: absolute;
+  z-index: 100;
+  padding: 12px 16px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  min-width: 200px;
+  max-width: 280px;
+  animation: tooltipEnter 0.2s ease;
+}
+
+@keyframes tooltipEnter {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tooltipArrow {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: var(--panel);
+  border-left: 1px solid var(--border);
+  border-top: 1px solid var(--border);
+  transform: rotate(45deg);
+}
+
+.tooltip.top .tooltipArrow {
+  bottom: -6px;
+  left: 50%;
+  margin-left: -5px;
+  transform: rotate(-135deg);
+}
+
+.tooltip.bottom .tooltipArrow {
+  top: -6px;
+  left: 50%;
+  margin-left: -5px;
+  transform: rotate(45deg);
+}
+
+.tooltip.left .tooltipArrow {
+  right: -6px;
+  top: 50%;
+  margin-top: -5px;
+  transform: rotate(135deg);
+}
+
+.tooltip.right .tooltipArrow {
+  left: -6px;
+  top: 50%;
+  margin-top: -5px;
+  transform: rotate(-45deg);
+}
+
+.tooltipHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.tooltipIcon {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-soft);
+  border-radius: 6px;
+  color: var(--accent);
+}
+
+.tooltipIcon svg {
+  font-size: 16px;
+}
+
+.tooltipTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.tooltipContent {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.tooltipAction {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 10px;
+  padding: 6px 12px;
+  background: var(--accent);
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: white;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+.tooltipAction:hover {
+  filter: brightness(1.1);
+}
+
+.tooltipAction svg {
+  font-size: 14px;
+}
+
+.tooltipDismiss {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tooltipDismiss:hover {
+  background: var(--bg);
+  color: var(--text);
+}
+
+.tooltipDismiss svg {
+  font-size: 14px;
+}
+
+/* Badge indicator */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: var(--accent-soft);
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--accent);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.badge:hover {
+  background: var(--accent);
+  color: white;
+}
+
+.badge svg {
+  font-size: 14px;
+}
+
+/* Progress hint */
+.progressHint {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, var(--accent-soft), rgba(var(--accent-rgb), 0.05));
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  margin: 12px 0;
+}
+
+.progressHintIcon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent);
+  border-radius: 8px;
+  color: white;
+  flex-shrink: 0;
+}
+
+.progressHintIcon svg {
+  font-size: 18px;
+}
+
+.progressHintContent {
+  flex: 1;
+}
+
+.progressHintTitle {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+
+.progressHintText {
+  display: block;
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.progressHintAction {
+  padding: 6px 14px;
+  background: white;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--accent);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.progressHintAction:hover {
+  background: var(--accent);
+  color: white;
+}
+
+/* Empty state coach */
+.emptyCoach {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 24px;
+  text-align: center;
+}
+
+.emptyCoachIcon {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  border-radius: 16px;
+  margin-bottom: 16px;
+  color: var(--text-muted);
+  animation: bounceIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes bounceIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.emptyCoachIcon svg {
+  font-size: 28px;
+}
+
+.emptyCoachTitle {
+  margin: 0 0 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.emptyCoachText {
+  margin: 0 0 20px;
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  max-width: 320px;
+}
+
+.emptyCoachBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: var(--accent);
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: white;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.emptyCoachBtn:hover {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+}
+
+.emptyCoachBtn svg {
+  font-size: 18px;
+}
+
+/* Reduce motion */
+@media (prefers-reduced-motion: reduce) {
+  .dot,
+  .dotRing,
+  .tooltip,
+  .emptyCoachIcon {
+    animation: none;
+  }
+}

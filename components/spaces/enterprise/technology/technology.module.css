@@ -1,0 +1,357 @@
+/**
+ * Technology Module Styles
+ */
+
+/* Loading */
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px;
+}
+
+.loadingSpinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #E2E0DB;
+  border-top-color: #47453F;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading p {
+  margin-top: 16px;
+  color: #5C5A54;
+}
+
+/* Radar */
+.technologyRadar {
+  padding: 16px;
+}
+
+.ringSummary {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.ringCard {
+  flex: 1;
+  padding: 16px;
+  background: #F0EFEC;
+  border-radius: 4px;
+  border-left: 3px solid var(--ring-color, #47453F);
+  text-align: center;
+}
+
+.ringCardValue {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1F1E1B;
+  display: block;
+}
+
+.ringCardLabel {
+  font-size: 0.75rem;
+  color: #5C5A54;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.radarControls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: #F0EFEC;
+  border-radius: 4px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.viewToggle {
+  display: flex;
+  gap: 4px;
+}
+
+.viewBtn {
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  color: #5C5A54;
+  font-size: 0.8125rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 150ms ease-out;
+}
+
+.viewBtn:hover {
+  background: #E2E0DB;
+}
+
+.viewBtn.active {
+  background: #47453F;
+  color: #F0EFEC;
+}
+
+.categoryFilter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.categoryFilter > span {
+  font-size: 0.8125rem;
+  color: #5C5A54;
+}
+
+.filterBtn {
+  padding: 6px 12px;
+  border: 1px solid #E2E0DB;
+  background: #FDFCFA;
+  color: #5C5A54;
+  font-size: 0.8125rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 150ms ease-out;
+}
+
+.filterBtn:hover {
+  border-color: #47453F;
+}
+
+.filterBtn.active {
+  background: #47453F;
+  border-color: #47453F;
+  color: #F0EFEC;
+}
+
+/* List View */
+.listView {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.listSection {
+  background: #FDFCFA;
+  border: 1px solid #E2E0DB;
+  border-radius: 4px;
+  padding: 16px;
+}
+
+.ringTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+}
+
+.ringDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.ringDesc {
+  font-weight: 400;
+  color: #5C5A54;
+  font-size: 0.875rem;
+}
+
+.categoryGroups {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 24px;
+}
+
+.categoryGroup {
+  min-width: 0;
+}
+
+.categoryTitle {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #5C5A54;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 12px 0;
+}
+
+.techList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.techItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: #F0EFEC;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 150ms ease-out;
+}
+
+.techItem:hover {
+  background: #E2E0DB;
+}
+
+.techItem.selected {
+  background: #47453F;
+}
+
+.techItem.selected .techName,
+.techItem.selected .techVersion {
+  color: #F0EFEC;
+}
+
+.techName {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #1F1E1B;
+}
+
+.techVersion {
+  font-size: 0.75rem;
+  color: #9C9A94;
+}
+
+/* Radar Blip */
+.radarBlip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  background: #F0EFEC;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 150ms ease-out;
+}
+
+.radarBlip:hover {
+  background: #E2E0DB;
+}
+
+.radarBlip.selected {
+  background: var(--blip-color, #47453F);
+}
+
+.radarBlip.selected .blipName {
+  color: white;
+}
+
+.blipDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--blip-color, #47453F);
+}
+
+.blipName {
+  font-size: 0.8125rem;
+  color: #1F1E1B;
+}
+
+/* Radar View */
+.radarView {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 24px;
+  min-height: 400px;
+}
+
+.radarSvg {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  display: block;
+}
+
+.radarPlaceholder {
+  font-size: 0.9375rem;
+  color: #5C5A54;
+}
+
+.radarTooltip {
+  position: absolute;
+  padding: 6px 10px;
+  background: #35332F;
+  color: #F0EFEC;
+  font-size: 0.75rem;
+  border-radius: 4px;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(31, 30, 27, 0.25);
+}
+
+.radarTooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 4px solid transparent;
+  border-top-color: #35332F;
+}
+
+.radarContainer {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.radarLegend {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: #5C5A54;
+}
+
+.legendDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+/* ============================================================================
+   MODAL FORM
+   ============================================================================ */
+
+.modalForm {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.formError {
+  padding: 8px 12px;
+  background: rgba(165, 77, 77, 0.08);
+  border: 1px solid rgba(165, 77, 77, 0.2);
+  border-radius: 4px;
+  color: #A54D4D;
+  font-size: 13px;
+}

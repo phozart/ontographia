@@ -17,11 +17,11 @@
   /* Text colors */
   --text-secondary: var(--text-muted, #6b7280);
 
-  /* Status colors */
-  --success: #22c55e;
-  --success-light: rgba(34, 197, 94, 0.1);
-  --warning: #f59e0b;
-  --warning-light: rgba(245, 158, 11, 0.1);
+  /* Status colors - Design System */
+  --success: #5B8A6A;
+  --success-light: rgba(91, 138, 106, 0.1);
+  --warning: #C9A227;
+  --warning-light: rgba(201, 162, 39, 0.1);
 }
 
 /* Dark mode overrides for ALS */
@@ -43,6 +43,124 @@
   color: var(--text, #111827);
 }
 
+/* ============ NAVIGATOR (NEW LAYOUT) ============ */
+.als-navigator {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--panel, #f9fafb);
+  overflow: hidden;
+}
+
+:root[data-theme='dark'] .als-navigator {
+  background: var(--panel, #2f3646);
+}
+
+.als-nav-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border, #d7dde5);
+}
+
+:root[data-theme='dark'] .als-nav-header {
+  border-bottom-color: var(--border, #3b4558);
+}
+
+.als-nav-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text, #111827);
+}
+
+:root[data-theme='dark'] .als-nav-title {
+  color: var(--text, #f4f6fb);
+}
+
+.als-nav-icon {
+  color: var(--primary);
+}
+
+.als-nav-situation {
+  border-bottom: 1px solid var(--border, #d7dde5);
+}
+
+:root[data-theme='dark'] .als-nav-situation {
+  border-bottom-color: var(--border, #3b4558);
+}
+
+.als-nav-modes {
+  flex: 1;
+  overflow-y: auto;
+  border-bottom: 1px solid var(--border, #d7dde5);
+}
+
+:root[data-theme='dark'] .als-nav-modes {
+  border-bottom-color: var(--border, #3b4558);
+}
+
+.als-nav-views {
+  padding: 12px;
+}
+
+.als-nav-section-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--text-muted, #6b7280);
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
+}
+
+.als-nav-view-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: var(--text, #111827);
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.12s ease-out;
+  margin-bottom: 4px;
+}
+
+:root[data-theme='dark'] .als-nav-view-btn {
+  color: var(--text, #f4f6fb);
+}
+
+.als-nav-view-btn:hover {
+  background: var(--bg-hover);
+}
+
+.als-nav-view-btn.active {
+  background: var(--primary);
+  color: white;
+}
+
+/* ============ WORKSPACE CONTENT (NEW LAYOUT) ============ */
+.als-workspace-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.als-guidance-wrapper {
+  width: 240px;
+  flex-shrink: 0;
+  border-left: 1px solid var(--border, #d7dde5);
+  overflow-y: auto;
+}
+
+:root[data-theme='dark'] .als-guidance-wrapper {
+  border-left-color: var(--border, #3b4558);
+}
+
 .als-workspace-body {
   display: flex;
   flex: 1;
@@ -54,10 +172,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
+  padding: 6px 16px;
+  min-height: 36px;
   background: var(--panel, #f9fafb);
   border-bottom: 1px solid var(--border, #d7dde5);
-  gap: 16px;
+  gap: 12px;
 }
 
 :root[data-theme='dark'] .als-header {
@@ -85,15 +204,15 @@
 .als-situation-btn {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
+  gap: 6px;
+  padding: 4px 10px;
   background: var(--bg-alt, #ffffff);
   border: 1px solid var(--border, #d7dde5);
-  border-radius: 6px;
+  border-radius: 4px;
   cursor: pointer;
   color: var(--text, #111827);
-  font-size: 14px;
-  min-width: 200px;
+  font-size: 0.8125rem;
+  min-width: 180px;
 }
 
 :root[data-theme='dark'] .als-situation-btn {
@@ -131,7 +250,7 @@
   min-width: 320px;
   background: var(--bg-alt, #ffffff);
   border: 1px solid var(--border, #d7dde5);
-  border-radius: 8px;
+  border-radius: 4px;
   box-shadow: 0 8px 24px rgba(0,0,0,0.15);
   z-index: 500;
   overflow: hidden;
@@ -230,7 +349,7 @@
 
 .als-status--active { color: #22c55e; }
 .als-status--paused { color: #f59e0b; }
-.als-status--completed { color: #6366f1; }
+.als-status--completed { color: var(--accent, #47453F); }
 .als-status--archived { color: var(--text-muted); }
 
 /* Menu */
@@ -256,7 +375,7 @@
   min-width: 180px;
   background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 4px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   z-index: 500;
   overflow: hidden;
@@ -318,12 +437,12 @@
 }
 
 .als-panel--left {
-  width: 280px;
+  width: 240px;
   flex-shrink: 0;
 }
 
 .als-panel--right {
-  width: 280px;
+  width: 240px;
   flex-shrink: 0;
   border-right: none;
   border-left: 1px solid var(--border, #d7dde5);
@@ -348,13 +467,13 @@
 }
 
 .als-mode-panel-header {
-  padding: 16px;
+  padding: 10px 12px;
   border-bottom: 1px solid var(--border);
 }
 
 .als-mode-panel-header h3 {
   margin: 0;
-  font-size: 14px;
+  font-size: 0.8125rem;
   font-weight: 600;
 }
 
@@ -379,11 +498,11 @@
   margin-bottom: 4px;
   background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 4px;
   cursor: pointer;
   text-align: left;
   color: var(--text);
-  transition: all 0.15s ease;
+  transition: all 0.12s ease-out;
 }
 
 .als-mode-item:hover {
@@ -485,7 +604,7 @@
   margin: 16px;
   background: var(--bg-secondary);
   border: 2px solid;
-  border-radius: 8px;
+  border-radius: 4px;
 }
 
 .als-session-header {
@@ -556,20 +675,20 @@
 .als-view-tabs {
   display: flex;
   gap: 4px;
-  padding: 12px 16px;
+  padding: 8px 16px;
   background: var(--bg-secondary);
   border-bottom: 1px solid var(--border);
 }
 
 .als-view-tab {
-  padding: 8px 16px;
+  padding: 6px 12px;
   background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 4px;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 0.75rem;
   color: var(--text);
-  transition: all 0.15s ease;
+  transition: all 0.12s ease-out;
 }
 
 .als-view-tab:hover {
@@ -770,7 +889,7 @@
   flex: 1;
   padding: 16px;
   background: var(--bg-secondary);
-  border-radius: 8px;
+  border-radius: 4px;
   text-align: center;
 }
 
@@ -844,7 +963,7 @@
   gap: 8px;
   padding: 8px 12px;
   background: var(--bg-secondary);
-  border-radius: 6px;
+  border-radius: 4px;
 }
 
 .als-signal-icon {
@@ -875,7 +994,7 @@
 .als-reflection-card {
   padding: 16px;
   background: var(--bg-secondary);
-  border-radius: 8px;
+  border-radius: 4px;
 }
 
 .als-reflection-header {
@@ -941,13 +1060,13 @@
 }
 
 .als-guidance-header {
-  padding: 16px;
+  padding: 10px 12px;
   border-bottom: 1px solid var(--border);
 }
 
 .als-guidance-header h3 {
   margin: 0;
-  font-size: 14px;
+  font-size: 0.8125rem;
   font-weight: 600;
 }
 
@@ -1000,7 +1119,7 @@
 .als-suggestion-item {
   padding: 12px;
   background: var(--bg);
-  border-radius: 6px;
+  border-radius: 4px;
   border-left: 3px solid var(--primary);
 }
 
@@ -1040,7 +1159,7 @@
 .als-tip-card {
   padding: 12px;
   background: var(--bg-secondary);
-  border-radius: 6px;
+  border-radius: 4px;
 }
 
 .als-tip-title {
@@ -1089,7 +1208,7 @@
 
 .als-modal {
   background: var(--bg);
-  border-radius: 12px;
+  border-radius: 4px;
   box-shadow: 0 8px 32px rgba(0,0,0,0.2);
   width: 90%;
   max-width: 480px;
@@ -1168,7 +1287,7 @@
   padding: 10px 12px;
   background: var(--bg-secondary);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 4px;
   font-size: 14px;
   color: var(--text);
   font-family: inherit;
@@ -1229,9 +1348,9 @@
   padding: 12px 8px;
   background: var(--bg-secondary);
   border: 2px solid var(--border);
-  border-radius: 8px;
+  border-radius: 4px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.12s ease-out;
 }
 
 .als-mode-option:hover {
@@ -1277,7 +1396,7 @@
   padding: 8px 16px;
   background: var(--bg-secondary);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 4px;
   cursor: pointer;
   font-size: 13px;
   color: var(--text);
@@ -1308,9 +1427,9 @@
   padding: 12px 8px;
   background: var(--bg-secondary);
   border: 2px solid var(--border);
-  border-radius: 8px;
+  border-radius: 4px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.12s ease-out;
 }
 
 .als-signal-btn:hover {
@@ -1334,7 +1453,7 @@
 .als-session-summary {
   padding: 12px;
   background: var(--bg-secondary);
-  border-radius: 6px;
+  border-radius: 4px;
   font-size: 13px;
   text-align: center;
 }
@@ -1350,11 +1469,11 @@
   padding: 10px 16px;
   background: var(--bg-secondary);
   border: 2px solid var(--border);
-  border-radius: 6px;
+  border-radius: 4px;
   cursor: pointer;
   font-size: 13px;
   color: var(--text);
-  transition: all 0.15s ease;
+  transition: all 0.12s ease-out;
 }
 
 .als-radio-btn:hover {
@@ -1380,11 +1499,11 @@
   padding: 6px 12px;
   background: var(--bg-secondary);
   border: 2px solid var(--border);
-  border-radius: 6px;
+  border-radius: 4px;
   cursor: pointer;
   font-size: 12px;
   color: var(--text);
-  transition: all 0.15s ease;
+  transition: all 0.12s ease-out;
 }
 
 .als-insight-btn:hover {
@@ -1400,12 +1519,12 @@
   padding: 10px 20px;
   background: var(--bg-secondary);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 4px;
   cursor: pointer;
   font-size: 14px;
   font-weight: 500;
   color: var(--text);
-  transition: all 0.15s ease;
+  transition: all 0.12s ease-out;
 }
 
 .als-btn:hover {
@@ -1453,7 +1572,7 @@
 @media (max-width: 1024px) {
   .als-panel--left,
   .als-panel--right {
-    width: 240px;
+    width: 200px;
   }
 }
 

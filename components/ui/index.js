@@ -7,10 +7,34 @@ export { ControlsBar, SearchBox, FilterSelect, ViewToggle, CheckboxFilter } from
 export { Card } from './Card';
 export { Navigator, NavGroup, NavItem } from './Navigator';
 export { EmptyState, QuickStart, EmptyFiltered } from './EmptyState';
+export {
+  Skeleton,
+  TextSkeleton,
+  CardSkeleton,
+  ListSkeleton,
+  TableSkeleton,
+  FormSkeleton,
+  NavigatorSkeleton,
+  DashboardSkeleton,
+  KanbanSkeleton,
+  PageSkeleton,
+} from './Skeleton';
 export { SummaryBar, SummaryItem } from './SummaryBar';
 export { ListView, ListRow, ListContainer, Timeline, ContentArea, Placeholder } from './ListView';
 export { ContextMenu, useContextMenu } from './ContextMenu';
-export { WorkspaceLayout, Breadcrumb, BreadcrumbSeparator, Breadcrumbs } from './WorkspaceLayout';
+export {
+  WorkspaceLayout,
+  Breadcrumb,
+  BreadcrumbSeparator,
+  Breadcrumbs,
+  NavigatorHeader,
+  NavigatorContent,
+  NavItem as WorkspaceNavItem
+} from './WorkspaceLayout';
+export { Modal, ConfirmModal } from './Modal';
+export { ToastProvider, useToast, Alert, Banner } from './Toast';
+export { FormField, FormGroup, FormRow, FormActions, ArrayField } from './FormField';
+export { StatsPanel, StatItem, LegendItem, StatGroup, StatDivider, MiniChart } from './StatsPanel';
 
 // Visual/Chart Components
 export { ProgressCard, ProgressCardGroup, MiniProgressCard } from './ProgressCard';

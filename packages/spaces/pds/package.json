@@ -1,0 +1,22 @@
+{
+  "name": "@ontographia/space-pds",
+  "version": "1.0.0",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./workspace": "./PDSWorkspace.js",
+    "./context": "./PDSContext.js",
+    "./types": "./pds-types.js",
+    "./guidance": "./pds-guidance.js",
+    "./tools": "./pds-tools.js"
+  },
+  "dependencies": {
+    "@ontographia/shared": "*"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "next": "^16.0.0",
+    "@mui/material": "^5.0.0",
+    "@mui/icons-material": "^5.0.0"
+  }
+}

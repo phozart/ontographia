@@ -1,0 +1,627 @@
+/* styles/mindlab-workspace.css */
+/* Mind Lab - Unified Personal Thinking Workspace Styles */
+/* Container for SRS, MMS, Philosophy, and NP workspaces */
+
+/* ============================================
+   Mind Lab Container
+   ============================================ */
+.mindlab-workspace-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--surface-canvas);
+}
+
+/* Horizontal Tab Bar (Level 2 Navigation) */
+.mindlab-space-tabs {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 0 16px;
+  background: var(--surface-panel);
+  border-bottom: 1px solid var(--border-default);
+  height: 44px;
+  flex-shrink: 0;
+}
+
+.mindlab-space-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  position: relative;
+}
+
+.mindlab-space-tab:hover {
+  color: var(--text-primary);
+  background: var(--surface-hover);
+}
+
+.mindlab-space-tab.active {
+  color: var(--text-primary);
+}
+
+.mindlab-space-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--accent);
+}
+
+.mindlab-space-tab .MuiSvgIcon-root {
+  font-size: 18px;
+}
+
+/* Workspace Content Area */
+.mindlab-workspace-content {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ============================================
+   Session Navigator (Left Sidebar) - for simple mode
+   ============================================ */
+.mindlab-session-nav {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 0;
+}
+
+.mindlab-session-nav-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  border-bottom: 1px solid var(--border-default);
+}
+
+.mindlab-session-nav-header h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+/* Session List */
+.mindlab-session-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+}
+
+.mindlab-session-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.mindlab-session-empty p {
+  font-size: 13px;
+  margin: 8px 0 16px 0;
+}
+
+/* Session Item */
+.mindlab-session-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  margin-bottom: 4px;
+  background: var(--surface-canvas);
+  border: 1px solid var(--border-default);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.mindlab-session-item:hover {
+  border-color: var(--border-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.mindlab-session-item.active {
+  border-color: var(--accent);
+  border-left: 2px solid var(--accent);
+  background: color-mix(in srgb, var(--accent) 5%, var(--surface-canvas));
+}
+
+.mindlab-session-item-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.mindlab-session-item-title {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mindlab-session-item-date {
+  display: block;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.mindlab-session-item-delete {
+  opacity: 0;
+  padding: 4px;
+  background: none;
+  border: none;
+  border-radius: 4px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.mindlab-session-item:hover .mindlab-session-item-delete {
+  opacity: 1;
+}
+
+.mindlab-session-item-delete:hover {
+  background: var(--surface-hover);
+  color: var(--error);
+}
+
+/* ============================================
+   Main Content Area
+   ============================================ */
+
+/* Empty Workspace State */
+.mindlab-empty-workspace {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+  padding: 48px 32px;
+}
+
+.mindlab-empty-workspace h3 {
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin: 0 0 8px 0;
+}
+
+/* Space Introduction */
+.mindlab-space-intro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 48px 32px;
+}
+
+.mindlab-space-intro-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  margin-bottom: 32px;
+  text-align: left;
+  width: 100%;
+}
+
+.mindlab-space-intro-header h2 {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 8px 0;
+}
+
+.mindlab-space-intro-header p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.mindlab-space-intro-prompts {
+  width: 100%;
+  padding: 20px 24px;
+  background: var(--surface-panel);
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+  margin-bottom: 32px;
+}
+
+.mindlab-space-intro-prompts h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 12px 0;
+}
+
+.mindlab-space-intro-prompts ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mindlab-space-intro-prompts li {
+  font-size: 14px;
+  color: var(--text-secondary);
+  padding: 8px 0;
+  padding-left: 20px;
+  position: relative;
+  line-height: 1.4;
+}
+
+.mindlab-space-intro-prompts li::before {
+  content: '?';
+  position: absolute;
+  left: 0;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* ============================================
+   Session Workspace (Active Session)
+   ============================================ */
+.mindlab-session-workspace {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 24px;
+}
+
+.mindlab-session-workspace-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-default);
+}
+
+.mindlab-session-workspace-header h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.mindlab-session-date {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.mindlab-session-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.mindlab-session-notes {
+  flex: 1;
+  width: 100%;
+  padding: 16px;
+  border: 1px solid var(--border-default);
+  border-radius: 4px;
+  background: var(--surface-canvas);
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-primary);
+  resize: none;
+}
+
+.mindlab-session-notes:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+.mindlab-session-notes::placeholder {
+  color: var(--text-muted);
+}
+
+/* ============================================
+   Modal
+   ============================================ */
+.mindlab-modal {
+  max-width: 500px;
+}
+
+.mindlab-modal .form-group {
+  margin-bottom: 16px;
+}
+
+.mindlab-modal label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+.mindlab-modal .form-control {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border-default);
+  border-radius: 4px;
+  font-size: 14px;
+  background: var(--surface-canvas);
+  color: var(--text-primary);
+}
+
+.mindlab-modal .form-control:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.mindlab-modal textarea.form-control {
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* ============================================
+   Button Variants
+   ============================================ */
+.btn-lg {
+  padding: 12px 24px;
+  font-size: 15px;
+}
+
+.btn-sm {
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--border-default);
+  color: var(--text-secondary);
+}
+
+.btn-outline:hover {
+  background: var(--surface-hover);
+  border-color: var(--border-hover);
+  color: var(--text-primary);
+}
+
+/* ============================================
+   Legacy Styles (kept for backwards compat)
+   ============================================ */
+
+/* Old Navigator - no longer used but kept temporarily */
+.mindlab-navigator {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--surface-panel);
+}
+
+.mindlab-nav-header {
+  padding: 16px;
+  border-bottom: 1px solid var(--border-default);
+}
+
+.mindlab-nav-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.mindlab-nav-icon {
+  color: #8b5cf6;
+}
+
+.mindlab-nav-subtitle {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 4px 0 0 0;
+}
+
+.mindlab-nav-spaces {
+  flex: 1;
+  padding: 12px;
+  overflow-y: auto;
+}
+
+.mindlab-nav-section-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  padding: 8px 4px;
+}
+
+.mindlab-nav-space-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  background: transparent;
+  border-radius: 4px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+}
+
+.mindlab-nav-space-btn:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+.mindlab-nav-space-btn.active {
+  background: var(--surface-active);
+  color: var(--text-primary);
+  border-left: 2px solid var(--space-color, var(--accent));
+}
+
+.mindlab-nav-space-btn .MuiSvgIcon-root {
+  color: var(--space-color, var(--text-muted));
+}
+
+/* Old Main Content - no longer used but kept temporarily */
+.mindlab-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--surface-canvas);
+}
+
+.mindlab-space-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  background: var(--surface-panel);
+  border-bottom: 1px solid var(--border-default);
+}
+
+.mindlab-space-header-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mindlab-space-header-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--space-color, var(--accent)) 15%, transparent);
+  border-radius: 8px;
+  color: var(--space-color, var(--accent));
+}
+
+.mindlab-space-header-icon .MuiSvgIcon-root {
+  font-size: 24px;
+}
+
+.mindlab-space-header-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.mindlab-space-header-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 2px 0 0 0;
+}
+
+.mindlab-main-area {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.mindlab-sessions-panel {
+  width: 280px;
+  border-right: 1px solid var(--border-default);
+  background: var(--surface-panel);
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.mindlab-workspace-panel {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.mindlab-session-card {
+  padding: 12px;
+  background: var(--surface-canvas);
+  border: 1px solid var(--border-default);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  margin-bottom: 8px;
+}
+
+.mindlab-session-card:hover {
+  border-color: var(--border-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.mindlab-session-card.active {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 5%, var(--surface-canvas));
+}
+
+.mindlab-session-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.mindlab-session-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.mindlab-session-preview {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin: 8px 0 0 0;
+  line-height: 1.4;
+}
+
+.mindlab-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.mindlab-empty-icon {
+  font-size: 48px;
+  opacity: 0.3;
+  margin-bottom: 12px;
+}
+
+.mindlab-empty-hint {
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.mindlab-empty-icon-large {
+  font-size: 64px;
+  opacity: 0.2;
+  margin-bottom: 16px;
+}

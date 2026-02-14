@@ -157,19 +157,29 @@ export function AuthProvider({ children }) {
       throw new Error(err.error || 'Login failed');
     }
     const data = await res.json();
-    setUser(data.username);
-    setRole(data.role);
-    if (data.personalDomainId) {
-      setPersonalDomainId(data.personalDomainId);
+    // API returns { user: {...}, accessToken, ... } - extract user object
+    const userData = data.user || data;
+    const userIdentifier = userData.username || userData.id;
+    const userRole = userData.role;
+    const userPersonalDomainId = userData.personalDomainId;
+
+    setUser(userIdentifier);
+    setRole(userRole);
+    if (userPersonalDomainId) {
+      setPersonalDomainId(userPersonalDomainId);
     }
     window.localStorage.setItem('kg-auth', JSON.stringify({
-      user: data.username,
-      role: data.role,
-      personalDomainId: data.personalDomainId
+      user: userIdentifier,
+      role: userRole,
+      personalDomainId: userPersonalDomainId
     }));
+    // Store access token if provided
+    if (data.accessToken) {
+      window.localStorage.setItem('accessToken', data.accessToken);
+    }
     // Fetch dynamic permissions after login
-    await fetchPermissions(data.username);
-    const dest = defaultRouteForRole(data.role);
+    await fetchPermissions(userIdentifier);
+    const dest = defaultRouteForRole(userRole);
     router.push(dest);
   };
 

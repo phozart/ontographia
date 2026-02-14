@@ -1,0 +1,207 @@
+/* components/ui/StatsPanel.module.css */
+/* Shared Stats Panel Styles */
+
+/* ============================================================================
+   PANEL
+   ============================================================================ */
+
+.panel {
+  background: var(--bg);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.title {
+  margin: 0 0 16px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* ============================================================================
+   STAT ITEM
+   ============================================================================ */
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  transition: background 0.15s ease;
+}
+
+.item.clickable {
+  cursor: pointer;
+}
+
+.item.clickable:hover {
+  background: var(--panel);
+}
+
+.itemIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.itemIcon svg {
+  font-size: 18px;
+}
+
+.itemContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.itemLabel {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.itemSublabel {
+  display: block;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+
+.itemValue {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+
+.value {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--stat-color, var(--text));
+}
+
+.trend {
+  font-size: 11px;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.trendUp {
+  color: #22c55e;
+}
+
+.trendDown {
+  color: #ef4444;
+}
+
+/* ============================================================================
+   LEGEND ITEM
+   ============================================================================ */
+
+.legendItem {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.legendItem:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.legendItem:first-child {
+  padding-top: 0;
+}
+
+.legendHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legendColor {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.legendLabel {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.legendCount {
+  padding: 2px 8px;
+  background: var(--panel);
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.legendDesc {
+  margin: 6px 0 0 20px;
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+/* ============================================================================
+   STAT GROUP
+   ============================================================================ */
+
+.group {
+  margin-bottom: 20px;
+}
+
+.group:last-child {
+  margin-bottom: 0;
+}
+
+.groupTitle {
+  margin: 0 0 10px 0;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+/* ============================================================================
+   DIVIDER
+   ============================================================================ */
+
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 16px 0;
+}
+
+/* ============================================================================
+   MINI CHART
+   ============================================================================ */
+
+.miniChart {
+  width: 60px;
+  height: 24px;
+}
+
+.miniChart svg {
+  width: 100%;
+  height: 100%;
+}

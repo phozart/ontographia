@@ -29,7 +29,6 @@ import LightModeIcon from '@mui/icons-material/LightMode';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import BuildIcon from '@mui/icons-material/Build';
 import HandshakeIcon from '@mui/icons-material/Handshake';
-import PsychologyIcon from '@mui/icons-material/Psychology';
 import SchoolIcon from '@mui/icons-material/School';
 import AutoStoriesIcon from '@mui/icons-material/AutoStories';
 import AutoGraphIcon from '@mui/icons-material/AutoGraph';
@@ -44,6 +43,9 @@ import FlagIcon from '@mui/icons-material/Flag';
 import GavelIcon from '@mui/icons-material/Gavel';
 import ShieldIcon from '@mui/icons-material/Shield';
 import BusinessCenterIcon from '@mui/icons-material/BusinessCenter';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
+import PsychologyIcon from '@mui/icons-material/Psychology';
 import { useAuth } from './AuthContext';
 import AboutModal from './AboutModal';
 import { useDomains } from './DomainContext';
@@ -64,18 +66,21 @@ const ICON_MAP = {
   LockIcon,
   BuildIcon,
   HandshakeIcon,
-  PsychologyIcon,
   SchoolIcon,
   AutoStoriesIcon,
   AutoGraphIcon,
   ChangeCircleIcon,
   GridViewIcon,
   CategoryIcon,
+  BusinessIcon,
   MiscellaneousServicesIcon,
   FlagIcon,
   GavelIcon,
   ShieldIcon,
   BusinessCenterIcon,
+  AutoAwesomeIcon,
+  RocketLaunchIcon,
+  PsychologyIcon,
 };
 
 export default function LeftNav({ theme, onThemeChange }) {
@@ -94,9 +99,9 @@ export default function LeftNav({ theme, onThemeChange }) {
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(208);
   const [isResizing, setIsResizing] = useState(false);
-  const [expandedSections, setExpandedSections] = useState(['navigation', 'knowledge', 'workspace', 'reasoning']);
-  // Section order - default: workspace before reasoning (fallback when no config)
-  const [sectionOrder, setSectionOrder] = useState(['navigation', 'knowledge', 'workspace', 'reasoning']);
+  const [expandedSections, setExpandedSections] = useState(['navigation', 'main-flow', 'thinking-tools', 'infrastructure']);
+  // Section order - default: new consolidated structure (fallback when no config)
+  const [sectionOrder, setSectionOrder] = useState(['navigation', 'main-flow', 'thinking-tools', 'infrastructure']);
   const [draggedSection, setDraggedSection] = useState(null);
   const [helpMenuOpen, setHelpMenuOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -283,13 +288,6 @@ export default function LeftNav({ theme, onThemeChange }) {
   // Main navigation items (without Home)
   const mainNavItems = [
     {
-      href: '/navigation/projects-overview',
-      label: 'Projects Overview',
-      icon: DashboardIcon,
-      active: isActive('/navigation/projects-overview', '/projects-overview'),
-      roles: ['admin', 'editor', 'viewer'],
-    },
-    {
       href: '/navigation/home',
       label: 'Product',
       icon: AppsIcon,
@@ -301,174 +299,132 @@ export default function LeftNav({ theme, onThemeChange }) {
   // Knowledge section items (only when logged in)
   const knowledgeNavItems = [
     {
-      href: '/app/knowledge/studio',
+      href: '/app/spaces/ks/navigator',
       label: 'Knowledge Studio',
       icon: HubIcon,
-      active: isActive('/app/knowledge/studio', '/knowledge-studio', '/graphnavigator', '/semanticmodelbrowser', '/user-view', '/studio'),
+      active: isActive('/app/spaces/ks', '/knowledge-studio', '/graphnavigator', '/semanticmodelbrowser'),
       roles: ['admin', 'editor', 'viewer'],
+      bypassPagePermissions: true,
     },
   ];
 
   // Reasoning section items (only when logged in)
   const reasoningNavItems = [
     {
-      href: '/app/reasoning/system-dynamics',
+      href: '/app/spaces/sd/canvas',
       label: 'System Dynamics',
       icon: LoopIcon,
-      active: isActive('/app/reasoning/system-dynamics', '/system-dynamics'),
+      active: isActive('/app/spaces/sd', '/app/reasoning/system-dynamics', '/system-dynamics'),
       roles: ['admin', 'editor', 'viewer'],
     },
     {
-      href: '/app/reasoning/dynamic-work-design',
+      href: '/app/spaces/dwd/landscape',
       label: 'Work Design',
       icon: BuildIcon,
-      active: isActive('/app/reasoning/dynamic-work-design', '/dynamic-work-design'),
+      active: isActive('/app/spaces/dwd', '/app/reasoning/dynamic-work-design', '/dynamic-work-design'),
       roles: ['admin', 'editor', 'viewer'],
     },
     {
-      href: '/app/reasoning/negotiation',
-      label: 'N&P Studio',
-      icon: HandshakeIcon,
-      active: isActive('/app/reasoning/negotiation', '/negotiation-studio'),
-      roles: ['admin', 'editor', 'viewer'],
-    },
-    {
-      href: '/app/reasoning/sensemaking',
-      label: 'Sensemaking',
-      icon: PsychologyIcon,
-      active: isActive('/app/reasoning/sensemaking', '/sensemaking-studio'),
-      roles: ['admin', 'editor', 'viewer'],
-    },
-    {
-      href: '/app/reasoning/learning',
+      href: '/app/spaces/als/sessions',
       label: 'Learning Studio',
       icon: SchoolIcon,
-      active: isActive('/app/reasoning/learning', '/learning-studio'),
+      active: isActive('/app/spaces/als', '/learning-studio'),
       roles: ['admin', 'editor', 'viewer'],
-    },
-    {
-      href: '/philosophy-studio',
-      label: 'Philosophy',
-      icon: AutoStoriesIcon,
-      active: isActive('/philosophy-studio'),
-      roles: ['admin', 'editor', 'viewer'],
-      bypassPagePermissions: true,
-    },
-    {
-      href: '/strategic-reasoning',
-      label: 'Strategic Reasoning',
-      icon: AutoGraphIcon,
-      active: isActive('/strategic-reasoning'),
-      roles: ['admin', 'editor', 'viewer'],
-      bypassPagePermissions: true,
     },
   ];
 
-  // Workspace navigation items (only when logged in)
+  // Workspace navigation items - Main Flow Studios (only when logged in)
   const workspaceNavItems = [
+    // Main Flow Studios (new consolidated structure)
     {
-      href: '/app/workspaces/project-design',
-      label: 'Project Design',
+      href: '/app/spaces/blueprint/funnel',
+      label: 'Blueprint Studio',
+      icon: LightbulbIcon,
+      active: isActive('/app/spaces/blueprint'),
+      roles: ['admin', 'editor', 'viewer'],
+      bypassPagePermissions: true,
+    },
+    {
+      href: '/app/spaces/analysis/projects',
+      label: 'Analysis Studio',
+      icon: AssignmentIcon,
+      active: isActive('/app/spaces/analysis'),
+      roles: ['admin', 'editor', 'viewer'],
+      bypassPagePermissions: true,
+    },
+    {
+      href: '/app/spaces/pds/overview',
+      label: 'Project Studio',
       icon: AccountTreeIcon,
-      active: isActive('/app/workspaces/project-design', '/project-design'),
+      active: isActive('/app/spaces/pds', '/app/workspaces/project-design', '/project-design'),
       roles: ['admin', 'editor', 'viewer'],
       bypassPagePermissions: true,
     },
     {
-      href: '/app/workspaces/organisation',
-      label: 'Organisation Studio',
-      icon: BusinessIcon,
-      active: isActive('/app/workspaces/organisation', '/organisation-studio'),
+      href: '/app/spaces/enterprise/dashboard',
+      label: 'Enterprise Studio',
+      icon: ArchitectureIcon,
+      active: isActive('/app/spaces/enterprise'),
       roles: ['admin', 'editor', 'viewer'],
       bypassPagePermissions: true,
     },
     {
-      href: '/business-service-studio',
-      label: 'Service Management',
-      icon: MiscellaneousServicesIcon,
-      active: isActive('/business-service-studio'),
+      href: '/app/spaces/gtm/plans',
+      label: 'GTM Studio',
+      icon: RocketLaunchIcon,
+      active: isActive('/app/spaces/gtm'),
       roles: ['admin', 'editor', 'viewer'],
       bypassPagePermissions: true,
     },
+    // Legacy studios (accessible but not primary navigation)
     {
-      href: '/performance-studio',
-      label: 'Performance Studio',
-      icon: FlagIcon,
-      active: isActive('/performance-studio'),
-      roles: ['admin', 'editor', 'viewer'],
-      bypassPagePermissions: true,
-    },
-    {
-      href: '/governance-studio',
-      label: 'Governance Studio',
-      icon: GavelIcon,
-      active: isActive('/governance-studio'),
-      roles: ['admin', 'editor', 'viewer'],
-      bypassPagePermissions: true,
-    },
-    {
-      href: '/risk-studio',
-      label: 'Risk & Resilience',
-      icon: ShieldIcon,
-      active: isActive('/risk-studio'),
-      roles: ['admin', 'editor', 'viewer'],
-      bypassPagePermissions: true,
-    },
-    {
-      href: '/app/workspaces/product-design',
+      href: '/app/spaces/pdw/discovery',
       label: 'Product Design',
       icon: LightbulbIcon,
-      active: isActive('/app/workspaces/product-design', '/product-design-workspace'),
+      active: isActive('/app/spaces/pdw', '/app/workspaces/product-design', '/product-design-workspace'),
       roles: ['admin', 'editor', 'viewer'],
     },
     {
-      href: '/app/workspaces/requirements',
+      href: '/app/spaces/ba/repository',
       label: 'Requirements Studio',
       icon: AssignmentIcon,
-      active: isActive('/app/workspaces/requirements', '/requirements-studio'),
+      active: isActive('/app/spaces/ba', '/app/workspaces/requirements', '/requirements-studio'),
       roles: ['admin', 'editor', 'viewer'],
     },
+  ];
+
+  // Infrastructure navigation items (only when logged in)
+  const infrastructureNavItems = [
     {
-      href: '/app/workspaces/enterprise-architecture',
-      label: 'Enterprise Architecture',
-      icon: ArchitectureIcon,
-      active: isActive('/app/workspaces/enterprise-architecture', '/ea-studio'),
-      roles: ['admin', 'editor', 'viewer'],
-    },
-    {
-      href: '/app/workspaces/portfolio',
-      label: 'Portfolio Studio',
-      icon: BusinessCenterIcon,
-      active: isActive('/app/workspaces/portfolio'),
-      roles: ['admin', 'editor', 'viewer'],
-      bypassPagePermissions: true,
-    },
-    {
-      href: '/diagram-studio-standalone',
+      href: '/app/spaces/diagram/canvas',
       label: 'Diagram Studio',
       icon: GridViewIcon,
-      active: isActive('/diagram-studio-standalone'),
+      active: isActive('/app/spaces/diagram', '/diagram-studio-standalone'),
       roles: ['admin', 'editor', 'viewer'],
       bypassPagePermissions: true,
-    },
-    {
-      href: '/app/workspaces/change-management',
-      label: 'Change Studio',
-      icon: ChangeCircleIcon,
-      active: isActive('/app/workspaces/change-management'),
-      roles: ['admin', 'editor', 'viewer'],
     },
   ];
 
   // Admin navigation items (Data Management now in Knowledge Studio)
   const adminNavItems = [];
 
-  // Build href with domain query parameter for shareable links
+  // Build href with domain context
+  // For /app/spaces/ URLs: append display ID as path segment (e.g., /app/spaces/ea/elements/DOM-0001)
+  // For other URLs: add domain query parameter (e.g., /app/knowledge/studio?dom=UUID)
   const buildHrefWithDomain = (href) => {
-    if (!activeDomain) return href;
+    if (!activeDomain || !activeDomainObj) return href;
     // Skip adding domain to home, login, admin pages
     if (href === '/' || href.startsWith('/login') || href.startsWith('/admin')) return href;
-    // Add domain query parameter
+
+    // For /app/spaces/ URLs, use display ID as path segment
+    if (href.startsWith('/app/spaces/')) {
+      const displayId = activeDomainObj.displayId || activeDomainObj.display_id;
+      if (displayId) {
+        return `${href}/${displayId}`;
+      }
+    }
+
+    // For other URLs, add domain query parameter (legacy behavior)
     const separator = href.includes('?') ? '&' : '?';
     return `${href}${separator}dom=${activeDomain}`;
   };
@@ -484,10 +440,23 @@ export default function LeftNav({ theme, onThemeChange }) {
 
     const Icon = item.icon;
     const hrefWithDomain = buildHrefWithDomain(item.href);
+
+    // Check if we're already on this page (to prevent "hard navigate to same URL" error)
+    const currentPath = router.asPath.split('?')[0];
+    const targetPath = hrefWithDomain.split('?')[0];
+    const isCurrentPage = currentPath === targetPath || currentPath.startsWith(targetPath + '/');
+
+    const handleClick = (e) => {
+      if (isCurrentPage) {
+        e.preventDefault(); // Don't navigate if already on this page
+      }
+    };
+
     const linkContent = (
       <Link
         href={hrefWithDomain}
         className={`left-nav-item ${item.active ? 'active' : ''}`}
+        onClick={handleClick}
       >
         <span className="left-nav-icon">
           <Icon fontSize="small" />
@@ -633,11 +602,15 @@ export default function LeftNav({ theme, onThemeChange }) {
             }));
 
             // Fallback items mapping for when config items are empty
+            // IMPORTANT: Each section maps to unique items - no duplicates
             const fallbackSectionItems = {
               navigation: mainNavItems,
-              knowledge: knowledgeNavItems,
-              workspace: workspaceNavItems,
-              reasoning: reasoningNavItems,
+              'main-flow': workspaceNavItems.slice(0, 5), // Blueprint, Analysis, Project, Enterprise, GTM
+              'thinking-tools': reasoningNavItems,
+              infrastructure: [
+                ...infrastructureNavItems,
+                ...knowledgeNavItems,
+              ],
             };
 
             // Build nav items from config with fallback
@@ -648,11 +621,20 @@ export default function LeftNav({ theme, onThemeChange }) {
                   const details = availableItems.find(ai => ai.key === configItem.key);
                   if (!details) return null;
                   const Icon = ICON_MAP[details.icon] || CategoryIcon;
+
+                  // Extract space prefix for active check (e.g., /app/spaces/ea from /app/spaces/ea/elements)
+                  // This ensures the nav item is highlighted regardless of which view is active
+                  let activeCheckPaths = [details.href];
+                  const spaceMatch = details.href.match(/^\/app\/spaces\/([^/]+)/);
+                  if (spaceMatch) {
+                    activeCheckPaths = [`/app/spaces/${spaceMatch[1]}`];
+                  }
+
                   return {
                     href: details.href,
                     label: configItem.label || details.label,
                     icon: Icon,
-                    active: isActive(details.href),
+                    active: isActive(...activeCheckPaths),
                     roles: details.roles,
                     bypassPagePermissions: true,
                   };

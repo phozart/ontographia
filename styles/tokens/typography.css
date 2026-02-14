@@ -1,0 +1,127 @@
+/**
+ * Design Tokens: Typography
+ * Ontographia V2 Design System
+ *
+ * Typography scale using Inter as the primary typeface.
+ * Modular scale based on 14px base size.
+ */
+
+:root {
+  /* ========================================
+   * Font Families
+   * ======================================== */
+  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', Consolas, 'Liberation Mono', Menlo, monospace;
+
+  /* ========================================
+   * Font Sizes
+   * Type scale: 12, 14, 16, 18, 20, 24, 30, 36, 48
+   * ======================================== */
+  --font-size-xs: 12px;
+  --font-size-sm: 14px;
+  --font-size-base: 14px;
+  --font-size-md: 16px;
+  --font-size-lg: 18px;
+  --font-size-xl: 20px;
+  --font-size-2xl: 24px;
+  --font-size-3xl: 30px;
+  --font-size-4xl: 36px;
+  --font-size-5xl: 48px;
+
+  /* ========================================
+   * Line Heights
+   * ======================================== */
+  --line-height-none: 1;
+  --line-height-tight: 1.25;
+  --line-height-snug: 1.375;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.625;
+  --line-height-loose: 2;
+
+  /* ========================================
+   * Font Weights
+   * ======================================== */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* ========================================
+   * Letter Spacing
+   * ======================================== */
+  --letter-spacing-tighter: -0.05em;
+  --letter-spacing-tight: -0.025em;
+  --letter-spacing-normal: 0;
+  --letter-spacing-wide: 0.025em;
+  --letter-spacing-wider: 0.05em;
+  --letter-spacing-widest: 0.1em;
+
+  /* ========================================
+   * Text Styles (Composite Tokens)
+   * These combine size, weight, and line-height
+   * ======================================== */
+
+  /* Display Text */
+  --text-display-lg: var(--font-weight-bold) var(--font-size-5xl)/var(--line-height-tight) var(--font-sans);
+  --text-display-md: var(--font-weight-bold) var(--font-size-4xl)/var(--line-height-tight) var(--font-sans);
+  --text-display-sm: var(--font-weight-bold) var(--font-size-3xl)/var(--line-height-tight) var(--font-sans);
+
+  /* Headings */
+  --text-heading-xl: var(--font-weight-semibold) var(--font-size-2xl)/var(--line-height-snug) var(--font-sans);
+  --text-heading-lg: var(--font-weight-semibold) var(--font-size-xl)/var(--line-height-snug) var(--font-sans);
+  --text-heading-md: var(--font-weight-semibold) var(--font-size-lg)/var(--line-height-snug) var(--font-sans);
+  --text-heading-sm: var(--font-weight-semibold) var(--font-size-md)/var(--line-height-snug) var(--font-sans);
+  --text-heading-xs: var(--font-weight-semibold) var(--font-size-sm)/var(--line-height-snug) var(--font-sans);
+
+  /* Body Text */
+  --text-body-lg: var(--font-weight-normal) var(--font-size-md)/var(--line-height-relaxed) var(--font-sans);
+  --text-body-md: var(--font-weight-normal) var(--font-size-sm)/var(--line-height-relaxed) var(--font-sans);
+  --text-body-sm: var(--font-weight-normal) var(--font-size-xs)/var(--line-height-relaxed) var(--font-sans);
+
+  /* Labels & Captions */
+  --text-label-lg: var(--font-weight-medium) var(--font-size-sm)/var(--line-height-normal) var(--font-sans);
+  --text-label-md: var(--font-weight-medium) var(--font-size-xs)/var(--line-height-normal) var(--font-sans);
+  --text-label-sm: var(--font-weight-medium) 11px/var(--line-height-normal) var(--font-sans);
+
+  /* Code */
+  --text-code-lg: var(--font-weight-normal) var(--font-size-sm)/var(--line-height-normal) var(--font-mono);
+  --text-code-md: var(--font-weight-normal) var(--font-size-xs)/var(--line-height-normal) var(--font-mono);
+  --text-code-sm: var(--font-weight-normal) 11px/var(--line-height-normal) var(--font-mono);
+
+  /* ========================================
+   * Semantic Text Tokens
+   * ======================================== */
+
+  /* Page Title */
+  --text-page-title-size: var(--font-size-2xl);
+  --text-page-title-weight: var(--font-weight-semibold);
+  --text-page-title-line-height: var(--line-height-tight);
+
+  /* Section Title */
+  --text-section-title-size: var(--font-size-lg);
+  --text-section-title-weight: var(--font-weight-semibold);
+  --text-section-title-line-height: var(--line-height-snug);
+
+  /* Card Title */
+  --text-card-title-size: var(--font-size-md);
+  --text-card-title-weight: var(--font-weight-medium);
+  --text-card-title-line-height: var(--line-height-snug);
+
+  /* Navigation Item */
+  --text-nav-size: var(--font-size-sm);
+  --text-nav-weight: var(--font-weight-medium);
+
+  /* Button Text */
+  --text-button-size: var(--font-size-sm);
+  --text-button-weight: var(--font-weight-medium);
+  --text-button-letter-spacing: var(--letter-spacing-wide);
+
+  /* Input Text */
+  --text-input-size: var(--font-size-sm);
+  --text-input-weight: var(--font-weight-normal);
+
+  /* Helper/Caption Text */
+  --text-helper-size: var(--font-size-xs);
+  --text-helper-weight: var(--font-weight-normal);
+  --text-helper-line-height: var(--line-height-normal);
+}

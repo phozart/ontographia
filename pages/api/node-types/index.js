@@ -1,86 +1,116 @@
-// pages/api/node-types.js
-import { runRead, runWrite } from '../../../lib/neo4j';
-import {
-  isDemoRequest,
-  listNodeTypes as demoListNodeTypes,
-  createNodeType as demoCreateNodeType,
-} from '../../../lib/demoStore';
+// pages/api/node-types/index.js
+// Graph node types API - PostgreSQL implementation
+
+import { query } from '../../../lib/pg';
+import { getUserFromRequest } from '../../../lib/projectAccess';
+
+// Auto-create table if it doesn't exist
+async function ensureTableExists() {
+  try {
+    await query(`
+      CREATE TABLE IF NOT EXISTS graph_node_types (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        label TEXT,
+        description TEXT,
+        layer TEXT,
+        color TEXT DEFAULT '#6b7280',
+        icon TEXT,
+        shape TEXT DEFAULT 'ellipse',
+        domain TEXT DEFAULT 'core',
+        properties JSONB DEFAULT '{}',
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      )
+    `);
+    await query(`CREATE INDEX IF NOT EXISTS idx_graph_node_types_domain ON graph_node_types(domain)`);
+    await query(`CREATE INDEX IF NOT EXISTS idx_graph_node_types_layer ON graph_node_types(layer)`);
+  } catch (err) {
+    if (!err.message.includes('already exists')) {
+      console.error('[node-types] Error ensuring table:', err.message);
+    }
+  }
+}
 
 export default async function handler(req, res) {
-  try {
-    const isDemo = isDemoRequest(req);
+  // Authentication required for write operations
+  const { user, role } = getUserFromRequest(req);
+  if (req.method !== 'GET' && !user) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
 
+  try {
     if (req.method === 'GET') {
       const { domain, domainName } = req.query;
 
-      if (isDemo) {
-        return res.status(200).json(demoListNodeTypes());
-      }
+      // Ensure table exists
+      await ensureTableExists();
 
-      let query = 'MATCH (t:NodeType)';
-      const params = {};
+      let sql = 'SELECT * FROM graph_node_types WHERE 1=1';
+      const params = [];
+      let paramIdx = 1;
 
       if (domain && domain !== 'all') {
-        const domains = [domain, domainName].filter(Boolean);
-        if (domains.length) {
-          query += ' WHERE coalesce(t.domain, "core") IN $domains';
-          params.domains = domains;
+        const domainFilters = [domain, domainName].filter(Boolean);
+        if (domainFilters.length) {
+          sql += ` AND COALESCE(domain, 'core') = ANY($${paramIdx})`;
+          params.push(domainFilters);
+          paramIdx++;
         }
       }
 
-      query += ' RETURN t ORDER BY t.name';
+      sql += ' ORDER BY name';
 
-      const records = await runRead(query, params);
+      const result = await query(sql, params);
 
-      const data = records.map(r => {
-        const t = r.get('t').properties;
-        return {
-          id: t.id,
-          name: t.name,
-          label: t.label,
-          description: t.description || '',
-          layer: t.layer || 'Unassigned',
-          color: t.color || '#888888',
-          icon: t.icon || 'dot',
-          domain: t.domain || 'core',
-          shape: t.shape || 'ellipse',
-        };
-      });
+      const data = result.rows.map(row => ({
+        id: row.id,
+        name: row.name,
+        label: row.label || row.name,
+        description: row.description || '',
+        layer: row.layer || 'Unassigned',
+        color: row.color || '#888888',
+        icon: row.icon || 'dot',
+        domain: row.domain || 'core',
+        shape: row.shape || 'ellipse',
+      }));
 
       return res.status(200).json(data);
     }
 
     if (req.method === 'POST') {
       const { name, label, description, layer, color, icon, domain, shape } = req.body || {};
+
       if (!name) {
         return res.status(400).json({ error: 'name is required' });
       }
+
       const id = `nt_${Date.now()}`;
-      if (isDemo) {
-        demoCreateNodeType({ id, name, label, description, layer, color, icon, domain, shape });
-        return res.status(201).json({ id });
-      }
-      await runWrite(
-        `
-        MERGE (t:NodeType {id: $id})
-        SET t.name = $name,
-            t.label = coalesce($label, $name),
-            t.description = coalesce($description, ''),
-            t.layer = coalesce($layer, 'Unassigned'),
-            t.color = coalesce($color, '#888888'),
-            t.icon = coalesce($icon, 'dot'),
-            t.domain = coalesce($domain, 'core'),
-            t.shape = coalesce($shape, 'ellipse')
-        RETURN t
-        `,
-        { id, name, label, description, layer, color, icon, domain, shape }
-      );
+
+      // Ensure table exists
+      await ensureTableExists();
+
+      await query(`
+        INSERT INTO graph_node_types (id, name, label, description, layer, color, icon, domain, shape)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      `, [
+        id,
+        name,
+        label || name,
+        description || '',
+        layer || 'Unassigned',
+        color || '#888888',
+        icon || 'dot',
+        domain || 'core',
+        shape || 'ellipse',
+      ]);
+
       return res.status(201).json({ id });
     }
 
     return res.status(405).json({ error: 'Method not allowed' });
   } catch (e) {
-    console.error(e);
-    return res.status(500).json({ error: 'Internal server error' });
+    console.error('[node-types API error]', e);
+    return res.status(500).json({ error: 'Internal server error', details: e.message });
   }
 }

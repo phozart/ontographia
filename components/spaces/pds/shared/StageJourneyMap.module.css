@@ -1,0 +1,392 @@
+/* StageJourneyMap.module.css */
+/* Visual journey map showing project stage progress */
+
+.container {
+  padding: 24px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.titleIcon {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-soft);
+  border-radius: 10px;
+  color: var(--accent);
+}
+
+.titleIcon svg {
+  font-size: 20px;
+}
+
+.overallProgress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.overallLabel {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.overallValue {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+/* Journey track */
+.journey {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  padding: 20px 0;
+}
+
+/* Connecting line */
+.journeyLine {
+  position: absolute;
+  top: 50%;
+  left: 40px;
+  right: 40px;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  transform: translateY(-50%);
+  z-index: 0;
+}
+
+.journeyLineProgress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: linear-gradient(90deg, #8b5cf6, #3b82f6, #f59e0b, #10b981, #6366f1);
+  border-radius: 2px;
+  transition: width 0.5s ease;
+}
+
+/* Stage nodes */
+.stage {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.stage:hover {
+  transform: translateY(-4px);
+}
+
+.stageNode {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--panel);
+  border: 3px solid var(--border);
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.stageNode svg {
+  font-size: 24px;
+  color: var(--text-muted);
+  transition: color 0.3s ease;
+}
+
+.stage.active .stageNode {
+  border-color: var(--stage-color);
+  background: var(--stage-color);
+  box-shadow: 0 0 0 4px rgba(var(--stage-color-rgb), 0.2);
+}
+
+.stage.active .stageNode svg {
+  color: white;
+}
+
+.stage.completed .stageNode {
+  border-color: var(--stage-color);
+  background: var(--stage-color);
+}
+
+.stage.completed .stageNode svg {
+  color: white;
+}
+
+.stage.partial .stageNode {
+  border-color: var(--stage-color);
+  background: linear-gradient(
+    to top,
+    var(--stage-color) var(--progress, 50%),
+    var(--panel) var(--progress, 50%)
+  );
+}
+
+.stage.partial .stageNode svg {
+  color: var(--stage-color);
+}
+
+/* Stage info */
+.stageInfo {
+  text-align: center;
+}
+
+.stageName {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.stageProgress {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.stageProgress strong {
+  color: var(--stage-color);
+}
+
+/* Check mark for completed */
+.stageCheck {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #22c55e;
+  border: 2px solid var(--panel);
+  border-radius: 50%;
+  color: white;
+  animation: checkPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes checkPop {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.stageCheck svg {
+  font-size: 12px;
+}
+
+/* Compact horizontal variant */
+.compact {
+  flex-direction: row;
+  padding: 16px;
+}
+
+.compact .journey {
+  flex-wrap: nowrap;
+  gap: 4px;
+  padding: 0;
+}
+
+.compact .journeyLine {
+  display: none;
+}
+
+.compact .stage {
+  flex-direction: row;
+  gap: 8px;
+  flex: 1;
+  padding: 8px 12px;
+  background: var(--bg);
+  border-radius: 8px;
+}
+
+.compact .stage:hover {
+  transform: none;
+  background: var(--bg-hover);
+}
+
+.compact .stageNode {
+  width: 32px;
+  height: 32px;
+  border-width: 2px;
+}
+
+.compact .stageNode svg {
+  font-size: 16px;
+}
+
+.compact .stageInfo {
+  text-align: left;
+}
+
+.compact .stageName {
+  font-size: 12px;
+}
+
+.compact .stageProgress {
+  font-size: 11px;
+}
+
+/* Mini variant for navigator */
+.mini {
+  padding: 0;
+  background: transparent;
+  border: none;
+}
+
+.mini .header {
+  display: none;
+}
+
+.mini .journey {
+  padding: 8px 0;
+}
+
+.mini .journeyLine {
+  left: 20px;
+  right: 20px;
+  height: 2px;
+}
+
+.mini .stage {
+  gap: 6px;
+}
+
+.mini .stageNode {
+  width: 36px;
+  height: 36px;
+  border-width: 2px;
+}
+
+.mini .stageNode svg {
+  font-size: 16px;
+}
+
+.mini .stageName {
+  font-size: 11px;
+}
+
+.mini .stageProgress {
+  display: none;
+}
+
+/* Tooltip on hover */
+.stageTooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 14px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.stage:hover .stageTooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(-8px);
+}
+
+.stageTooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -6px;
+  border: 6px solid transparent;
+  border-top-color: var(--panel);
+}
+
+.tooltipTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.tooltipProgress {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.tooltipBar {
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+
+.tooltipBarFill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+/* Reduce motion */
+@media (prefers-reduced-motion: reduce) {
+  .stageCheck,
+  .stage,
+  .stageTooltip,
+  .journeyLineProgress {
+    animation: none;
+    transition: none;
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .journey {
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: center;
+  }
+
+  .journeyLine {
+    display: none;
+  }
+
+  .stage {
+    width: 80px;
+  }
+}

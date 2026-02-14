@@ -24,7 +24,7 @@ export default async function handler(req, res) {
     console.error('Error fetching projects overview:', err);
     return res.status(500).json({
       error: 'Failed to fetch projects overview',
-      details: err.message
+      ...(process.env.NODE_ENV !== 'production' && { details: err.message }),
     });
   }
 }

@@ -72,6 +72,7 @@ export default function GraphView({
   onCreateNodeRequest,
   onEditNodeRequest,
   onCreateRelationshipRequest,
+  onContextMenu,
   readOnly = false,
   highlightedNodeIds = [],
   focusNodeId = null,
@@ -94,12 +95,13 @@ export default function GraphView({
   const [showMinimap, setShowMinimap] = useState(true);
   const minimapRef = useRef(null);
   const minimapCanvasRef = useRef(null);
-  const { activeDomain, activeDomainObj } = useDomains();
+  const { activeDomain, activeDomainObj, loading: domainLoading } = useDomains();
 
   const domainMatch = useMemo(() => {
     const activeName = activeDomainObj?.name;
     const active = activeDomain;
     return (entity) => {
+      // No active domain filter - accept all
       if (!active) return true;
       if (!entity) return false;
       const val =
@@ -108,7 +110,8 @@ export default function GraphView({
         entity.domainName ??
         entity.workspace ??
         entity.workspaceId;
-      if (val === undefined || val === null) return false;
+      // If node has no domain, accept it (server already filtered)
+      if (val === undefined || val === null) return true;
       return String(val) === String(active) || (activeName && String(val) === String(activeName));
     };
   }, [activeDomain, activeDomainObj?.name]);
@@ -125,8 +128,23 @@ export default function GraphView({
   }, []);
 
   useEffect(() => {
-    loadGraph();
-  }, [reloadKey, typeFilters, themeDark, activeDomain, activeDomainObj]);
+    // Load graph when domain context is ready
+    // Also trigger after a timeout if domain context takes too long
+    if (!domainLoading) {
+      loadGraph();
+    }
+  }, [reloadKey, typeFilters, themeDark, activeDomain, activeDomainObj, domainLoading]);
+
+  // Fallback: if domainLoading stays true for too long, try loading anyway
+  useEffect(() => {
+    if (domainLoading) {
+      const timeout = setTimeout(() => {
+        console.log('[GraphView] Domain loading timeout, attempting to load graph anyway');
+        loadGraph();
+      }, 2000);
+      return () => clearTimeout(timeout);
+    }
+  }, [domainLoading]);
 
   // Modern color palette - more vibrant and saturated
   function getTypeColor(layer, nodeColor, typeColor) {
@@ -137,10 +155,10 @@ export default function GraphView({
     const colors = {
       'Physical': '#3b82f6',      // Blue
       'Information': '#10b981',   // Emerald
-      'Systems': '#8b5cf6',       // Violet
+      'Systems': '#0891b2',       // Cyan (was Violet)
       'Rules': '#f59e0b',         // Amber
       'Governance': '#ef4444',    // Red
-      'default': '#6366f1',       // Indigo
+      'default': '#00d4aa',       // Teal (was Indigo)
     };
     return colors[layer] || colors.default;
   }
@@ -164,17 +182,43 @@ export default function GraphView({
           ? `?domain=${encodeURIComponent(activeDomain)}&domainName=${encodeURIComponent(activeDomainObj?.name || '')}`
           : ''
       }`;
+      console.log('[GraphView] Fetching:', { nodesUrl, relUrl, activeDomain, domainName: activeDomainObj?.name, domainLoading });
       const [nodesRes, relsRes] = await Promise.all([
         fetch(nodesUrl),
         fetch(relUrl),
       ]);
       if (!nodesRes.ok || !relsRes.ok) {
-        console.error('Failed to load graph data', nodesRes.status, relsRes.status);
+        console.error('[GraphView] Failed to load graph data', nodesRes.status, relsRes.status);
         return;
       }
-      const domainNodes = await nodesRes.json();
-      const rels = await relsRes.json();
-      const scopedNodes = (Array.isArray(domainNodes) ? domainNodes : []).filter(domainMatch);
+      let domainNodes = await nodesRes.json();
+      let rels = await relsRes.json();
+      console.log('[GraphView] API returned:', { nodeCount: domainNodes?.length, relCount: rels?.length, activeDomain, sampleNode: domainNodes?.[0] });
+
+      // If no nodes returned, always try loading all nodes as fallback
+      // This handles cases where domain context isn't properly set up (e.g., in iframes)
+      if (!domainNodes || domainNodes.length === 0) {
+        console.log('[GraphView] No nodes returned, trying without domain filter...');
+        const [fallbackNodesRes, fallbackRelsRes] = await Promise.all([
+          fetch('/api/nodes'),
+          fetch('/api/relationships'),
+        ]);
+        if (fallbackNodesRes.ok && fallbackRelsRes.ok) {
+          const allNodes = await fallbackNodesRes.json();
+          const allRels = await fallbackRelsRes.json();
+          console.log('[GraphView] Fallback (all nodes):', { nodeCount: allNodes?.length, relCount: allRels?.length });
+          if (allNodes && allNodes.length > 0) {
+            domainNodes = allNodes;
+            rels = allRels;
+            console.log('[GraphView] Using all nodes as fallback');
+          }
+        }
+      }
+
+      // Server already filters by domain, so we just use the returned nodes directly
+      // The domainMatch filter was causing issues by filtering out valid nodes
+      const scopedNodes = Array.isArray(domainNodes) ? domainNodes : [];
+      console.log('[GraphView] Using nodes:', { scopedCount: scopedNodes.length });
       const scopedIds = new Set(scopedNodes.map(n => n.id));
       const scopedRels = (Array.isArray(rels) ? rels : []).filter(
         r => scopedIds.has(r.sourceId) && scopedIds.has(r.targetId)
@@ -230,6 +274,7 @@ export default function GraphView({
         };
       });
 
+      console.log('[GraphView] Setting elements:', { nodeCount: cyNodes.length, edgeCount: cyEdges.length });
       setElements([...cyNodes, ...cyEdges]);
     } catch (e) {
       console.error('Error loading graph', e);
@@ -515,6 +560,13 @@ export default function GraphView({
     cy.userZoomingEnabled(true);
     cy.boxSelectionEnabled(false);
 
+    // Log container dimensions for debugging
+    const container = containerRef.current;
+    if (container) {
+      const rect = container.getBoundingClientRect();
+      console.log('[GraphView] Container dimensions:', { width: rect.width, height: rect.height });
+    }
+
     // Smoother wheel zoom
     cy.minZoom(0.2);
     cy.maxZoom(3);
@@ -545,6 +597,44 @@ export default function GraphView({
         const ny = np.y + dy * 0.03;
         n.animate({ position: { x: nx, y: ny } }, { duration: 200, easing: 'ease-out', queue: false });
       });
+    });
+
+    // Context menu (right-click) events
+    // Use a single handler to avoid event conflicts
+    cy.on('cxttap', evt => {
+      if (!onContextMenu) return;
+
+      const originalEvt = evt.originalEvent;
+      if (originalEvt) {
+        originalEvt.preventDefault();
+        originalEvt.stopPropagation();
+      }
+
+      const position = {
+        x: originalEvt?.clientX || evt.position?.x || 100,
+        y: originalEvt?.clientY || evt.position?.y || 100
+      };
+
+      if (evt.target === cy) {
+        // Right-clicked on background
+        onContextMenu({ type: 'background', position, target: null });
+      } else if (evt.target.isNode && evt.target.isNode()) {
+        // Right-clicked on a node
+        const data = evt.target.data();
+        onContextMenu({
+          type: 'node',
+          position,
+          target: { id: data.id, data: { raw: data.raw || data } }
+        });
+      } else if (evt.target.isEdge && evt.target.isEdge()) {
+        // Right-clicked on an edge
+        const data = evt.target.data();
+        onContextMenu({
+          type: 'edge',
+          position,
+          target: data
+        });
+      }
     });
 
     if (!readOnly) {
@@ -691,18 +781,30 @@ export default function GraphView({
   // Run layout on elements change
   useEffect(() => {
     const cy = cyRef.current;
-    if (!cy || cy.destroyed?.() || cy.elements().length === 0) return;
+    // Use elements.length from state, not cy.elements().length, to avoid race condition
+    if (!cy || cy.destroyed?.() || elements.length === 0) {
+      console.log('[GraphView] Layout skipped:', { cy: !!cy, destroyed: cy?.destroyed?.(), elementsLength: elements.length });
+      return;
+    }
 
-    const layout = cy.layout(layoutPresets[layoutName] || layoutPresets.cose);
-    layout.run();
-    layout.once('layoutstop', () => {
+    // Small delay to ensure Cytoscape has processed the elements
+    const timeoutId = setTimeout(() => {
       if (cy.destroyed?.()) return;
-      if (!initialFitDoneRef.current) {
-        cy.fit(cy.nodes(), 60);
-        initialFitDoneRef.current = true;
-      }
-    });
-    return () => layout.stop();
+      console.log('[GraphView] Running layout:', { elementsLength: elements.length, cyElementsLength: cy.elements().length, layout: layoutName });
+
+      const layout = cy.layout(layoutPresets[layoutName] || layoutPresets.cose);
+      layout.run();
+      layout.once('layoutstop', () => {
+        if (cy.destroyed?.()) return;
+        if (!initialFitDoneRef.current) {
+          cy.fit(cy.nodes(), 60);
+          initialFitDoneRef.current = true;
+          console.log('[GraphView] Initial fit done');
+        }
+      });
+    }, 50);
+
+    return () => clearTimeout(timeoutId);
   }, [elements, layoutName]);
 
   // Minimap rendering
@@ -765,7 +867,7 @@ export default function GraphView({
         const pos = node.position();
         const x = (pos.x - bb.x1) * scale + padding;
         const y = (pos.y - bb.y1) * scale + padding;
-        const color = node.data('color') || '#6366f1';
+        const color = node.data('color') || '#00d4aa'; // Teal default
         const size = Math.max(3, (node.data('size') || 50) * scale * 0.5);
 
         ctx.fillStyle = color;
@@ -841,6 +943,12 @@ export default function GraphView({
       style={{ position: 'relative', width: '100%', height: '100%' }}
       tabIndex={0}
       onClick={() => containerRef.current?.focus()}
+      onContextMenu={e => {
+        // Prevent default browser context menu when we have a custom handler
+        if (onContextMenu) {
+          e.preventDefault();
+        }
+      }}
       onKeyDown={e => {
         if ((e.key === 'n' || e.key === 'N') && onNewNodeShortcut && !readOnly) {
           e.preventDefault();
@@ -970,14 +1078,14 @@ export default function GraphView({
         </button>
       </div>
 
-      {/* Minimap */}
+      {/* Minimap - positioned above the FAB area to prevent overlap */}
       {showMinimap && (
         <div
           ref={minimapRef}
           className="graph-minimap"
           style={{
             position: 'absolute',
-            bottom: 16,
+            bottom: 100, // Moved up to avoid FAB overlap
             right: 16,
             width: 160,
             height: 120,

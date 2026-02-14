@@ -1,0 +1,406 @@
+/**
+ * Organisation Module Styles
+ * Following Ontographia Design System
+ */
+
+.structure,
+.rolesList {
+  padding: var(--space-6);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--space-6);
+}
+
+.headerContent h2 {
+  color: var(--color-text-primary, #1F1E1B);
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0 0 var(--space-1) 0;
+}
+
+.subtitle {
+  color: var(--color-text-secondary, #5C5A54);
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+.headerActions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.addButton {
+  background: var(--color-shell-accent, #47453F);
+  color: var(--color-shell-text, #F0EFEC);
+  border: none;
+  padding: var(--space-2) var(--space-4);
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform 100ms ease-out, box-shadow 100ms ease-out;
+}
+
+.addButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(31, 30, 27, 0.15);
+}
+
+.secondaryButton {
+  background: var(--color-canvas, #FDFCFA);
+  color: var(--color-text-primary, #1F1E1B);
+  border: 1px solid var(--color-border, #E2E0DB);
+  padding: var(--space-2) var(--space-4);
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform 100ms ease-out, box-shadow 100ms ease-out;
+}
+
+.secondaryButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(31, 30, 27, 0.1);
+}
+
+/* Stats Row */
+.statsRow {
+  display: flex;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+  flex-wrap: wrap;
+}
+
+.statCard {
+  background: var(--color-panel, #F0EFEC);
+  border: 1px solid var(--color-border, #E2E0DB);
+  border-radius: 4px;
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 100px;
+}
+
+.statValue {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--color-text-primary, #1F1E1B);
+}
+
+.statLabel {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary, #5C5A54);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Toolbar */
+.toolbar {
+  display: flex;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+  flex-wrap: wrap;
+}
+
+.viewToggle {
+  display: flex;
+  background: var(--color-panel, #F0EFEC);
+  border: 1px solid var(--color-border, #E2E0DB);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.toggleButton {
+  background: transparent;
+  border: none;
+  padding: var(--space-2) var(--space-3);
+  font-size: 0.875rem;
+  color: var(--color-text-secondary, #5C5A54);
+  cursor: pointer;
+  transition: all 100ms ease-out;
+}
+
+.toggleButton.active {
+  background: var(--color-shell-accent, #47453F);
+  color: var(--color-shell-text, #F0EFEC);
+}
+
+.select {
+  background: var(--color-canvas, #FDFCFA);
+  border: 1px solid var(--color-border, #E2E0DB);
+  border-radius: 4px;
+  padding: var(--space-2) var(--space-3);
+  font-size: 0.875rem;
+  color: var(--color-text-primary, #1F1E1B);
+  min-width: 150px;
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 200px;
+  background: var(--color-canvas, #FDFCFA);
+  border: 1px solid var(--color-border, #E2E0DB);
+  border-radius: 4px;
+  padding: var(--space-2) var(--space-3);
+  font-size: 0.875rem;
+  color: var(--color-text-primary, #1F1E1B);
+}
+
+/* Tree View */
+.treeView {
+  background: var(--color-panel, #F0EFEC);
+  border: 1px solid var(--color-border, #E2E0DB);
+  border-radius: 4px;
+  padding: var(--space-4);
+}
+
+.treeNode {
+  margin-bottom: var(--space-2);
+}
+
+.treeChildren {
+  border-left: 2px solid var(--color-border, #E2E0DB);
+  margin-left: var(--space-3);
+  padding-left: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+/* Grid View */
+.gridView {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-4);
+}
+
+/* Compact Card */
+.compactCard {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: var(--color-canvas, #FDFCFA);
+  border: 1px solid var(--color-border, #E2E0DB);
+  border-radius: 4px;
+  padding: var(--space-2) var(--space-3);
+  cursor: pointer;
+  transition: transform 100ms ease-out, box-shadow 100ms ease-out;
+}
+
+.compactCard:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(31, 30, 27, 0.1);
+}
+
+.typeIcon {
+  font-size: 1.25rem;
+}
+
+.compactName {
+  flex: 1;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-primary, #1F1E1B);
+}
+
+.headcount {
+  background: var(--color-border, #E2E0DB);
+  color: var(--color-text-secondary, #5C5A54);
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+/* Full Card */
+.card {
+  background: var(--color-canvas, #FDFCFA);
+  border: 1px solid var(--color-border, #E2E0DB);
+  border-radius: 4px;
+  padding: var(--space-4);
+  cursor: pointer;
+  transition: transform 100ms ease-out, box-shadow 100ms ease-out;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(31, 30, 27, 0.1);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.unitType {
+  font-size: 0.75rem;
+  color: var(--color-text-muted, #9C9A94);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.cardTitle {
+  color: var(--color-text-primary, #1F1E1B);
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 var(--space-2) 0;
+}
+
+.cardDescription {
+  color: var(--color-text-secondary, #5C5A54);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  margin: 0 0 var(--space-3) 0;
+}
+
+.cardMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.metaItem {
+  color: var(--color-text-muted, #9C9A94);
+  font-size: 0.75rem;
+}
+
+.cardStats {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.statBadge {
+  background: var(--color-border, #E2E0DB);
+  color: var(--color-text-secondary, #5C5A54);
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.linkedCapabilities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  align-items: center;
+}
+
+.linkedLabel {
+  font-size: 0.75rem;
+  color: var(--color-text-muted, #9C9A94);
+  margin-right: var(--space-1);
+}
+
+.linkedItem {
+  background: rgba(245, 158, 11, 0.15);
+  color: #b45309;
+  font-size: 0.75rem;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.linkedMore {
+  color: var(--color-text-muted, #9C9A94);
+  font-size: 0.75rem;
+}
+
+/* Roles Table */
+.rolesTable {
+  background: var(--color-canvas, #FDFCFA);
+  border: 1px solid var(--color-border, #E2E0DB);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.tableHeader {
+  display: grid;
+  grid-template-columns: 2fr 1fr 0.5fr 0.5fr;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-panel, #F0EFEC);
+  border-bottom: 1px solid var(--color-border, #E2E0DB);
+}
+
+.headerCell {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-secondary, #5C5A54);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.tableRow {
+  display: grid;
+  grid-template-columns: 2fr 1fr 0.5fr 0.5fr;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border, #E2E0DB);
+  cursor: pointer;
+  transition: background 100ms ease-out;
+}
+
+.tableRow:hover {
+  background: var(--color-panel, #F0EFEC);
+}
+
+.tableRow:last-child {
+  border-bottom: none;
+}
+
+.roleCell {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.roleCell strong {
+  color: var(--color-text-primary, #1F1E1B);
+  font-size: 0.875rem;
+}
+
+.roleDescription {
+  color: var(--color-text-muted, #9C9A94);
+  font-size: 0.75rem;
+}
+
+.cell {
+  color: var(--color-text-secondary, #5C5A54);
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+}
+
+/* Empty State */
+.emptyState {
+  text-align: center;
+  padding: var(--space-12);
+  color: var(--color-text-secondary, #5C5A54);
+}
+
+.emptyState p {
+  margin-bottom: var(--space-4);
+}
+
+/* ============================================================================
+   MODAL FORM
+   ============================================================================ */
+
+.modalForm {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.formError {
+  padding: 8px 12px;
+  background: rgba(165, 77, 77, 0.08);
+  border: 1px solid rgba(165, 77, 77, 0.2);
+  border-radius: 4px;
+  color: #A54D4D;
+  font-size: 13px;
+}

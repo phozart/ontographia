@@ -3,6 +3,7 @@
 
 import { query } from '../../../lib/pg';
 import { getUserFromRequest, checkProjectAccess } from '../../../lib/projectAccess';
+import { errorResponse } from '../../../lib/api/errorResponse';
 import { DWD_RELATIONSHIP_TYPES, validateRelationship } from '../../../lib/dwd-types';
 
 export default async function handler(req, res) {
@@ -87,7 +88,7 @@ export default async function handler(req, res) {
       return res.status(200).json({ relationships: result.rows });
     } catch (err) {
       console.error('Error fetching DWD relationships:', err);
-      return res.status(500).json({ error: 'Failed to fetch relationships', details: err.message });
+      return errorResponse(res, 500, 'Failed to fetch relationships', err);
     }
   }
 
@@ -153,7 +154,7 @@ export default async function handler(req, res) {
       return res.status(201).json(result.rows[0]);
     } catch (err) {
       console.error('Error creating DWD relationship:', err);
-      return res.status(500).json({ error: 'Failed to create relationship', details: err.message });
+      return errorResponse(res, 500, 'Failed to create relationship', err);
     }
   }
 
@@ -191,7 +192,7 @@ export default async function handler(req, res) {
       return res.status(200).json({ success: true, deleted: relResult.rows[0] });
     } catch (err) {
       console.error('Error deleting DWD relationship:', err);
-      return res.status(500).json({ error: 'Failed to delete relationship', details: err.message });
+      return errorResponse(res, 500, 'Failed to delete relationship', err);
     }
   }
 

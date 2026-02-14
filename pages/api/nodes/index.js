@@ -1,23 +1,88 @@
-import { runRead, runWrite } from '../../../lib/neo4j';
-import {
-  isDemoRequest,
-  listNodes as demoListNodes,
-  createNode as demoCreateNode,
-} from '../../../lib/demoStore';
+// pages/api/nodes/index.js
+// Graph nodes API - PostgreSQL implementation
+
+import { query } from '../../../lib/pg';
+import { getUserFromRequest } from '../../../lib/projectAccess';
+
+// Auto-create tables if they don't exist
+async function ensureTablesExist() {
+  try {
+    await query(`
+      CREATE TABLE IF NOT EXISTS graph_node_types (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        label TEXT,
+        description TEXT,
+        layer TEXT,
+        color TEXT DEFAULT '#6b7280',
+        icon TEXT,
+        shape TEXT DEFAULT 'ellipse',
+        domain TEXT DEFAULT 'core',
+        properties JSONB DEFAULT '{}',
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      )
+    `);
+
+    await query(`
+      CREATE TABLE IF NOT EXISTS graph_nodes (
+        id TEXT PRIMARY KEY,
+        type_id TEXT REFERENCES graph_node_types(id) ON DELETE SET NULL,
+        name TEXT NOT NULL,
+        description TEXT,
+        layer TEXT,
+        tags TEXT[] DEFAULT '{}',
+        attributes JSONB DEFAULT '{}',
+        color TEXT,
+        icon TEXT,
+        weight REAL,
+        shape TEXT,
+        domain TEXT,
+        x REAL,
+        y REAL,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      )
+    `);
+
+    await query(`CREATE INDEX IF NOT EXISTS idx_graph_nodes_type ON graph_nodes(type_id)`);
+    await query(`CREATE INDEX IF NOT EXISTS idx_graph_nodes_domain ON graph_nodes(domain)`);
+  } catch (err) {
+    // Tables might already exist with different constraints, ignore errors
+    if (!err.message.includes('already exists')) {
+      console.error('[nodes] Error ensuring tables:', err.message);
+    }
+  }
+}
 
 export default async function handler(req, res) {
+  // Authentication required for write operations
+  const { user, role } = getUserFromRequest(req);
+  if (req.method !== 'GET' && !user) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+
   try {
-    const isDemo = isDemoRequest(req);
-
     if (req.method === 'GET') {
-      const { typeId, typeIds, domain, domainName } = req.query;
+      const { typeId, typeIds, domain, domainName, count } = req.query;
 
-      let query = `
-        MATCH (n:DomainNode)
-        OPTIONAL MATCH (n)-[:INSTANCE_OF]->(t:NodeType)
+      // Ensure tables exist
+      await ensureTablesExist();
+
+      // Build query
+      let sql = `
+        SELECT
+          n.id, n.name, n.type_id, n.description, n.layer, n.tags,
+          n.attributes, n.color, n.icon, n.weight, n.shape, n.domain, n.x, n.y,
+          t.name as type_name, t.color as type_color, t.shape as type_shape, t.icon as type_icon, t.layer as type_layer, t.domain as type_domain
+        FROM graph_nodes n
+        LEFT JOIN graph_node_types t ON n.type_id = t.id
+        WHERE 1=1
       `;
-      const params = {};
+      const params = [];
+      let paramIdx = 1;
 
+      // Filter by type
       let filterIds = [];
       if (typeIds) {
         const raw = Array.isArray(typeIds) ? typeIds.join(',') : typeIds;
@@ -26,65 +91,51 @@ export default async function handler(req, res) {
         filterIds = [typeId];
       }
 
-      const whereParts = [];
-
-      if (filterIds.length) {
-        whereParts.push('coalesce(t.id, n.typeId) IN $typeIds');
-        params.typeIds = filterIds;
+      if (filterIds.length > 0) {
+        sql += ` AND COALESCE(n.type_id, '') = ANY($${paramIdx})`;
+        params.push(filterIds);
+        paramIdx++;
       }
 
+      // Filter by domain - cast UUID to text for comparison
       const domainFilters = domain ? [domain, domainName].filter(Boolean) : [];
-      if (domainFilters.length) {
-        whereParts.push('coalesce(n.domain, t.domain, "core") IN $domains');
-        params.domains = domainFilters;
+      if (domainFilters.length > 0) {
+        sql += ` AND COALESCE(n.domain::text, COALESCE(t.domain::text, 'core')) = ANY($${paramIdx})`;
+        params.push(domainFilters);
+        paramIdx++;
       }
 
-      if (whereParts.length) {
-        query += ' WHERE ' + whereParts.join(' AND ');
+      sql += ' ORDER BY n.name';
+
+      // Count mode
+      if (count === 'true') {
+        const countSql = sql.replace(/SELECT[\s\S]*?FROM/, 'SELECT COUNT(*) as count FROM');
+        const result = await query(countSql.replace(' ORDER BY n.name', ''), params);
+        return res.status(200).json({ count: parseInt(result.rows[0]?.count || 0) });
       }
 
-      if (isDemo) {
-        const nodes = demoListNodes({ typeIds: filterIds, domains: domainFilters });
-        return res.status(200).json(nodes);
-      }
+      const result = await query(sql, params);
 
-      query += ' RETURN n, t ORDER BY n.name';
-
-      const records = await runRead(query, params);
-      const nodes = records.map(r => {
-        const n = r.get('n').properties;
-        const tVal = r.get('t');
-        const t = tVal ? tVal.properties : null;
-        let attrs = {};
-        if (n.attributesJson) {
-          try {
-            attrs = JSON.parse(n.attributesJson);
-          } catch (_) {
-            attrs = {};
-          }
-        } else if (n.attributes && typeof n.attributes === 'object') {
-          attrs = n.attributes;
-        }
-        return {
-          id: n.id,
-          name: n.name,
-          typeId: t ? t.id : null,
-          typeName: t ? t.name : null,
-          typeColor: t ? t.color : null,
-          typeShape: t ? t.shape : null,
-          layer: n.layer || (t ? t.layer : null) || 'Unassigned',
-          description: n.description || '',
-          tags: n.tags || [],
-          attributes: attrs,
-          color: n.color || null,
-          icon: n.icon || (t ? t.icon : null) || null,
-          weight: typeof n.weight === 'number' ? n.weight : parseFloat(n.weight) || null,
-          shape: n.shape || (t ? t.shape : null) || 'ellipse',
-          domain: n.domain || t?.domain || null,
-          x: typeof n.x === 'number' ? n.x : null,
-          y: typeof n.y === 'number' ? n.y : null,
-        };
-      });
+      const nodes = result.rows.map(row => ({
+        id: row.id,
+        name: row.name,
+        typeId: row.type_id,
+        typeName: row.type_name,
+        typeColor: row.type_color || row.color,
+        typeShape: row.type_shape || row.shape,
+        layer: row.layer || row.type_layer || 'Unassigned',
+        description: row.description || '',
+        tags: row.tags || [],
+        attributes: row.attributes || {},
+        color: row.color,
+        icon: row.icon || row.type_icon,
+        weight: row.weight,
+        shape: row.shape || row.type_shape || 'ellipse',
+        // Return domain with fallback to type domain - matches server-side filter logic
+        domain: row.domain || row.type_domain || null,
+        x: row.x,
+        y: row.y,
+      }));
 
       return res.status(200).json(nodes);
     }
@@ -99,6 +150,9 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'name is required' });
       }
 
+      // Ensure tables exist
+      await ensureTablesExist();
+
       const id = `n_${Date.now()}`;
       const safeLayer = layer ?? null;
       const safeDomain = domain ?? null;
@@ -106,83 +160,32 @@ export default async function handler(req, res) {
       const safeDescription = description ?? '';
       const safeIcon = icon ?? null;
       const safeShape = shape ?? null;
-      const safeAttributes =
-        attributes && typeof attributes === 'object' ? attributes : {};
-      const attributesJson = JSON.stringify(safeAttributes);
-      const safeWeight =
-        typeof weight === 'number'
-          ? weight
-          : isNaN(parseFloat(weight))
-            ? null
-            : parseFloat(weight);
+      const safeAttributes = attributes && typeof attributes === 'object' ? attributes : {};
+      const safeWeight = typeof weight === 'number' ? weight : (parseFloat(weight) || null);
       const safeColor = color === undefined || color === '' ? null : color;
-      const safeX = typeof x === 'number' ? x : (typeof x === 'string' && !isNaN(parseFloat(x)) ? parseFloat(x) : null);
-      const safeY = typeof y === 'number' ? y : (typeof y === 'string' && !isNaN(parseFloat(y)) ? parseFloat(y) : null);
+      const safeX = typeof x === 'number' ? x : (parseFloat(x) || null);
+      const safeY = typeof y === 'number' ? y : (parseFloat(y) || null);
 
-      if (isDemo) {
-        const id = demoCreateNode({
-          id,
-          typeId,
-          name,
-          description: safeDescription,
-          icon: safeIcon,
-          attributes: safeAttributes,
-          layer: safeLayer,
-          tags: safeTags,
-          weight: safeWeight,
-          color: safeColor,
-          shape: safeShape,
-          x: safeX,
-          y: safeY
-        });
-        return res.status(201).json({ id });
+      // Get layer from type if not specified
+      let finalLayer = safeLayer;
+      if (!finalLayer && typeId) {
+        const typeResult = await query('SELECT layer FROM graph_node_types WHERE id = $1', [typeId]);
+        if (typeResult.rows[0]) {
+          finalLayer = typeResult.rows[0].layer;
+        }
       }
 
-      await runWrite(
-        `
-        MATCH (t:NodeType {id: $typeId})
-        CREATE (n:DomainNode {
-          id: $id,
-          name: $name,
-          description: $description,
-          icon: $icon,
-          attributesJson: $attributesJson,
-          color: $color,
-          layer: coalesce($layer, t.layer),
-          tags: coalesce($tags, []),
-          weight: $weight,
-          shape: $shape,
-          domain: coalesce($domain, t.domain),
-          x: $x,
-          y: $y
-        })
-        MERGE (n)-[:INSTANCE_OF]->(t)
-        RETURN n
-        `,
-        {
-          id,
-          typeId,
-          name,
-          description: safeDescription,
-          icon: safeIcon,
-          attributesJson,
-          layer: safeLayer,
-          tags: safeTags,
-          weight: safeWeight,
-          color: safeColor,
-          shape: safeShape,
-          domain: safeDomain,
-          x: safeX,
-          y: safeY,
-        }
-      );
+      await query(`
+        INSERT INTO graph_nodes (id, type_id, name, description, layer, tags, attributes, color, icon, weight, shape, domain, x, y)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+      `, [id, typeId, name, safeDescription, finalLayer, safeTags, safeAttributes, safeColor, safeIcon, safeWeight, safeShape, safeDomain, safeX, safeY]);
 
       return res.status(201).json({ id });
     }
 
     return res.status(405).json({ error: 'Method not allowed' });
   } catch (e) {
-    console.error(e);
-    return res.status(500).json({ error: 'Internal server error' });
+    console.error('[nodes API error]', e);
+    return res.status(500).json({ error: 'Internal server error', details: e.message });
   }
 }

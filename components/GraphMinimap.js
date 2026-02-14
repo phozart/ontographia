@@ -61,7 +61,7 @@ export default function GraphMinimap({ cy, visible = true, onClose, position = '
     cy.nodes().forEach(node => {
       const pos = node.position();
       const size = Math.max(4, (node.data('size') || 60) * scale * 0.15);
-      const color = node.data('color') || '#6366f1';
+      const color = node.data('color') || '#00d4aa';
       const isSelected = node.selected();
       const isHighlighted = node.hasClass('highlighted');
 
@@ -80,7 +80,7 @@ export default function GraphMinimap({ cy, visible = true, onClose, position = '
 
       // Border for selected/highlighted
       if (isSelected || isHighlighted) {
-        ctx.strokeStyle = isHighlighted ? '#f59e0b' : '#6366f1';
+        ctx.strokeStyle = isHighlighted ? '#f59e0b' : '#00d4aa';
         ctx.lineWidth = 2;
         ctx.stroke();
       }

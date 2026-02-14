@@ -1,13 +1,16 @@
 // pages/api/nodes/[id].js
-import { runRead, runWrite } from '../../../lib/neo4j';
-import {
-  isDemoRequest,
-  getNode as demoGetNode,
-  updateNode as demoUpdateNode,
-  deleteNode as demoDeleteNode,
-} from '../../../lib/demoStore';
+// Single node operations - PostgreSQL implementation
+
+import { query } from '../../../lib/pg';
+import { getUserFromRequest } from '../../../lib/projectAccess';
 
 export default async function handler(req, res) {
+  // Authentication required for write operations
+  const { user, role } = getUserFromRequest(req);
+  if (req.method !== 'GET' && !user) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+
   const { id } = req.query;
 
   if (!id) {
@@ -15,60 +18,40 @@ export default async function handler(req, res) {
   }
 
   try {
-    const isDemo = isDemoRequest(req);
-
     if (req.method === 'GET') {
-      if (isDemo) {
-        const node = demoGetNode(id);
-        if (!node) return res.status(404).json({ error: 'Node not found' });
-        return res.status(200).json(node);
-      }
+      const result = await query(`
+        SELECT
+          n.id, n.name, n.type_id, n.description, n.layer, n.tags,
+          n.attributes, n.color, n.icon, n.weight, n.shape, n.domain, n.x, n.y,
+          t.name as type_name, t.color as type_color, t.shape as type_shape, t.icon as type_icon, t.layer as type_layer
+        FROM graph_nodes n
+        LEFT JOIN graph_node_types t ON n.type_id = t.id
+        WHERE n.id = $1
+      `, [id]);
 
-      const records = await runRead(
-        `
-        MATCH (n:DomainNode {id: $id})
-        OPTIONAL MATCH (n)-[:INSTANCE_OF]->(t:NodeType)
-        RETURN n, t
-        `,
-        { id }
-      );
-
-      if (records.length === 0) {
+      if (result.rows.length === 0) {
         return res.status(404).json({ error: 'Node not found' });
       }
 
-      const rec = records[0];
-      const n = rec.get('n').properties;
-      const tVal = rec.get('t');
-      const t = tVal ? tVal.properties : {};
-      let attrs = {};
-      if (n.attributesJson) {
-        try {
-          attrs = JSON.parse(n.attributesJson);
-        } catch (_) {
-          attrs = {};
-        }
-      } else if (n.attributes && typeof n.attributes === 'object') {
-        attrs = n.attributes;
-      }
+      const row = result.rows[0];
 
       return res.status(200).json({
-        id: n.id,
-        name: n.name,
-        typeId: t.id || null,
-        typeName: t.name || null,
-        typeColor: t.color || null,
-        typeShape: t.shape || null,
-        layer: n.layer || t.layer || 'Unassigned',
-        description: n.description || '',
-        tags: n.tags || [],
-        icon: n.icon || t.icon || null,
-        color: n.color || null,
-        attributes: attrs,
-        weight: typeof n.weight === 'number' ? n.weight : parseFloat(n.weight) || null,
-        shape: n.shape || t.shape || 'ellipse',
-        x: typeof n.x === 'number' ? n.x : null,
-        y: typeof n.y === 'number' ? n.y : null,
+        id: row.id,
+        name: row.name,
+        typeId: row.type_id || null,
+        typeName: row.type_name || null,
+        typeColor: row.type_color || row.color || null,
+        typeShape: row.type_shape || row.shape || null,
+        layer: row.layer || row.type_layer || 'Unassigned',
+        description: row.description || '',
+        tags: row.tags || [],
+        icon: row.icon || row.type_icon || null,
+        color: row.color || null,
+        attributes: row.attributes || {},
+        weight: typeof row.weight === 'number' ? row.weight : null,
+        shape: row.shape || row.type_shape || 'ellipse',
+        x: typeof row.x === 'number' ? row.x : null,
+        y: typeof row.y === 'number' ? row.y : null,
       });
     }
 
@@ -87,92 +70,78 @@ export default async function handler(req, res) {
             ? null
             : parseFloat(weight);
       const safeLayer = layer ?? null;
-      const safeDescription = description ?? null;
+      const safeDescription = description ?? '';
       const safeIcon = icon ?? null;
-      const safeColor =
-        color === undefined
-          ? null
-          : color === ''
-            ? null
-            : color;
+      const safeColor = color === undefined || color === '' ? null : color;
       const safeShape = shape ?? null;
-      const shapeProvided = shape !== undefined;
-      const attributesProvided = attributes !== undefined;
-      const safeAttributes =
-        attributesProvided && attributes && typeof attributes === 'object' ? attributes : {};
-      const attributesJson = attributesProvided ? JSON.stringify(safeAttributes) : null;
-      const xProvided = x !== undefined;
-      const yProvided = y !== undefined;
+      const safeAttributes = attributes && typeof attributes === 'object' ? attributes : {};
       const safeX = typeof x === 'number' ? x : (typeof x === 'string' && !isNaN(parseFloat(x)) ? parseFloat(x) : null);
       const safeY = typeof y === 'number' ? y : (typeof y === 'string' && !isNaN(parseFloat(y)) ? parseFloat(y) : null);
 
-      if (isDemo) {
-        const ok = demoUpdateNode(id, {
-          name,
-          layer: safeLayer,
-          tags: safeTags,
-          description: safeDescription,
-          icon: safeIcon,
-          color: color !== undefined ? safeColor : undefined,
-          weight: safeWeight,
-          shape: safeShape,
-          attributes: attributesProvided ? safeAttributes : undefined,
-          x: xProvided ? safeX : undefined,
-          y: yProvided ? safeY : undefined,
-        });
-        if (!ok) return res.status(404).json({ error: 'Node not found' });
-        return res.status(200).json({ id });
+      // Build dynamic update query
+      const updates = ['name = $2', 'updated_at = NOW()'];
+      const params = [id, name];
+      let paramIdx = 3;
+
+      if (layer !== undefined) {
+        updates.push(`layer = $${paramIdx}`);
+        params.push(safeLayer);
+        paramIdx++;
+      }
+      if (tags !== undefined) {
+        updates.push(`tags = $${paramIdx}`);
+        params.push(safeTags);
+        paramIdx++;
+      }
+      if (description !== undefined) {
+        updates.push(`description = $${paramIdx}`);
+        params.push(safeDescription);
+        paramIdx++;
+      }
+      if (icon !== undefined) {
+        updates.push(`icon = $${paramIdx}`);
+        params.push(safeIcon);
+        paramIdx++;
+      }
+      if (color !== undefined) {
+        updates.push(`color = $${paramIdx}`);
+        params.push(safeColor);
+        paramIdx++;
+      }
+      if (weight !== undefined) {
+        updates.push(`weight = $${paramIdx}`);
+        params.push(safeWeight);
+        paramIdx++;
+      }
+      if (shape !== undefined) {
+        updates.push(`shape = $${paramIdx}`);
+        params.push(safeShape);
+        paramIdx++;
+      }
+      if (attributes !== undefined) {
+        updates.push(`attributes = $${paramIdx}`);
+        params.push(safeAttributes);
+        paramIdx++;
+      }
+      if (x !== undefined) {
+        updates.push(`x = $${paramIdx}`);
+        params.push(safeX);
+        paramIdx++;
+      }
+      if (y !== undefined) {
+        updates.push(`y = $${paramIdx}`);
+        params.push(safeY);
+        paramIdx++;
       }
 
-      const records = await runWrite(
-        `
-        MATCH (n:DomainNode {id: $id})
-        OPTIONAL MATCH (n)-[r:INSTANCE_OF]->(t:NodeType)
-        SET n.name = $name,
-            n.layer = coalesce($layer, n.layer),
-            n.tags = coalesce($tags, n.tags, []),
-            n.description = coalesce($description, n.description, ''),
-            n.icon = coalesce($icon, n.icon, t.icon),
-            n.weight = coalesce($weight, n.weight)
-        FOREACH (_ IN CASE WHEN $colorProvided THEN [1] ELSE [] END |
-          SET n.color = $color
-        )
-        FOREACH (_ IN CASE WHEN $shapeProvided THEN [1] ELSE [] END |
-          SET n.shape = $shape
-        )
-        FOREACH (_ IN CASE WHEN $attributesProvided THEN [1] ELSE [] END |
-          SET n.attributesJson = $attributesJson
-        )
-        FOREACH (_ IN CASE WHEN $xProvided THEN [1] ELSE [] END |
-          SET n.x = $x
-        )
-        FOREACH (_ IN CASE WHEN $yProvided THEN [1] ELSE [] END |
-          SET n.y = $y
-        )
-        RETURN n
-        `,
-        {
-          id,
-          name,
-          layer: safeLayer,
-          tags: safeTags,
-          icon: safeIcon,
-          color: safeColor,
-          colorProvided: color !== undefined,
-          shape: safeShape,
-          shapeProvided,
-          description: safeDescription,
-          attributesJson,
-          attributesProvided,
-          weight: safeWeight,
-          x: safeX,
-          y: safeY,
-          xProvided,
-          yProvided,
-        }
-      );
+      const result = await query(`
+        UPDATE graph_nodes
+        SET ${updates.join(', ')}
+        WHERE id = $1
+        RETURNING id
+      `, params);
 
-      if (records.length === 0) {
+      if (result.rows.length === 0) {
         return res.status(404).json({ error: 'Node not found' });
       }
 
@@ -180,23 +149,16 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'DELETE') {
-      if (isDemo) {
-        demoDeleteNode(id);
-        return res.status(204).end();
-      }
-      await runWrite(
-        `
-        MATCH (n:DomainNode {id: $id})
-        DETACH DELETE n
-        `,
-        { id }
-      );
+      // Delete relationships first (CASCADE should handle this, but explicit is safer)
+      await query('DELETE FROM graph_relationships WHERE source_id = $1 OR target_id = $1', [id]);
+      await query('DELETE FROM graph_nodes WHERE id = $1', [id]);
+
       return res.status(204).end();
     }
 
     return res.status(405).json({ error: 'Method not allowed' });
   } catch (e) {
-    console.error(e);
-    return res.status(500).json({ error: 'Internal server error' });
+    console.error('[nodes/[id] API error]', e);
+    return res.status(500).json({ error: 'Internal server error', details: e.message });
   }
 }

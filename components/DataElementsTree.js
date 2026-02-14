@@ -1,7 +1,8 @@
 import React from 'react';
 import { SimpleTreeView } from '@mui/x-tree-view/SimpleTreeView';
 import { TreeItem } from '@mui/x-tree-view/TreeItem';
-import { ChevronRight, ExpandMore } from '@mui/icons-material';
+import ChevronRight from '@mui/icons-material/ChevronRight';
+import ExpandMore from '@mui/icons-material/ExpandMore';
 import { Box, Chip, Typography } from '@mui/material';
 
 export default function DataElementsTree({

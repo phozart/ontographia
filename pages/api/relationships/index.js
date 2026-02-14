@@ -1,112 +1,122 @@
-// pages/api/relationships.js
-import { runRead, runWrite } from '../../../lib/neo4j';
-import {
-  isDemoRequest,
-  listRelationships as demoListRelationships,
-  createRelationship as demoCreateRelationship,
-} from '../../../lib/demoStore';
+// pages/api/relationships/index.js
+// Graph relationships API - PostgreSQL implementation
+
+import { query } from '../../../lib/pg';
+import { getUserFromRequest } from '../../../lib/projectAccess';
 
 export default async function handler(req, res) {
-  try {
-    const isDemo = isDemoRequest(req);
+  // Authentication required for write operations
+  const { user, role } = getUserFromRequest(req);
+  if (req.method !== 'GET' && !user) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
 
+  try {
     if (req.method === 'GET') {
       const { nodeId, domain, domainName } = req.query;
 
       if (nodeId) {
         // relationships for a single node, with direction
-        if (isDemo) {
-          const rels = demoListRelationships(nodeId, domain);
-          return res.status(200).json(rels);
+        const domainFilters = domain ? [domain, domainName].filter(Boolean) : [];
+
+        // Get outgoing relationships
+        // Cast UUID columns to text for comparison with graph_nodes TEXT ids
+        let outgoingSql = `
+          SELECT
+            r.id, r.type_id, t.name as type_name,
+            r.source_id, r.target_id, r.name, r.description, r.weight, r.properties,
+            n.id as other_id, n.name as other_name, 'out' as direction
+          FROM graph_relationships r
+          LEFT JOIN graph_relationship_types t ON r.type_id::text = t.id
+          JOIN graph_nodes n ON r.target_id::text = n.id
+          WHERE r.source_id::text = $1
+        `;
+        const outgoingParams = [nodeId];
+        let paramIdx = 2;
+
+        if (domainFilters.length > 0) {
+          outgoingSql += ` AND COALESCE(n.domain::text, 'core') = ANY($${paramIdx})`;
+          outgoingParams.push(domainFilters);
+          paramIdx++;
         }
 
-        const records = await runRead(
-          `
-          MATCH (n:DomainNode {id: $nodeId})
-          OPTIONAL MATCH (n)-[r]->(m:DomainNode)
-          WITH n, collect({ rel: r, other: m, direction: 'out' }) AS outgoing
-          OPTIONAL MATCH (p:DomainNode)-[r2]->(n)
-          WITH n, outgoing, collect({ rel: r2, other: p, direction: 'in' }) AS incoming
-          UNWIND (outgoing + incoming) AS row
-          WITH row.rel AS r, row.other AS otherNode, row.direction AS direction
-          WHERE r IS NOT NULL AND otherNode IS NOT NULL
-          ${domain ? 'AND coalesce(n.domain, "core") IN $domains AND coalesce(otherNode.domain, "core") IN $domains' : ''}
-          RETURN r, otherNode, direction
-          `,
-          {
-            nodeId,
-            domains: domain ? [domain, domainName].filter(Boolean) : undefined,
-          }
-        );
+        // Get incoming relationships
+        // Cast UUID columns to text for comparison with graph_nodes TEXT ids
+        let incomingSql = `
+          SELECT
+            r.id, r.type_id, t.name as type_name,
+            r.source_id, r.target_id, r.name, r.description, r.weight, r.properties,
+            n.id as other_id, n.name as other_name, 'in' as direction
+          FROM graph_relationships r
+          LEFT JOIN graph_relationship_types t ON r.type_id::text = t.id
+          JOIN graph_nodes n ON r.source_id::text = n.id
+          WHERE r.target_id::text = $1
+        `;
+        const incomingParams = [nodeId];
+        let inParamIdx = 2;
 
-        const rels = records.map(rec => {
-          const r = rec.get('r');
-          const other = rec.get('otherNode').properties;
-          const direction = rec.get('direction');
-          const props = r.properties || {};
-          const id =
-            props.id ||
-            (r.identity
-              ? String(r.identity.toNumber ? r.identity.toNumber() : r.identity)
-              : null);
+        if (domainFilters.length > 0) {
+          incomingSql += ` AND COALESCE(n.domain::text, 'core') = ANY($${inParamIdx})`;
+          incomingParams.push(domainFilters);
+        }
 
-          return {
-            id,
-            type: r.type,
-            direction,
-            otherNodeId: other.id,
-            otherNodeName: other.name || other.id,
-          };
-        });
+        const [outgoingResult, incomingResult] = await Promise.all([
+          query(outgoingSql, outgoingParams),
+          query(incomingSql, incomingParams),
+        ]);
+
+        const rels = [...outgoingResult.rows, ...incomingResult.rows].map(row => ({
+          id: row.id,
+          type: row.type_id || row.type_name,
+          direction: row.direction,
+          otherNodeId: row.other_id,
+          otherNodeName: row.other_name || row.other_id,
+        }));
 
         return res.status(200).json(rels);
       }
 
       // all relationships (for Graph)
-      if (isDemo) {
-        const rels = demoListRelationships(null, domain);
-        return res.status(200).json(rels);
-      }
-
-      let query = `
-        MATCH (a:DomainNode)-[r]->(b:DomainNode)
+      // Cast UUID columns to text for comparison with graph_nodes TEXT ids
+      let sql = `
+        SELECT
+          r.id, r.type_id, t.name as type_name,
+          r.source_id, r.target_id, r.name, r.description, r.weight, r.properties
+        FROM graph_relationships r
+        LEFT JOIN graph_relationship_types t ON r.type_id::text = t.id
+        JOIN graph_nodes a ON r.source_id::text = a.id
+        JOIN graph_nodes b ON r.target_id::text = b.id
+        WHERE 1=1
       `;
-      const params = {};
+      const params = [];
+      let idx = 1;
+
       if (domain) {
-        const domains = [domain, domainName].filter(Boolean);
-        if (domains.length) {
-          query += ' WHERE coalesce(a.domain, "core") IN $domains AND coalesce(b.domain, "core") IN $domains';
-          params.domains = domains;
+        const domainFilters = [domain, domainName].filter(Boolean);
+        if (domainFilters.length) {
+          // Cast UUID domain column to text for comparison
+          sql += ` AND COALESCE(a.domain::text, 'core') = ANY($${idx}) AND COALESCE(b.domain::text, 'core') = ANY($${idx})`;
+          params.push(domainFilters);
+          idx++;
         }
       }
-      query += ' RETURN a, r, b';
 
-      const records = await runRead(query, params);
+      sql += ' ORDER BY r.id';
 
-      const rels = records.map(rec => {
-        const a = rec.get('a').properties;
-        const r = rec.get('r');
-        const b = rec.get('b').properties;
-        const props = r.properties || {};
-        const id =
-          props.id ||
-          (r.identity
-            ? String(r.identity.toNumber ? r.identity.toNumber() : r.identity)
-            : null);
+      const result = await query(sql, params);
 
-        return {
-          id,
-          type: r.type,
-          sourceId: a.id,
-          targetId: b.id,
-        };
-      });
+      const rels = result.rows.map(row => ({
+        id: row.id,
+        type: row.type_id || row.type_name,
+        sourceId: row.source_id,
+        targetId: row.target_id,
+      }));
 
       return res.status(200).json(rels);
     }
 
     if (req.method === 'POST') {
-      const { sourceId, targetId, type } = req.body || {};
+      const { sourceId, targetId, type, name, description, weight, properties } = req.body || {};
 
       if (!sourceId || !targetId || !type) {
         return res
@@ -116,36 +126,30 @@ export default async function handler(req, res) {
 
       const relId = `rel_${Date.now()}`;
 
-      if (isDemo) {
-        const id = demoCreateRelationship({ sourceId, targetId, type });
-        return res.status(201).json({ id });
-      }
-
-      const records = await runWrite(
-        `
-        MATCH (a:DomainNode {id: $sourceId}), (b:DomainNode {id: $targetId})
-        MERGE (a)-[r:\`${type}\`]->(b)
-        ON CREATE SET r.id = $relId
-        ON MATCH SET r.id = coalesce(r.id, $relId)
-        RETURN r
-        `,
-        { sourceId, targetId, type, relId }
+      // Check that both nodes exist
+      const nodesExist = await query(
+        'SELECT id FROM graph_nodes WHERE id = ANY($1)',
+        [[sourceId, targetId]]
       );
 
-      const r = records[0].get('r');
-      const props = r.properties || {};
-      const id =
-        props.id ||
-        (r.identity
-          ? String(r.identity.toNumber ? r.identity.toNumber() : r.identity)
-          : null);
+      if (nodesExist.rows.length < 2) {
+        return res.status(400).json({ error: 'Source or target node not found' });
+      }
 
-      return res.status(201).json({ id });
+      const safeProperties = properties && typeof properties === 'object' ? properties : {};
+      const safeWeight = typeof weight === 'number' ? weight : null;
+
+      await query(`
+        INSERT INTO graph_relationships (id, type_id, source_id, target_id, name, description, weight, properties)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      `, [relId, type, sourceId, targetId, name || null, description || null, safeWeight, safeProperties]);
+
+      return res.status(201).json({ id: relId });
     }
 
     return res.status(405).json({ error: 'Method not allowed' });
   } catch (e) {
-    console.error(e);
-    return res.status(500).json({ error: 'Internal server error' });
+    console.error('[relationships API error]', e);
+    return res.status(500).json({ error: 'Internal server error', details: e.message });
   }
 }

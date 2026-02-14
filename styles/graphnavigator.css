@@ -1,0 +1,1785 @@
+/* =============================================================================
+   KNOWLEDGE STUDIO - GRAPH NAVIGATOR
+   Post-2026 Design Language: Spatial-Native, Command-First
+   ============================================================================= */
+
+/* -----------------------------------------------------------------------------
+   CSS CUSTOM PROPERTIES (Design Tokens)
+   ----------------------------------------------------------------------------- */
+:root {
+  /* Background layers */
+  --ks-bg-void: #050507;
+  --ks-bg-canvas: #0a0a0c;
+  --ks-bg-surface: #12121a;
+  --ks-bg-elevated: #1a1a24;
+
+  /* Glass */
+  --ks-glass-bg: rgba(18, 18, 26, 0.72);
+  --ks-glass-border: rgba(255, 255, 255, 0.06);
+  --ks-glass-hover: rgba(255, 255, 255, 0.08);
+
+  /* Brand */
+  --ks-primary: #00d4aa;
+  --ks-primary-soft: rgba(0, 212, 170, 0.12);
+  --ks-primary-glow: rgba(0, 212, 170, 0.25);
+
+  /* Text */
+  --ks-text: #f0f0f5;
+  --ks-text-secondary: #8b8b9a;
+  --ks-text-muted: #5a5a6a;
+
+  /* Motion */
+  --ks-duration-fast: 100ms;
+  --ks-duration-normal: 150ms;
+  --ks-duration-slow: 250ms;
+  --ks-ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --ks-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* ==========================================================================
+     3-LEVEL ELEVATION SYSTEM
+     Level 1: Structural Docked (top bar, sidebars) - subtle, grounded
+     Level 2: Primary Action (FAB, action panels) - prominent, actionable
+     Level 3: Contextual (tooltips, dropdowns, modals) - floating, focus
+     ========================================================================== */
+  --ks-elevation-1: 0 1px 2px rgba(0, 0, 0, 0.15);
+  --ks-elevation-2:
+    0 4px 12px rgba(0, 0, 0, 0.25),
+    0 2px 4px rgba(0, 0, 0, 0.15);
+  --ks-elevation-3:
+    0 8px 24px rgba(0, 0, 0, 0.35),
+    0 4px 8px rgba(0, 0, 0, 0.2);
+
+  /* Elevation with glow (for primary actions) */
+  --ks-elevation-2-glow:
+    0 4px 16px var(--ks-primary-glow),
+    0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+/* Light mode overrides */
+[data-theme="light"] {
+  --ks-bg-void: #f5f5f7;
+  --ks-bg-canvas: #ffffff;
+  --ks-bg-surface: #ffffff;
+  --ks-bg-elevated: #ffffff;
+  --ks-glass-bg: rgba(255, 255, 255, 0.72);
+  --ks-glass-border: rgba(0, 0, 0, 0.06);
+  --ks-glass-hover: rgba(0, 0, 0, 0.04);
+  --ks-text: #0a0a0c;
+  --ks-text-secondary: #5a5a6a;
+  --ks-text-muted: #8b8b9a;
+
+  /* Light mode elevations - softer shadows */
+  --ks-elevation-1: 0 1px 2px rgba(0, 0, 0, 0.08);
+  --ks-elevation-2:
+    0 4px 12px rgba(0, 0, 0, 0.1),
+    0 2px 4px rgba(0, 0, 0, 0.06);
+  --ks-elevation-3:
+    0 8px 24px rgba(0, 0, 0, 0.15),
+    0 4px 8px rgba(0, 0, 0, 0.08);
+  --ks-elevation-2-glow:
+    0 4px 16px rgba(0, 212, 170, 0.2),
+    0 2px 4px rgba(0, 0, 0, 0.06);
+}
+
+/* -----------------------------------------------------------------------------
+   STUDIO CONTAINER - Full viewport canvas with row layout
+   ----------------------------------------------------------------------------- */
+.studio-container {
+  display: flex;
+  flex-direction: row; /* Row layout: graph + sidepanel side by side */
+  width: 100%;
+  height: 100%;
+  background: var(--ks-bg-canvas);
+  position: relative;
+  overflow: hidden;
+}
+
+.studio-graph {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  position: relative;
+  min-height: 0;
+  min-width: 0; /* Allow shrinking when sidepanel is open */
+}
+
+/* Sidepanel - Right side panel for node details */
+.studio-sidepanel {
+  width: 340px;
+  min-width: 280px;
+  max-width: 400px;
+  height: 100%; /* Fill full container height */
+  padding-top: 56px; /* Align with graph area below toolbar (48px toolbar + 8px spacing) */
+  background: var(--ks-glass-bg);
+  backdrop-filter: blur(16px) saturate(1.2);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  border-left: 1px solid var(--ks-glass-border);
+  box-shadow: var(--ks-elevation-1);
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+/* When embedded (toolbar hidden), no top padding needed */
+.app--embedded .studio-sidepanel {
+  padding-top: 0;
+}
+
+/* -----------------------------------------------------------------------------
+   3-ZONE TOP BAR STRUCTURE
+   Zone 1: Identity (left) - workspace, context, breadcrumb
+   Zone 2: Mode (center) - current tool/view mode
+   Zone 3: Global (right) - theme, user, notifications
+   ----------------------------------------------------------------------------- */
+.studio-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  height: 48px;
+  min-height: 48px;
+  /* Level 1: Structural - docked to top */
+  background: var(--ks-glass-bg);
+  backdrop-filter: blur(16px) saturate(1.2);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  border-bottom: 1px solid var(--ks-glass-border);
+  box-shadow: var(--ks-elevation-1);
+  z-index: 100;
+}
+
+/* Zone 1: Identity (left) */
+.topbar-zone-identity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 0 0 auto;
+}
+
+.topbar-workspace {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.topbar-workspace-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: var(--ks-primary-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ks-primary);
+  font-size: 12px;
+}
+
+.topbar-workspace-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ks-text);
+}
+
+.topbar-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--ks-text-secondary);
+}
+
+.topbar-breadcrumb-sep {
+  color: var(--ks-text-muted);
+}
+
+/* Zone 2: Mode (center) */
+.topbar-zone-mode {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.topbar-mode-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ks-text);
+}
+
+.topbar-mode-badge {
+  padding: 2px 8px;
+  background: var(--ks-primary-soft);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ks-primary);
+}
+
+/* Zone 3: Global (right) */
+.topbar-zone-global {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.topbar-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  color: var(--ks-text-secondary);
+  cursor: pointer;
+  transition: all var(--ks-duration-fast) var(--ks-ease);
+}
+
+.topbar-action-btn:hover {
+  background: var(--ks-glass-hover);
+  color: var(--ks-text);
+}
+
+.topbar-action-btn.active {
+  background: var(--ks-primary-soft);
+  color: var(--ks-primary);
+}
+
+/* -----------------------------------------------------------------------------
+   DROPDOWN MENU SYSTEM
+   Groups: Create, View, Layout, Data, Tools
+   ----------------------------------------------------------------------------- */
+.dropdown-trigger {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  color: var(--ks-text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--ks-duration-fast) var(--ks-ease);
+}
+
+.dropdown-trigger:hover,
+.dropdown-trigger.open {
+  background: var(--ks-glass-hover);
+  color: var(--ks-text);
+}
+
+.dropdown-trigger .dropdown-caret {
+  font-size: 10px;
+  transition: transform var(--ks-duration-fast) var(--ks-ease);
+}
+
+.dropdown-trigger.open .dropdown-caret {
+  transform: rotate(180deg);
+}
+
+.dropdown-container {
+  position: relative;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 200px;
+  padding: 6px;
+  border-radius: 12px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+  transition: all var(--ks-duration-fast) var(--ks-ease);
+  z-index: 200;
+  /* Level 3: Contextual - dropdown overlay */
+  background: var(--ks-glass-bg);
+  backdrop-filter: blur(20px) saturate(1.2);
+  -webkit-backdrop-filter: blur(20px) saturate(1.2);
+  border: 1px solid var(--ks-glass-border);
+  box-shadow: var(--ks-elevation-3);
+}
+
+.dropdown-container:hover .dropdown-menu,
+.dropdown-container.open .dropdown-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.dropdown-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+  font-size: 13px;
+  color: var(--ks-text);
+  transition: background var(--ks-duration-fast) var(--ks-ease);
+}
+
+.dropdown-menu-item:hover {
+  background: var(--ks-glass-hover);
+}
+
+.dropdown-menu-item:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.dropdown-menu-item-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  color: var(--ks-text-secondary);
+}
+
+.dropdown-menu-item-label {
+  flex: 1;
+}
+
+.dropdown-menu-item-shortcut {
+  font-size: 11px;
+  color: var(--ks-text-muted);
+  font-family: var(--font-mono, monospace);
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: var(--ks-glass-border);
+  margin: 4px 0;
+}
+
+/* Dropdown item (alias for dropdown-menu-item) */
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+  font-size: 13px;
+  color: var(--ks-text);
+  transition: background var(--ks-duration-fast) var(--ks-ease);
+}
+
+.dropdown-item:hover {
+  background: var(--ks-glass-hover);
+}
+
+.dropdown-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  font-size: 14px;
+  color: var(--ks-text-secondary);
+}
+
+/* Right-aligned dropdown (for toolbar) */
+.dropdown-container .dropdown-menu {
+  left: auto;
+  right: 0;
+}
+
+.dropdown-section-label {
+  padding: 8px 12px 4px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--ks-text-muted);
+}
+
+/* -----------------------------------------------------------------------------
+   COMPACT ACTION TOOLBAR
+   Unified toolbar with dropdown groups
+   ----------------------------------------------------------------------------- */
+.action-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 8px;
+  border-radius: 12px;
+  /* Level 1: Structural - docked toolbar */
+  background: var(--ks-glass-bg);
+  backdrop-filter: blur(16px) saturate(1.2);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  border: 1px solid var(--ks-glass-border);
+  box-shadow: var(--ks-elevation-1);
+}
+
+.action-toolbar-divider {
+  width: 1px;
+  height: 20px;
+  background: var(--ks-glass-border);
+  margin: 0 4px;
+}
+
+/* Primary action button in toolbar */
+.action-toolbar-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  color: var(--ks-text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all var(--ks-duration-fast) var(--ks-ease);
+}
+
+.action-toolbar-btn:hover {
+  background: var(--ks-glass-hover);
+  color: var(--ks-text);
+}
+
+.action-toolbar-btn.primary {
+  background: var(--ks-primary);
+  color: var(--ks-bg-canvas);
+}
+
+.action-toolbar-btn.primary:hover {
+  filter: brightness(1.1);
+}
+
+.action-toolbar-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Icon-only button variant */
+.action-toolbar-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  color: var(--ks-text-muted);
+  cursor: pointer;
+  transition: all var(--ks-duration-fast) var(--ks-ease);
+}
+
+.action-toolbar-icon-btn:hover {
+  background: var(--ks-glass-hover);
+  color: var(--ks-text);
+}
+
+.action-toolbar-icon-btn.active {
+  background: var(--ks-primary-soft);
+  color: var(--ks-primary);
+}
+
+.studio-graph-canvas {
+  flex: 1;
+  min-height: 0;
+  min-height: 400px; /* Fallback minimum height for Cytoscape */
+  overflow: hidden;
+  position: relative;
+}
+
+/* Ensure graph container fills available space */
+.studio-graph-canvas > *,
+.studio-graph-canvas .graph-view-container {
+  width: 100%;
+  height: 100%;
+  min-height: inherit;
+}
+
+/* -----------------------------------------------------------------------------
+   GLASS MIXIN - Reusable glassmorphism with elevation levels
+   ----------------------------------------------------------------------------- */
+.glass {
+  background: var(--ks-glass-bg);
+  backdrop-filter: blur(20px) saturate(1.2);
+  -webkit-backdrop-filter: blur(20px) saturate(1.2);
+  border: 1px solid var(--ks-glass-border);
+  box-shadow: var(--ks-elevation-2);
+}
+
+/* Level 1: Structural - docked elements like toolbars */
+.glass.elevation-1,
+.glass--structural {
+  box-shadow: var(--ks-elevation-1);
+}
+
+/* Level 2: Primary Action - FABs, action panels (default for .glass) */
+.glass.elevation-2,
+.glass--action {
+  box-shadow: var(--ks-elevation-2);
+}
+
+/* Level 2 with glow for primary CTA */
+.glass.elevation-2-glow,
+.glass--primary {
+  box-shadow: var(--ks-elevation-2-glow);
+}
+
+/* Level 3: Contextual - modals, dropdowns, tooltips */
+.glass.elevation-3,
+.glass--contextual {
+  box-shadow: var(--ks-elevation-3);
+}
+
+/* -----------------------------------------------------------------------------
+   COMMAND TRIGGER - Minimal top-right button
+   ----------------------------------------------------------------------------- */
+.command-trigger {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  z-index: 100;
+  transition: all var(--ks-duration-fast) var(--ks-ease);
+}
+
+.command-trigger:hover {
+  background: var(--ks-glass-hover);
+  border-color: var(--ks-primary);
+}
+
+.command-trigger-text {
+  font-size: 13px;
+  color: var(--ks-text-secondary);
+}
+
+.command-trigger-kbd {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px 6px;
+  background: var(--ks-bg-elevated);
+  border-radius: 5px;
+  font-size: 11px;
+  font-family: var(--font-mono, monospace);
+  color: var(--ks-text-muted);
+}
+
+/* -----------------------------------------------------------------------------
+   SEARCH PILL - Compact floating search
+   ----------------------------------------------------------------------------- */
+.search-pill {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  min-width: 200px;
+  max-width: 320px;
+  border-radius: 12px;
+  z-index: 100;
+  transition: all var(--ks-duration-normal) var(--ks-ease);
+}
+
+.search-pill:focus-within {
+  min-width: 280px;
+  border-color: var(--ks-primary);
+  box-shadow: 0 0 0 3px var(--ks-primary-soft);
+}
+
+.search-pill-icon {
+  color: var(--ks-text-muted);
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.search-pill-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 13px;
+  color: var(--ks-text);
+}
+
+.search-pill-input::placeholder {
+  color: var(--ks-text-muted);
+}
+
+.search-pill-count {
+  padding: 2px 8px;
+  background: var(--ks-primary-soft);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ks-primary);
+}
+
+/* Search suggestions dropdown */
+.search-suggestions {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  max-height: 320px;
+  overflow-y: auto;
+  border-radius: 12px;
+  padding: 6px;
+  z-index: 200;
+  /* Level 3: Contextual - dropdown overlay */
+  background: var(--ks-glass-bg);
+  backdrop-filter: blur(20px) saturate(1.2);
+  -webkit-backdrop-filter: blur(20px) saturate(1.2);
+  border: 1px solid var(--ks-glass-border);
+  box-shadow: var(--ks-elevation-3);
+}
+
+.suggestion-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+  transition: background var(--ks-duration-fast) var(--ks-ease);
+}
+
+.suggestion-item:hover,
+.suggestion-item:focus {
+  background: var(--ks-glass-hover);
+}
+
+.suggestion-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.suggestion-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.suggestion-content strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ks-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.suggestion-type {
+  font-size: 11px;
+  color: var(--ks-text-muted);
+}
+
+/* -----------------------------------------------------------------------------
+   CONTEXT BAR - Appears above selection
+   ----------------------------------------------------------------------------- */
+.context-bar {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px;
+  border-radius: 12px;
+  z-index: 150;
+  opacity: 0;
+  transform: translateY(8px) scale(0.95);
+  pointer-events: none;
+  transition: all var(--ks-duration-normal) var(--ks-ease-spring);
+  /* Level 2: Primary Action - contextual toolbar */
+  background: var(--ks-glass-bg);
+  backdrop-filter: blur(20px) saturate(1.2);
+  -webkit-backdrop-filter: blur(20px) saturate(1.2);
+  border: 1px solid var(--ks-glass-border);
+  box-shadow: var(--ks-elevation-2);
+}
+
+.context-bar.visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.context-bar-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  color: var(--ks-text-secondary);
+  cursor: pointer;
+  transition: all var(--ks-duration-fast) var(--ks-ease);
+}
+
+.context-bar-btn:hover {
+  background: var(--ks-glass-hover);
+  color: var(--ks-text);
+}
+
+.context-bar-btn.primary {
+  background: var(--ks-primary);
+  color: var(--ks-bg-canvas);
+}
+
+.context-bar-btn.primary:hover {
+  filter: brightness(1.1);
+}
+
+.context-bar-btn.danger:hover {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.context-bar-divider {
+  width: 1px;
+  height: 20px;
+  background: var(--ks-glass-border);
+  margin: 0 4px;
+}
+
+/* -----------------------------------------------------------------------------
+   MINIMAP - Bottom right glass panel
+   ----------------------------------------------------------------------------- */
+.minimap-container {
+  position: absolute;
+  bottom: 100px; /* Moved up to avoid FAB overlap */
+  right: 16px;
+  width: 180px;
+  height: 140px;
+  border-radius: 14px;
+  overflow: hidden;
+  z-index: 90;
+  transition: all var(--ks-duration-normal) var(--ks-ease);
+  /* Level 1: Structural - docked utility panel */
+  background: var(--ks-glass-bg);
+  backdrop-filter: blur(16px) saturate(1.2);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  border: 1px solid var(--ks-glass-border);
+  box-shadow: var(--ks-elevation-1);
+}
+
+.minimap-container:hover {
+  transform: scale(1.02);
+  /* Elevate on hover to Level 2 */
+  box-shadow: var(--ks-elevation-2);
+}
+
+.minimap-canvas {
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+/* -----------------------------------------------------------------------------
+   LAYOUT CONTROLS - Compact bottom-left
+   ----------------------------------------------------------------------------- */
+.layout-controls {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 6px;
+  border-radius: 12px;
+  z-index: 90;
+  /* Level 1: Structural - docked to canvas edge */
+  background: var(--ks-glass-bg);
+  backdrop-filter: blur(16px) saturate(1.2);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  border: 1px solid var(--ks-glass-border);
+  box-shadow: var(--ks-elevation-1);
+}
+
+.layout-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  color: var(--ks-text-muted);
+  cursor: pointer;
+  font-size: 14px;
+  transition: all var(--ks-duration-fast) var(--ks-ease);
+}
+
+.layout-btn:hover {
+  background: var(--ks-glass-hover);
+  color: var(--ks-text);
+}
+
+.layout-btn.active {
+  background: var(--ks-primary-soft);
+  color: var(--ks-primary);
+}
+
+.layout-divider {
+  width: 1px;
+  height: 16px;
+  background: var(--ks-glass-border);
+  margin: 0 4px;
+}
+
+/* -----------------------------------------------------------------------------
+   COMMAND PALETTE - Modal overlay
+   ----------------------------------------------------------------------------- */
+.command-palette-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 15vh;
+  animation: fadeIn var(--ks-duration-fast) var(--ks-ease);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.command-palette {
+  width: 560px;
+  max-height: 480px;
+  border-radius: 16px;
+  overflow: hidden;
+  animation: slideUp var(--ks-duration-normal) var(--ks-ease-spring);
+  /* Level 3: Contextual - highest elevation */
+  background: var(--ks-glass-bg);
+  backdrop-filter: blur(24px) saturate(1.2);
+  -webkit-backdrop-filter: blur(24px) saturate(1.2);
+  border: 1px solid var(--ks-glass-border);
+  box-shadow: var(--ks-elevation-3);
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.command-palette-input {
+  width: 100%;
+  padding: 16px 20px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--ks-glass-border);
+  outline: none;
+  font-size: 16px;
+  color: var(--ks-text);
+}
+
+.command-palette-input::placeholder {
+  color: var(--ks-text-muted);
+}
+
+.command-palette-results {
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.command-group {
+  margin-bottom: 8px;
+}
+
+.command-group-title {
+  padding: 8px 12px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--ks-text-muted);
+}
+
+.command-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  background: transparent;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: left;
+  transition: background var(--ks-duration-fast) var(--ks-ease);
+}
+
+.command-item:hover,
+.command-item.selected {
+  background: var(--ks-glass-hover);
+}
+
+.command-item-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: var(--ks-bg-elevated);
+  border-radius: 8px;
+  color: var(--ks-text-secondary);
+}
+
+.command-item-content {
+  flex: 1;
+}
+
+.command-item-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ks-text);
+}
+
+.command-item-desc {
+  font-size: 12px;
+  color: var(--ks-text-muted);
+}
+
+.command-item-kbd {
+  padding: 4px 8px;
+  background: var(--ks-bg-elevated);
+  border-radius: 6px;
+  font-size: 11px;
+  font-family: var(--font-mono, monospace);
+  color: var(--ks-text-muted);
+}
+
+/* Command Palette - Backdrop and container */
+.command-palette-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 15vh;
+  z-index: 1000;
+}
+
+.command-palette-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--ks-glass-border);
+}
+
+.command-palette-icon {
+  font-size: 18px;
+  color: var(--ks-text-muted);
+}
+
+.command-palette-kbd {
+  padding: 4px 8px;
+  background: var(--ks-bg-elevated);
+  border-radius: 6px;
+  font-size: 11px;
+  font-family: var(--font-mono, monospace);
+  color: var(--ks-text-muted);
+}
+
+.command-palette-list {
+  max-height: 360px;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.command-palette-section {
+  margin-bottom: 8px;
+}
+
+.command-palette-section-label {
+  padding: 8px 12px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--ks-text-muted);
+}
+
+.command-palette-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  background: transparent;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: left;
+  transition: background var(--ks-duration-fast) var(--ks-ease);
+  color: var(--ks-text);
+}
+
+.command-palette-item:hover,
+.command-palette-item.selected {
+  background: var(--ks-glass-hover);
+}
+
+.command-palette-item-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.command-palette-item-label {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.command-palette-item-sublabel {
+  margin-left: 8px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--ks-text-muted);
+}
+
+.command-palette-item-shortcut {
+  padding: 3px 6px;
+  background: var(--ks-bg-elevated);
+  border-radius: 5px;
+  font-size: 11px;
+  font-family: var(--font-mono, monospace);
+  color: var(--ks-text-muted);
+}
+
+.command-palette-empty {
+  padding: 24px;
+  text-align: center;
+  color: var(--ks-text-muted);
+  font-size: 14px;
+}
+
+.command-palette-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 12px;
+  border-top: 1px solid var(--ks-glass-border);
+  font-size: 11px;
+  color: var(--ks-text-muted);
+}
+
+/* -----------------------------------------------------------------------------
+   FAB (Floating Action Button) - Level 2 Primary Action
+   Floating Discipline: Single unified action point
+   Position: Bottom right for natural reach
+   ----------------------------------------------------------------------------- */
+.fab-container {
+  position: absolute;
+  bottom: 24px;
+  right: 24px;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: 12px;
+  z-index: 150;
+}
+
+/* Main FAB button */
+.fab-main {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  border: none;
+  background: var(--ks-primary);
+  color: var(--ks-bg-canvas);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--ks-duration-normal) var(--ks-ease);
+}
+
+.fab-main:hover {
+  transform: scale(1.05);
+  box-shadow:
+    0 6px 24px var(--ks-primary-glow),
+    var(--ks-elevation-3);
+}
+
+.fab-main.expanded {
+  transform: rotate(45deg);
+  border-radius: 50%;
+}
+
+.fab-main .fab-icon {
+  font-size: 24px;
+  transition: transform var(--ks-duration-normal) var(--ks-ease);
+}
+
+/* FAB actions menu */
+.fab-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 8px;
+  border-radius: 14px;
+  opacity: 0;
+  transform: translateY(16px) scale(0.95);
+  pointer-events: none;
+  transition: all var(--ks-duration-normal) var(--ks-ease-spring);
+}
+
+.fab-actions.visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+/* FAB action buttons */
+.fab-action-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ks-text);
+  transition: all var(--ks-duration-fast) var(--ks-ease);
+}
+
+.fab-action-btn:hover {
+  background: var(--ks-glass-hover);
+  transform: scale(1.08);
+}
+
+.fab-action-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.fab-action-btn:disabled:hover {
+  transform: none;
+}
+
+.fab-action-btn svg {
+  font-size: 20px;
+}
+
+/* Primary action styling (command palette) */
+.fab-action-primary {
+  background: var(--ks-primary-soft);
+}
+
+.fab-action-primary:hover {
+  background: var(--ks-primary);
+  color: var(--ks-bg-canvas);
+}
+
+.fab-action-icon {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* Divider between action groups */
+.fab-divider {
+  width: 28px;
+  height: 1px;
+  background: var(--ks-glass-border);
+  margin: 4px 0;
+}
+
+/* Legacy support for .fab-action class */
+.fab-action {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ks-text);
+  transition: all var(--ks-duration-fast) var(--ks-ease);
+}
+
+.fab-action:hover {
+  background: var(--ks-glass-hover);
+  transform: scale(1.08);
+}
+
+.fab-action:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.fab-action svg {
+  font-size: 20px;
+}
+
+/* -----------------------------------------------------------------------------
+   CANVAS EMPTY STATE - Onboarding affordance with visual hierarchy
+   ----------------------------------------------------------------------------- */
+.canvas-empty-state {
+  position: absolute;
+  top: 56px; /* Below toolbar */
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px;
+  gap: 24px;
+}
+
+/* Animated rings visual */
+.empty-state-visual {
+  position: relative;
+  width: 160px;
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty-state-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid var(--ks-primary);
+  opacity: 0.2;
+  animation: pulse-ring 3s ease-in-out infinite;
+}
+
+.empty-state-ring.ring-1 {
+  width: 80px;
+  height: 80px;
+  animation-delay: 0s;
+}
+
+.empty-state-ring.ring-2 {
+  width: 120px;
+  height: 120px;
+  animation-delay: 0.5s;
+}
+
+.empty-state-ring.ring-3 {
+  width: 160px;
+  height: 160px;
+  animation-delay: 1s;
+}
+
+@keyframes pulse-ring {
+  0%, 100% {
+    opacity: 0.1;
+    transform: scale(0.95);
+  }
+  50% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+}
+
+.empty-state-center {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: var(--ks-primary-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+.empty-state-icon {
+  font-size: 24px;
+  color: var(--ks-primary);
+}
+
+/* Content */
+.empty-state-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.empty-state-title {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--ks-text);
+  margin: 0;
+}
+
+.empty-state-desc {
+  font-size: 14px;
+  color: var(--ks-text-secondary);
+  max-width: 320px;
+  line-height: 1.6;
+  margin: 0 0 16px 0;
+}
+
+.empty-state-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.empty-state-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--ks-duration-fast) var(--ks-ease);
+}
+
+.empty-state-btn.primary {
+  background: var(--ks-primary);
+  color: var(--ks-bg-canvas);
+}
+
+.empty-state-btn.primary:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px var(--ks-primary-glow);
+}
+
+.empty-state-btn.secondary {
+  background: var(--ks-glass-bg);
+  border: 1px solid var(--ks-glass-border);
+  color: var(--ks-text);
+}
+
+.empty-state-btn.secondary:hover {
+  background: var(--ks-glass-hover);
+}
+
+.empty-state-btn .btn-icon {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.empty-state-btn .btn-kbd {
+  font-size: 11px;
+  padding: 2px 6px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  font-family: var(--font-mono, monospace);
+  margin-left: 4px;
+}
+
+.empty-state-hint {
+  font-size: 13px;
+  color: var(--ks-text-muted);
+  margin: 0;
+}
+
+/* Bottom hint row */
+.empty-state-hint-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.hint-text {
+  font-size: 12px;
+  color: var(--ks-text-muted);
+}
+
+.hint-kbd {
+  font-size: 11px;
+  padding: 4px 8px;
+  background: var(--ks-bg-elevated);
+  border: 1px solid var(--ks-glass-border);
+  border-radius: 6px;
+  font-family: var(--font-mono, monospace);
+  color: var(--ks-text-secondary);
+}
+
+/* Legacy empty state (backward compatibility) */
+.empty-state,
+.graph-empty-state {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px;
+}
+
+.empty-icon {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 24px;
+  border-radius: 20px;
+  background: var(--ks-primary-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ks-primary);
+  font-size: 32px;
+}
+
+/* Legacy empty state button */
+.graph-empty-state .btn {
+  margin-top: 16px;
+}
+
+/* -----------------------------------------------------------------------------
+   TYPE LEGEND - Collapsible to reduce floating element clutter
+   Floating Discipline: Collapsed by default, expands on demand
+   ----------------------------------------------------------------------------- */
+.type-legend {
+  position: absolute;
+  top: 64px; /* Position below toolbar (48px toolbar + 16px margin) */
+  left: 16px;
+}
+
+/* When embedded (no toolbar), type legend at top */
+.type-legend.embedded {
+  top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border-radius: 12px;
+  z-index: 90;
+  overflow: hidden;
+  transition: all var(--ks-duration-normal) var(--ks-ease);
+}
+
+/* Collapsed state - just the toggle button */
+.type-legend.collapsed {
+  width: auto;
+}
+
+/* Expanded state */
+.type-legend.expanded {
+  min-width: 160px;
+}
+
+/* Toggle button */
+.legend-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--ks-text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  transition: all var(--ks-duration-fast) var(--ks-ease);
+}
+
+.legend-toggle:hover {
+  background: var(--ks-glass-hover);
+  color: var(--ks-text);
+}
+
+.legend-toggle-icon {
+  font-size: 10px;
+  opacity: 0.6;
+}
+
+.legend-toggle-label {
+  white-space: nowrap;
+}
+
+/* Items container */
+.legend-items {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px 8px 8px;
+  border-top: 1px solid var(--ks-glass-border);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all var(--ks-duration-fast) var(--ks-ease);
+  text-align: left;
+}
+
+.legend-item:hover {
+  background: var(--ks-glass-hover);
+}
+
+.legend-item.active {
+  background: var(--ks-primary-soft);
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.legend-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ks-text-secondary);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.legend-item.active .legend-label {
+  color: var(--ks-primary);
+}
+
+.legend-count {
+  font-size: 10px;
+  color: var(--ks-text-muted);
+  padding: 2px 6px;
+  background: var(--ks-bg-elevated);
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+/* -----------------------------------------------------------------------------
+   GRAPH CANVAS GRID
+   ----------------------------------------------------------------------------- */
+.graph-view-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.graph-view-container.with-grid {
+  background-image: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.04) 1px,
+    transparent 1px
+  );
+  background-size: 24px 24px;
+}
+
+[data-theme="light"] .graph-view-container.with-grid {
+  background-image: radial-gradient(
+    circle,
+    rgba(0, 0, 0, 0.06) 1px,
+    transparent 1px
+  );
+}
+
+/* -----------------------------------------------------------------------------
+   MODALS - Unified glass style
+   ----------------------------------------------------------------------------- */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn var(--ks-duration-fast) var(--ks-ease);
+}
+
+.modal {
+  width: 480px;
+  max-width: 90vw;
+  max-height: 85vh;
+  overflow-y: auto;
+  border-radius: 16px;
+  padding: 24px;
+  animation: slideUp var(--ks-duration-normal) var(--ks-ease-spring);
+  /* Level 3: Contextual - highest elevation for modals */
+  background: var(--ks-glass-bg);
+  backdrop-filter: blur(20px) saturate(1.2);
+  -webkit-backdrop-filter: blur(20px) saturate(1.2);
+  border: 1px solid var(--ks-glass-border);
+  box-shadow: var(--ks-elevation-3);
+}
+
+.modal h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ks-text);
+  margin-bottom: 16px;
+}
+
+.modal-form label {
+  display: block;
+  margin-bottom: 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ks-text-secondary);
+}
+
+.modal-form input,
+.modal-form select,
+.modal-form textarea {
+  width: 100%;
+  margin-top: 6px;
+  padding: 10px 12px;
+  background: var(--ks-bg-elevated);
+  border: 1px solid var(--ks-glass-border);
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--ks-text);
+  outline: none;
+  transition: border-color var(--ks-duration-fast) var(--ks-ease);
+}
+
+.modal-form input:focus,
+.modal-form select:focus,
+.modal-form textarea:focus {
+  border-color: var(--ks-primary);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.btn {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--ks-duration-fast) var(--ks-ease);
+}
+
+.btn-primary,
+.btn {
+  background: var(--ks-primary);
+  color: var(--ks-bg-canvas);
+}
+
+.btn-primary:hover,
+.btn:hover {
+  filter: brightness(1.1);
+}
+
+.btn-secondary {
+  background: var(--ks-glass-bg);
+  border: 1px solid var(--ks-glass-border);
+  color: var(--ks-text);
+}
+
+.btn-secondary:hover {
+  background: var(--ks-glass-hover);
+}
+
+/* -----------------------------------------------------------------------------
+   RESPONSIVE ADJUSTMENTS
+   ----------------------------------------------------------------------------- */
+@media (max-width: 768px) {
+  .search-pill {
+    right: 16px;
+    left: 16px;
+    max-width: none;
+  }
+
+  .command-palette {
+    width: calc(100vw - 32px);
+    margin: 0 16px;
+  }
+
+  /* Type legend on mobile - stays top left but smaller, below toolbar */
+  .type-legend {
+    top: 56px; /* Below mobile toolbar */
+    left: 8px;
+  }
+
+  .legend-toggle {
+    padding: 6px 10px;
+  }
+
+  /* FAB on mobile - smaller and closer to edge */
+  .fab-container {
+    bottom: 16px;
+    right: 16px;
+  }
+
+  .fab-main {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+  }
+
+  .fab-action-btn {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

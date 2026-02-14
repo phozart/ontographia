@@ -1,0 +1,17 @@
+# =============================================================================
+# Ontographia V2 - Grafana Dashboard Provisioning
+# =============================================================================
+
+apiVersion: 1
+
+providers:
+  - name: 'ontographia'
+    orgId: 1
+    folder: 'Ontographia'
+    folderUid: 'ontographia'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards/json

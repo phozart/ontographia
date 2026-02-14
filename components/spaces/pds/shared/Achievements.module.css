@@ -1,0 +1,453 @@
+/* Achievements.module.css */
+/* Achievement system and celebration effects */
+
+/* Achievement toast notification */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 20px 24px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+  z-index: 2000;
+  animation: toastSlideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  max-width: 400px;
+}
+
+@keyframes toastSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.toastLeaving {
+  animation: toastSlideOut 0.3s ease forwards;
+}
+
+@keyframes toastSlideOut {
+  to {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+}
+
+.toastIcon {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f59e0b, #f97316);
+  border-radius: 14px;
+  color: white;
+  flex-shrink: 0;
+  animation: iconBounce 0.6s ease 0.3s;
+}
+
+@keyframes iconBounce {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+
+.toastIcon svg {
+  font-size: 28px;
+}
+
+.toastContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.toastLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #f59e0b;
+  margin-bottom: 4px;
+}
+
+.toastLabel svg {
+  font-size: 14px;
+}
+
+.toastTitle {
+  margin: 0 0 4px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.toastDesc {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.toastClose {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.toastClose:hover {
+  background: var(--bg);
+  color: var(--text);
+}
+
+.toastClose svg {
+  font-size: 16px;
+}
+
+/* Progress ring in toast */
+.toastProgress {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.toastProgressBar {
+  flex: 1;
+  height: 6px;
+  background: var(--bg);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.toastProgressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #f59e0b, #f97316);
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+.toastProgressText {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* Achievement badge */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  transition: all 0.15s ease;
+  cursor: default;
+}
+
+.badge:hover {
+  border-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.1);
+}
+
+.badgeIcon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f59e0b, #f97316);
+  border-radius: 6px;
+  color: white;
+}
+
+.badgeIcon svg {
+  font-size: 14px;
+}
+
+.badgeIcon.locked {
+  background: var(--border);
+  color: var(--text-muted);
+}
+
+.badgeName {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.badgeName.locked {
+  color: var(--text-muted);
+}
+
+/* Achievement grid */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.card:hover {
+  border-color: #f59e0b;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.card.unlocked {
+  border-color: #f59e0b;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.05), transparent);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.cardIcon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f59e0b, #f97316);
+  border-radius: 12px;
+  color: white;
+  flex-shrink: 0;
+}
+
+.card.locked .cardIcon {
+  background: var(--bg);
+  color: var(--text-muted);
+}
+
+.cardIcon svg {
+  font-size: 24px;
+}
+
+.cardInfo {
+  flex: 1;
+}
+
+.cardName {
+  margin: 0 0 4px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.card.locked .cardName {
+  color: var(--text-muted);
+}
+
+.cardDesc {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.cardProgress {
+  margin-top: 12px;
+}
+
+.cardProgressBar {
+  height: 6px;
+  background: var(--bg);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.cardProgressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #f59e0b, #f97316);
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+.card.locked .cardProgressFill {
+  background: var(--border);
+}
+
+.cardProgressText {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.cardUnlockedDate {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: #f59e0b;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cardUnlockedDate svg {
+  font-size: 14px;
+}
+
+/* Confetti burst */
+.confetti {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 3000;
+  overflow: hidden;
+}
+
+.confettiPiece {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: #f59e0b;
+  animation: confettiFall 3s ease-out forwards;
+}
+
+@keyframes confettiFall {
+  0% {
+    transform: translateY(-10vh) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+/* Milestone celebration */
+.milestone {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  z-index: 2500;
+  animation: milestoneIn 0.5s ease;
+}
+
+@keyframes milestoneIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.milestoneContent {
+  text-align: center;
+  padding: 48px;
+  animation: milestoneContentIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes milestoneContentIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.milestoneIcon {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f59e0b, #f97316);
+  border-radius: 30px;
+  color: white;
+  box-shadow: 0 0 60px rgba(245, 158, 11, 0.5);
+  animation: milestoneIconPulse 2s ease-in-out infinite;
+}
+
+@keyframes milestoneIconPulse {
+  0%, 100% { box-shadow: 0 0 60px rgba(245, 158, 11, 0.5); }
+  50% { box-shadow: 0 0 80px rgba(245, 158, 11, 0.8); }
+}
+
+.milestoneIcon svg {
+  font-size: 60px;
+}
+
+.milestoneTitle {
+  margin: 0 0 12px;
+  font-size: 36px;
+  font-weight: 700;
+  color: white;
+}
+
+.milestoneDesc {
+  margin: 0 0 32px;
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.milestoneBtn {
+  padding: 14px 32px;
+  background: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #f59e0b;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.milestoneBtn:hover {
+  transform: scale(1.05);
+}
+
+/* Reduce motion */
+@media (prefers-reduced-motion: reduce) {
+  .toast,
+  .toastIcon,
+  .confettiPiece,
+  .milestone,
+  .milestoneContent,
+  .milestoneIcon {
+    animation: none;
+  }
+}

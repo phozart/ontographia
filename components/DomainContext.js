@@ -13,6 +13,7 @@
  *
  * @typedef {Object} Domain
  * @property {string} id - Domain UUID
+ * @property {string} displayId - Human-readable ID (DOM-0001)
  * @property {string} name - Domain name
  * @property {string} owner - Owner username
  * @property {string[]} [sharedWith] - Users with access
@@ -31,6 +32,7 @@
  * @property {Function} addDomain - Create new domain
  * @property {Function} shareDomain - Share domain with user
  * @property {Function} removeShare - Remove user access
+ * @property {Function} findByDisplayId - Find domain by display ID (DOM-0001)
  * @property {boolean} loading - Loading state
  * @property {string} error - Error message
  */
@@ -52,6 +54,7 @@ const DomainContext = createContext({
   addDomain: () => {},
   shareDomain: () => {},
   removeShare: () => {},
+  findByDisplayId: () => null,
   loading: false,
   error: '',
 });
@@ -163,18 +166,29 @@ export function DomainProvider({ children }) {
   }, [accessibleDomains, activeDomain]);
 
   // Handle domain from URL query parameter (?dom=xxx) for shareable links
+  // Supports both UUID format and display_id format (DOM-0001)
   useEffect(() => {
     if (!router.isReady || !accessibleDomains.length || urlDomainApplied) return;
 
     const domFromUrl = router.query.dom;
     if (domFromUrl && typeof domFromUrl === 'string') {
-      // Check if this domain is accessible to the user
-      const targetDomain = accessibleDomains.find(d => d.id === domFromUrl);
-      if (targetDomain && domFromUrl !== activeDomain) {
-        setActiveDomainState(domFromUrl);
+      let targetDomain = null;
+
+      // Check if it's a display_id format (DOM-XXXX)
+      if (/^DOM-\d{4}$/i.test(domFromUrl)) {
+        targetDomain = accessibleDomains.find(d =>
+          (d.displayId || d.display_id) === domFromUrl.toUpperCase()
+        );
+      } else {
+        // Try UUID match
+        targetDomain = accessibleDomains.find(d => d.id === domFromUrl);
+      }
+
+      if (targetDomain && targetDomain.id !== activeDomain) {
+        setActiveDomainState(targetDomain.id);
         // Also update localStorage so it persists
         if (typeof window !== 'undefined') {
-          window.localStorage.setItem('kg-active-domain', domFromUrl);
+          window.localStorage.setItem('kg-active-domain', targetDomain.id);
         }
       }
       setUrlDomainApplied(true);
@@ -223,6 +237,15 @@ export function DomainProvider({ children }) {
     setDomains(prev => prev.map(d => (d.id === updated.id ? updated : d)));
   }
 
+  // Find domain by display ID (DOM-0001 format)
+  // Handles both camelCase (displayId) and snake_case (display_id) from API
+  function findByDisplayId(displayId) {
+    if (!displayId) return null;
+    return accessibleDomains.find(d =>
+      d.displayId === displayId || d.display_id === displayId
+    ) || null;
+  }
+
   const value = useMemo(() => ({
     domains,
     accessibleDomains,
@@ -236,6 +259,7 @@ export function DomainProvider({ children }) {
     addDomain,
     shareDomain,
     removeShare,
+    findByDisplayId,
     loading,
     error,
   }), [domains, accessibleDomains, personalDomain, sharedDomains, activeDomain, isPersonalDomain, personalDomainId, loading, error]);

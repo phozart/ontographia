@@ -165,37 +165,37 @@ export default function KnowledgeStudioPage() {
         // Render the Graph Navigator inline
         return (
           <div className="ks-view-container">
-            <iframe src="/graphnavigator?embed=true" style={{ width: '100%', height: '100%', border: 'none' }} />
+            <iframe key="graph" src="/graphnavigator?embed=true" style={{ width: '100%', height: '100%', border: 'none' }} />
           </div>
         );
       case 'browser':
         return (
           <div className="ks-view-container">
-            <iframe src="/semanticmodelbrowser?embed=true" style={{ width: '100%', height: '100%', border: 'none' }} />
+            <iframe key="browser" src="/semanticmodelbrowser?embed=true" style={{ width: '100%', height: '100%', border: 'none' }} />
           </div>
         );
       case 'nodes':
         return (
           <div className="ks-view-container">
-            <iframe src="/nodes?embed=true" style={{ width: '100%', height: '100%', border: 'none' }} />
+            <iframe key="nodes" src="/graph/nodes?embed=true" style={{ width: '100%', height: '100%', border: 'none' }} />
           </div>
         );
       case 'node-types':
         return (
           <div className="ks-view-container">
-            <iframe src="/node-types?embed=true" style={{ width: '100%', height: '100%', border: 'none' }} />
+            <iframe key="node-types" src="/graph/node-types?embed=true" style={{ width: '100%', height: '100%', border: 'none' }} />
           </div>
         );
       case 'relationships':
         return (
           <div className="ks-view-container">
-            <iframe src="/relationships?embed=true" style={{ width: '100%', height: '100%', border: 'none' }} />
+            <iframe key="relationships" src="/graph/relationships?embed=true" style={{ width: '100%', height: '100%', border: 'none' }} />
           </div>
         );
       case 'rel-types':
         return (
           <div className="ks-view-container">
-            <iframe src="/relationship-types?embed=true" style={{ width: '100%', height: '100%', border: 'none' }} />
+            <iframe key="rel-types" src="/graph/relationship-types?embed=true" style={{ width: '100%', height: '100%', border: 'none' }} />
           </div>
         );
       case 'colors':

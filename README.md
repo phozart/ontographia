@@ -64,17 +64,18 @@ The future roadmap includes:
 
 ---
 
-## Technology Stack (initial direction)
+## Technology Stack
 
-| Layer        | Technology                          |
-|-------------|--------------------------------------|
-| Frontend    | React / Next.js + CYTOSPACE.js + MUI |
-| Graph Engine| Neo4j                                |
-| API Layer   | Node.js                              |
-| Storage     | Hybrid (Graph + Relational)          |
-| Deployment  | Docker & Cloud-native                |
+| Layer        | Technology                              |
+|-------------|----------------------------------------|
+| Frontend    | Next.js 16 + React 19 + MUI 5          |
+| Visualization | Cytoscape.js + XY Flow               |
+| Database    | PostgreSQL 15 (JSONB for graph data)   |
+| Cache       | Redis 7 (events & performance)         |
+| Auth        | NextAuth.js + JWT + RBAC               |
+| Deployment  | Docker + Docker Compose                |
 
-_Implementation details may evolve over time._
+See [docs/DEVELOPMENT_GUIDE.md](./docs/DEVELOPMENT_GUIDE.md) for detailed architecture.
 
 ---
 

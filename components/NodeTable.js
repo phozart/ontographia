@@ -97,6 +97,10 @@ export default function NodeTable() {
   }
 
   function openCreate() {
+    if (types.length === 0) {
+      alert('Please create a node type first. Go to Node Types to add one.');
+      return;
+    }
     setEditingId(null);
     setForm({
       name: '',
@@ -133,7 +137,10 @@ export default function NodeTable() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (!form.name || !form.type) return;
+    if (!form.name || !form.type) {
+      alert('Please enter a name and select a type');
+      return;
+    }
     const payload = {
       name: form.name,
       typeId: form.type.id,
@@ -383,10 +390,18 @@ export default function NodeTable() {
         </DialogTitle>
         <form onSubmit={handleSubmit}>
           <DialogContent dividers>
+            {types.length === 0 && (
+              <Box sx={{ p: 2, mb: 2, bgcolor: 'warning.light', borderRadius: 1 }}>
+                <Typography variant="body2" color="warning.dark">
+                  No node types defined. Please create a node type first in the Node Types section.
+                </Typography>
+              </Box>
+            )}
             <Autocomplete
               options={types.map(t => ({ ...t, label: t.name }))}
               value={form.type}
               onChange={(_, val) => setForm(prev => ({ ...prev, type: val }))}
+              noOptionsText="No types available - create one first"
               renderOption={(props, option) => (
                 <Box component="li" {...props} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Box sx={{ width: 12, height: 12, borderRadius: 1, bgcolor: option.color || '#888' }} />

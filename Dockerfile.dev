@@ -1,0 +1,37 @@
+# =============================================================================
+# Ontographia V2 - Development Dockerfile
+# Optimized for fast rebuilds and hot module replacement
+# =============================================================================
+
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install development dependencies
+RUN apk add --no-cache \
+    libc6-compat \
+    git \
+    curl \
+    bash
+
+# Copy package files
+COPY package.json package-lock.json* ./
+
+# Install dependencies
+RUN npm ci
+
+# Copy source (will be overridden by volume mount in docker-compose)
+COPY . .
+
+# Set development environment
+ENV NODE_ENV=development
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Expose ports
+# 3000 - Next.js dev server
+# 9229 - Node.js debugger
+EXPOSE 3000
+EXPOSE 9229
+
+# Default command
+CMD ["npm", "run", "dev"]

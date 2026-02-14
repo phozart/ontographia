@@ -1,6 +1,9 @@
 /* styles/index.css - Main entry point for all CSS */
 
-/* Core */
+/* Design Tokens (V2) - Import first as foundation */
+@import './tokens/index.css';
+
+/* Core (Legacy variables kept for compatibility) */
 @import './variables.css';
 @import './base.css';
 
@@ -9,12 +12,19 @@
 
 /* Components */
 @import './components.css';
+@import './system-header.css';
 
 /* Page-specific styles */
 @import './login.css';
 @import './ba-guided.css';
 @import './ba-workspace.css';
 @import './knowledge-studio.css';
+@import './graphnavigator.css';
+@import './trace-explorer.css';
+@import './floating-dock.css';
+@import './mindlab-workspace.css';
+@import './blueprint-studio.css';
+@import './analysis-studio.css';
 
 /*
  * Legacy styles are imported from the main styles.css for now.

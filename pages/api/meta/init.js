@@ -1,5 +1,6 @@
 // pages/api/meta/init.js
 import { runWrite } from '../../../lib/neo4j';
+import { getUserFromRequest } from '../../../lib/projectAccess';
 
 const layers = [
   { id: 'physical', name: 'Physical', order: 1 },
@@ -89,6 +90,15 @@ const nodeTypes = [
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Use POST for initialisation' });
+  }
+
+  // Admin authentication required for init endpoints
+  const { user, role } = getUserFromRequest(req);
+  if (!user) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+  if (role !== 'admin') {
+    return res.status(403).json({ error: 'Admin access required for initialization' });
   }
 
   try {

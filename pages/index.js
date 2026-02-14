@@ -16,13 +16,10 @@ import DashboardIcon from '@mui/icons-material/Dashboard';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import LightbulbIcon from '@mui/icons-material/Lightbulb';
 import HubIcon from '@mui/icons-material/Hub';
-import PsychologyIcon from '@mui/icons-material/Psychology';
-import HandshakeIcon from '@mui/icons-material/Handshake';
-import AutoStoriesIcon from '@mui/icons-material/AutoStories';
 import BlockIcon from '@mui/icons-material/Block';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 
-// Studios organized by purpose
+// Studios organized by purpose - URLs match spaceRegistry
 const studioCategories = [
   {
     category: 'Enterprise & Architecture',
@@ -31,21 +28,21 @@ const studioCategories = [
       {
         title: 'Enterprise Architecture',
         subtitle: 'Map capabilities, applications, and processes',
-        href: '/ea-studio',
+        href: '/app/spaces/ea/elements',
         icon: <ArchitectureIcon sx={{ fontSize: 28 }} />,
         color: '#475569',
       },
       {
         title: 'Knowledge Studio',
         subtitle: 'Navigate and manage your knowledge graph',
-        href: '/knowledge-studio',
+        href: '/app/spaces/ks/navigator',
         icon: <HubIcon sx={{ fontSize: 28 }} />,
         color: '#64748b',
       },
       {
         title: 'System Dynamics',
         subtitle: 'Model feedback loops and system behavior',
-        href: '/system-dynamics',
+        href: '/app/spaces/sd/canvas',
         icon: <LoopIcon sx={{ fontSize: 28 }} />,
         color: '#78716c',
       },
@@ -58,49 +55,22 @@ const studioCategories = [
       {
         title: 'Requirements Studio',
         subtitle: 'Capture and trace requirements end-to-end',
-        href: '/requirements-studio',
+        href: '/app/spaces/ba/repository',
         icon: <AssignmentIcon sx={{ fontSize: 28 }} />,
         color: '#475569',
       },
       {
         title: 'Product Design',
         subtitle: 'Discovery before commitment - frame problems first',
-        href: '/product-design-workspace',
+        href: '/app/spaces/pdw/discovery',
         icon: <LightbulbIcon sx={{ fontSize: 28 }} />,
         color: '#64748b',
       },
       {
         title: 'Portfolio Studio',
         subtitle: 'Prioritize investments with visual tools',
-        href: '/portfolio-studio',
+        href: '/app/spaces/portfolio/matrix',
         icon: <TrendingUpIcon sx={{ fontSize: 28 }} />,
-        color: '#78716c',
-      },
-    ],
-  },
-  {
-    category: 'Reasoning & Thinking',
-    description: 'Structured approaches to complex problems and decisions',
-    studios: [
-      {
-        title: 'Sensemaking Studio',
-        subtitle: 'Mental models and structured analysis',
-        href: '/sensemaking-studio',
-        icon: <PsychologyIcon sx={{ fontSize: 28 }} />,
-        color: '#475569',
-      },
-      {
-        title: 'Negotiation Studio',
-        subtitle: 'Prepare for negotiations systematically',
-        href: '/negotiation-studio',
-        icon: <HandshakeIcon sx={{ fontSize: 28 }} />,
-        color: '#64748b',
-      },
-      {
-        title: 'Philosophy Studio',
-        subtitle: 'Examine arguments and assumptions',
-        href: '/philosophy-studio',
-        icon: <AutoStoriesIcon sx={{ fontSize: 28 }} />,
         color: '#78716c',
       },
     ],
@@ -130,8 +100,8 @@ const journeySteps = [
   {
     phase: '4. Analyze',
     title: 'Think it through',
-    description: 'For complex decisions, use System Dynamics for feedback loops, Sensemaking for structured analysis, or Philosophy Studio for rigorous argument examination.',
-    studios: ['System Dynamics', 'Sensemaking', 'Philosophy Studio'],
+    description: 'For complex decisions, use System Dynamics to model feedback loops and understand system behavior.',
+    studios: ['System Dynamics'],
   },
 ];
 

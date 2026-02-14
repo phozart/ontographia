@@ -376,7 +376,7 @@ export default function NodeDetailPanel({
     if (!selectedNode?.data?.raw) return null;
     const raw = selectedNode.data.raw;
     const typeInfo = getNodeTypeInfo(raw.typeId);
-    const nodeColor = raw.color || typeInfo.color || '#8b5cf6';
+    const nodeColor = raw.color || typeInfo.color || '#00d4aa';
     const nodeShape = raw.shape || typeInfo.shape || 'ellipse';
     const ShapeSvg = shapePreview[nodeShape] || shapePreview.ellipse;
 
@@ -690,7 +690,7 @@ export default function NodeDetailPanel({
                 margin="dense"
                 label="Color"
                 type="color"
-                value={formColor || '#8b5cf6'}
+                value={formColor || '#00d4aa'}
                 onChange={e => { setFormColor(e.target.value); setColorCleared(false); }}
                 sx={{ flex: '0 0 80px' }}
               />
@@ -740,7 +740,7 @@ export default function NodeDetailPanel({
                 margin="dense"
                 label="Color"
                 type="color"
-                value={formColor || '#8b5cf6'}
+                value={formColor || '#00d4aa'}
                 onChange={e => { setFormColor(e.target.value); setColorCleared(false); }}
                 sx={{ flex: '0 0 80px' }}
               />
@@ -810,13 +810,13 @@ export default function NodeDetailPanel({
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
               <input
                 type="color"
-                value={highlightColor || '#8b5cf6'}
+                value={highlightColor || '#00d4aa'}
                 onChange={e => { setHighlightColor(e.target.value); setFormColor(e.target.value); }}
                 style={{ width: 100, height: 100, border: 'none', cursor: 'pointer', borderRadius: 8 }}
               />
               <TextField
                 size="small"
-                value={highlightColor || '#8b5cf6'}
+                value={highlightColor || '#00d4aa'}
                 onChange={e => { setHighlightColor(e.target.value); setFormColor(e.target.value); }}
                 sx={{ width: 120 }}
               />

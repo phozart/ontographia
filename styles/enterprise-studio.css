@@ -1,0 +1,76 @@
+/**
+ * Enterprise Studio Global Styles
+ *
+ * This file provides additional global styles for Enterprise Studio.
+ * Most styles are in component-level CSS modules:
+ * - components/spaces/enterprise/enterprise.module.css
+ * - components/spaces/enterprise/capabilities/capabilities.module.css
+ * - components/spaces/enterprise/services/services.module.css
+ * - components/spaces/enterprise/landscape/landscape.module.css
+ * - components/spaces/enterprise/technology/technology.module.css
+ * - components/spaces/enterprise/value/value.module.css
+ *
+ * Following Ontographia Design System:
+ * - Shell: #35332F (header), #47453F (accents)
+ * - Canvas: #FDFCFA
+ * - Panel: #F0EFEC
+ * - Borders: #E2E0DB
+ * - Text: #1F1E1B (primary), #5C5A54 (secondary), #9C9A94 (muted)
+ * - Semantic: #5B8A6A (success), #C9A227 (warning), #A54D4D (danger)
+ */
+
+/* Enterprise Studio Root */
+.enterprise-studio {
+  --enterprise-primary: #47453F;
+  --enterprise-accent: #6366f1;
+  --enterprise-success: #5B8A6A;
+  --enterprise-warning: #C9A227;
+  --enterprise-danger: #A54D4D;
+
+  --capability-color: #f59e0b;
+  --service-color: #3b82f6;
+  --product-color: #10b981;
+  --landscape-color: #8b5cf6;
+  --technology-color: #06b6d4;
+  --governance-color: #64748b;
+  --risk-color: #A54D4D;
+  --value-color: #5B8A6A;
+  --organisation-color: #f97316;
+}
+
+/* Module-specific accents */
+.enterprise-studio[data-module="capabilities"] {
+  --module-accent: var(--capability-color);
+}
+
+.enterprise-studio[data-module="services"] {
+  --module-accent: var(--service-color);
+}
+
+.enterprise-studio[data-module="products"] {
+  --module-accent: var(--product-color);
+}
+
+.enterprise-studio[data-module="landscape"] {
+  --module-accent: var(--landscape-color);
+}
+
+.enterprise-studio[data-module="technology"] {
+  --module-accent: var(--technology-color);
+}
+
+.enterprise-studio[data-module="governance"] {
+  --module-accent: var(--governance-color);
+}
+
+.enterprise-studio[data-module="risk"] {
+  --module-accent: var(--risk-color);
+}
+
+.enterprise-studio[data-module="value"] {
+  --module-accent: var(--value-color);
+}
+
+.enterprise-studio[data-module="organisation"] {
+  --module-accent: var(--organisation-color);
+}

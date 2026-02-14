@@ -1,7 +1,9 @@
 // pages/graphnavigator.js
 import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
+import { useRouter } from 'next/router';
 import nextDynamic from 'next/dynamic';
 import NodeDetailPanel from '../components/NodeDetailPanel';
+import CommandPalette from '../components/CommandPalette';
 import { useFilter } from '../components/FilterContext';
 import { useAuth } from '../components/AuthContext';
 import IconButton from '@mui/material/IconButton';
@@ -17,6 +19,7 @@ import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import SettingsIcon from '@mui/icons-material/Settings';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import RouteIcon from '@mui/icons-material/Route';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { LogoSpinner } from '../components/Logo';
 import { useDomains } from '../components/DomainContext';
 import BulkImportExport from '../components/BulkImportExport';
@@ -26,15 +29,26 @@ const GraphView = nextDynamic(() => import('../components/GraphView'), {
   ssr: false,
 });
 
-// Colors for node types
+// Colors for node types (teal, blue, amber, rose, red, orange, yellow, green, cyan, slate)
 const TYPE_COLORS = [
-  '#008a7a', '#3b82f6', '#8b5cf6', '#ec4899', '#ef4444',
-  '#f97316', '#eab308', '#22c55e', '#06b6d4', '#6366f1',
+  '#00d4aa', '#0ea5e9', '#f59e0b', '#f472b6', '#ef4444',
+  '#f97316', '#84cc16', '#22c55e', '#06b6d4', '#64748b',
 ];
 
-export default function GraphNavigatorPage() {
-  const { role } = useAuth();
+export default function GraphNavigatorPage({ showToolbar = true }) {
+  const router = useRouter();
+  const { user, role } = useAuth();
   const readOnly = role !== 'admin';
+
+  // Detect embed mode from URL query parameter
+  const isEmbedded = router.query.embed === 'true';
+
+  // Auth headers for API calls
+  const getAuthHeaders = useCallback(() => ({
+    'Content-Type': 'application/json',
+    'x-user': user || '',
+    'x-role': role || '',
+  }), [user, role]);
   const { typeFilters, setTypeFilters } = useFilter();
 
   const [selectedNode, setSelectedNode] = useState(null);
@@ -55,13 +69,26 @@ export default function GraphNavigatorPage() {
   const [focusNodeId, setFocusNodeId] = useState(null);
   const [suggestionsOpen, setSuggestionsOpen] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const { activeDomain, activeDomainObj } = useDomains();
+
+  // Global keyboard shortcut for command palette
+  useEffect(() => {
+    function handleKeyDown(e) {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setCommandPaletteOpen(prev => !prev);
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // New state for enhanced features
   const [quickCreateOpen, setQuickCreateOpen] = useState(false);
   const [showTypeManager, setShowTypeManager] = useState(false);
   const [typeManagerTab, setTypeManagerTab] = useState('node-types');
-  const [contextMenu, setContextMenu] = useState(null);
+  const [contextMenu, setContextMenu] = useState(null); // { type, position, target }
 
   // Quick create form state
   const [quickCreateForm, setQuickCreateForm] = useState({
@@ -71,18 +98,23 @@ export default function GraphNavigatorPage() {
   });
 
   // Type management form state
-  const [newNodeTypeForm, setNewNodeTypeForm] = useState({ name: '', label: '', color: '#8b5cf6', shape: 'ellipse', description: '' });
+  const [newNodeTypeForm, setNewNodeTypeForm] = useState({ name: '', label: '', color: '#00d4aa', shape: 'ellipse', description: '' });
   const [newRelTypeForm, setNewRelTypeForm] = useState({ name: '', label: '', description: '' });
   const [editingNodeType, setEditingNodeType] = useState(null);
   const [editingRelType, setEditingRelType] = useState(null);
   const [showImportExport, setShowImportExport] = useState(false);
   const [showPathFinder, setShowPathFinder] = useState(false);
+  const [showFilter, setShowFilter] = useState(false);
+  const [fabExpanded, setFabExpanded] = useState(false);
+  const [legendExpanded, setLegendExpanded] = useState(false);
+  const [moreMenuOpen, setMoreMenuOpen] = useState(false);
   const cyRef = useRef(null);
 
   const domainMatch = useMemo(() => {
     const activeName = activeDomainObj?.name;
     const active = activeDomain;
     return (entity) => {
+      // No active domain filter - accept all
       if (!active) return true;
       if (!entity) return false;
       const val =
@@ -91,7 +123,8 @@ export default function GraphNavigatorPage() {
         entity.domainName ??
         entity.workspace ??
         entity.workspaceId;
-      if (val === undefined || val === null) return false;
+      // If node has no domain, accept it (server already filtered)
+      if (val === undefined || val === null) return true;
       return String(val) === String(active) || (activeName && String(val) === String(activeName));
     };
   }, [activeDomain, activeDomainObj?.name]);
@@ -122,11 +155,151 @@ export default function GraphNavigatorPage() {
     setContextMenu(null);
   }
 
+  // Context menu handler
+  function handleContextMenu({ type, position, target }) {
+    setContextMenu({ type, position, target });
+  }
+
+  // Close context menu
+  function closeContextMenu() {
+    setContextMenu(null);
+  }
+
+  // Context menu actions
+  function handleContextMenuAction(action) {
+    const cy = cyRef.current;
+    closeContextMenu();
+
+    switch (action) {
+      case 'create-node':
+        setQuickCreateOpen(true);
+        setQuickCreateForm(prev => ({ ...prev, typeId: nodeTypes[0]?.id || '' }));
+        break;
+      case 'zoom-in':
+        if (cy) cy.zoom({ level: cy.zoom() * 1.3, renderedPosition: { x: cy.width() / 2, y: cy.height() / 2 } });
+        break;
+      case 'zoom-out':
+        if (cy) cy.zoom({ level: cy.zoom() / 1.3, renderedPosition: { x: cy.width() / 2, y: cy.height() / 2 } });
+        break;
+      case 'fit-view':
+        if (cy) cy.fit(cy.nodes(), 60);
+        break;
+      case 'run-layout':
+        if (cy) cy.layout({ name: 'cose', animate: true, animationDuration: 500 }).run();
+        break;
+      case 'refresh':
+        setReloadKey(k => k + 1);
+        break;
+      case 'edit-node':
+        if (contextMenu?.target) {
+          setSelectedNode(contextMenu.target);
+          setSelectedEdge(null);
+          setDetailsOpen(true);
+          setEditSignal(s => s + 1);
+        }
+        break;
+      case 'delete-node':
+        if (contextMenu?.target?.id) {
+          if (confirm('Delete this node and all its relationships?')) {
+            fetch(`/api/nodes/${encodeURIComponent(contextMenu.target.id)}`, { method: 'DELETE', headers: getAuthHeaders() })
+              .then(res => {
+                if (res.ok) {
+                  handleDataChanged();
+                  clearSelection();
+                } else {
+                  alert('Failed to delete node');
+                }
+              })
+              .catch(() => alert('Failed to delete node'));
+          }
+        }
+        break;
+      case 'add-relationship':
+        if (contextMenu?.target) {
+          setSelectedNode(contextMenu.target);
+          setSelectedEdge(null);
+          setDetailsOpen(true);
+          setRelationshipSignal(s => s + 1);
+        }
+        break;
+      case 'focus-node':
+        if (contextMenu?.target?.id) {
+          setFocusNodeId(contextMenu.target.id);
+          setHighlightedIds([contextMenu.target.id]);
+        }
+        break;
+      case 'select-node':
+        if (contextMenu?.target) {
+          setSelectedNode(contextMenu.target);
+          setSelectedEdge(null);
+          setDetailsOpen(true);
+        }
+        break;
+      case 'edit-edge':
+        if (contextMenu?.target) {
+          setSelectedEdge(contextMenu.target);
+          setSelectedNode(null);
+          setDetailsOpen(true);
+        }
+        break;
+      case 'delete-edge':
+        if (contextMenu?.target?.id) {
+          if (confirm('Delete this relationship?')) {
+            fetch(`/api/relationships/${encodeURIComponent(contextMenu.target.id)}`, { method: 'DELETE', headers: getAuthHeaders() })
+              .then(res => {
+                if (res.ok) {
+                  handleDataChanged();
+                  clearSelection();
+                } else {
+                  alert('Failed to delete relationship');
+                }
+              })
+              .catch(() => alert('Failed to delete relationship'));
+          }
+        }
+        break;
+      case 'manage-types':
+        setShowTypeManager(true);
+        break;
+      case 'import-export':
+        setShowImportExport(true);
+        break;
+      default:
+        break;
+    }
+  }
+
   useEffect(() => {
     if (!typeFilters || typeFilters.length === 0) {
       clearSelection();
     }
   }, [typeFilters]);
+
+  // Close context menu on ESC key
+  useEffect(() => {
+    function handleKeyDown(e) {
+      if (e.key === 'Escape' && contextMenu) {
+        closeContextMenu();
+      }
+    }
+    if (contextMenu) {
+      document.addEventListener('keydown', handleKeyDown);
+      return () => document.removeEventListener('keydown', handleKeyDown);
+    }
+  }, [contextMenu]);
+
+  // Close more menu dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (moreMenuOpen && !e.target.closest('.dropdown-container')) {
+        setMoreMenuOpen(false);
+      }
+    }
+    if (moreMenuOpen) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [moreMenuOpen]);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -148,7 +321,9 @@ export default function GraphNavigatorPage() {
       ]);
       setNodeTypes(typesData || []);
       setRelationshipTypes(relTypesData || []);
-      const scopedNodes = (nodesData || []).filter(domainMatch);
+      // Server already filters by domain, use returned data directly
+      const scopedNodes = nodesData || [];
+      console.log('[GraphNav] Loaded nodes:', { count: scopedNodes.length, sample: scopedNodes[0] });
       const scopedIds = new Set(scopedNodes.map(n => n.id));
       const scopedRels = (relsData || []).filter(
         r => scopedIds.has(r.sourceId) && scopedIds.has(r.targetId)
@@ -165,6 +340,43 @@ export default function GraphNavigatorPage() {
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  // Listen for messages from parent window (for toolbar integration)
+  useEffect(() => {
+    function handleMessage(event) {
+      const action = event.data?.action;
+      if (!action) return;
+
+      switch (action) {
+        case 'createNode':
+          setQuickCreateOpen(true);
+          setQuickCreateForm(prev => ({ ...prev, typeId: nodeTypes[0]?.id || '' }));
+          break;
+        case 'manageSchema':
+          setShowTypeManager(true);
+          break;
+        case 'importExport':
+          setShowImportExport(true);
+          break;
+        case 'createRelationship':
+          // Open relationship creation mode
+          setDetailsOpen(true);
+          setRelationshipSignal(s => s + 1);
+          break;
+        case 'pathFinder':
+          setShowPathFinder(true);
+          break;
+        case 'toggleFilter':
+          // Toggle the filter panel visibility
+          setShowFilter(prev => !prev);
+          break;
+        default:
+          break;
+      }
+    }
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [nodeTypes]);
 
   const adjacency = useMemo(() => {
     const map = new Map();
@@ -235,7 +447,7 @@ export default function GraphNavigatorPage() {
     try {
       const res = await fetch('/api/nodes', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({
           name: quickCreateForm.name,
           typeId: quickCreateForm.typeId,
@@ -271,7 +483,7 @@ export default function GraphNavigatorPage() {
     try {
       const res = await fetch('/api/node-types', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({
           name: newNodeTypeForm.name.trim(),
           label: newNodeTypeForm.label.trim() || newNodeTypeForm.name.trim(),
@@ -301,7 +513,7 @@ export default function GraphNavigatorPage() {
     try {
       const res = await fetch(`/api/node-types/${encodeURIComponent(editingNodeType.id)}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({
           name: editingNodeType.name,
           label: editingNodeType.label,
@@ -328,7 +540,7 @@ export default function GraphNavigatorPage() {
     if (!confirm('Delete this node type? Nodes using this type will not be deleted.')) return;
 
     try {
-      const res = await fetch(`/api/node-types/${encodeURIComponent(typeId)}`, { method: 'DELETE' });
+      const res = await fetch(`/api/node-types/${encodeURIComponent(typeId)}`, { method: 'DELETE', headers: getAuthHeaders() });
       if (res.ok) {
         setNodeTypes(prev => prev.filter(t => t.id !== typeId));
       } else {
@@ -347,7 +559,7 @@ export default function GraphNavigatorPage() {
     try {
       const res = await fetch('/api/relationship-types', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({
           name: newRelTypeForm.name.trim().toUpperCase().replace(/\s+/g, '_'),
           label: newRelTypeForm.label.trim() || newRelTypeForm.name.trim(),
@@ -375,7 +587,7 @@ export default function GraphNavigatorPage() {
     try {
       const res = await fetch(`/api/relationship-types/${encodeURIComponent(editingRelType.id)}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({
           name: editingRelType.name,
           label: editingRelType.label,
@@ -399,7 +611,7 @@ export default function GraphNavigatorPage() {
     if (!confirm('Delete this relationship type?')) return;
 
     try {
-      const res = await fetch(`/api/relationship-types/${encodeURIComponent(typeId)}`, { method: 'DELETE' });
+      const res = await fetch(`/api/relationship-types/${encodeURIComponent(typeId)}`, { method: 'DELETE', headers: getAuthHeaders() });
       if (res.ok) {
         setRelationshipTypes(prev => prev.filter(t => t.id !== typeId));
       } else {
@@ -411,21 +623,14 @@ export default function GraphNavigatorPage() {
     }
   };
 
-  // Stats for display
-  const stats = useMemo(() => ({
-    nodeCount: nodes.length,
-    relCount: rels.length,
-    typeCount: nodeTypes.length,
-  }), [nodes, rels, nodeTypes]);
-
   return (
-    <div className="studio-container" style={{ display: 'flex', flex: 1, minHeight: 0 }}>
-      <div className="studio-graph" style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-        {/* Enhanced Toolbar */}
-        <div className="graph-nav-toolbar">
-          {/* Quick Actions */}
+    <div className="studio-container">
+      <div className="studio-graph">
+        {/* Structural Toolbar (Level 1 Elevation - Docked) - hidden when embedded */}
+        {showToolbar && !isEmbedded && (
+        <div className="graph-nav-toolbar glass elevation-1 compact">
+          {/* Quick Actions - Simplified */}
           <div className="toolbar-section">
-            <span className="toolbar-section-label">Actions</span>
             <div className="toolbar-buttons">
               {!readOnly && (
                 <>
@@ -456,38 +661,8 @@ export default function GraphNavigatorPage() {
                       </button>
                     </span>
                   </Tooltip>
-                  <Tooltip title="Manage Types">
-                    <span className="toolbar-tooltip-span">
-                      <button
-                        className="toolbar-btn"
-                        onClick={() => setShowTypeManager(true)}
-                      >
-                        <SettingsIcon fontSize="small" /> Types
-                      </button>
-                    </span>
-                  </Tooltip>
-                  <Tooltip title="Import / Export">
-                    <span className="toolbar-tooltip-span">
-                      <button
-                        className="toolbar-btn"
-                        onClick={() => setShowImportExport(true)}
-                      >
-                        <FileUploadIcon fontSize="small" /> Data
-                      </button>
-                    </span>
-                  </Tooltip>
                 </>
               )}
-              <Tooltip title="Find Path">
-                <span className="toolbar-tooltip-span">
-                  <button
-                    className={`toolbar-btn ${showPathFinder ? 'active' : ''}`}
-                    onClick={() => setShowPathFinder(!showPathFinder)}
-                  >
-                    <RouteIcon fontSize="small" /> Path
-                  </button>
-                </span>
-              </Tooltip>
             </div>
           </div>
 
@@ -553,17 +728,8 @@ export default function GraphNavigatorPage() {
             </div>
           </div>
 
-          {/* Stats & Actions */}
+          {/* Actions */}
           <div className="toolbar-section">
-            <span className="toolbar-section-label">Graph</span>
-            <div className="toolbar-stats">
-              <span className="stat-badge">
-                <span className="stat-value">{stats.nodeCount}</span> nodes
-              </span>
-              <span className="stat-badge">
-                <span className="stat-value">{stats.relCount}</span> links
-              </span>
-            </div>
             <div className="toolbar-buttons">
               <Tooltip title="Refresh">
                 <span className="toolbar-tooltip-span">
@@ -584,21 +750,45 @@ export default function GraphNavigatorPage() {
                       setFocusNodeId(null);
                     }}
                   >
-                    ƒo
+                    ✕
                   </button>
                 </span>
               </Tooltip>
-              <Tooltip title="Help">
-                <span className="toolbar-tooltip-span">
-                  <IconButton
-                    size="small"
-                    onClick={() => setInfoOpen(true)}
-                    sx={{ color: 'var(--text)' }}
-                  >
-                    <InfoOutlinedIcon fontSize="small" />
-                  </IconButton>
-                </span>
-              </Tooltip>
+              {/* More Menu Dropdown */}
+              <div className="dropdown-container">
+                <Tooltip title="More options">
+                  <span className="toolbar-tooltip-span">
+                    <IconButton
+                      size="small"
+                      onClick={() => setMoreMenuOpen(!moreMenuOpen)}
+                      sx={{ color: 'var(--text)' }}
+                    >
+                      <MoreVertIcon fontSize="small" />
+                    </IconButton>
+                  </span>
+                </Tooltip>
+                {moreMenuOpen && (
+                  <div className="dropdown-menu glass elevation-2">
+                    <button className="dropdown-item" onClick={() => { setShowTypeManager(true); setMoreMenuOpen(false); }}>
+                      <span className="dropdown-icon">◉</span>
+                      Manage Types
+                    </button>
+                    <button className="dropdown-item" onClick={() => { setShowImportExport(true); setMoreMenuOpen(false); }}>
+                      <span className="dropdown-icon">↔</span>
+                      Import / Export
+                    </button>
+                    <button className="dropdown-item" onClick={() => { setShowPathFinder(true); setMoreMenuOpen(false); }}>
+                      <span className="dropdown-icon">⤳</span>
+                      Find Path
+                    </button>
+                    <div className="dropdown-divider" />
+                    <button className="dropdown-item" onClick={() => { setInfoOpen(true); setMoreMenuOpen(false); }}>
+                      <span className="dropdown-icon">?</span>
+                      Help & Shortcuts
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
@@ -608,31 +798,41 @@ export default function GraphNavigatorPage() {
             </div>
           )}
         </div>
+        )}
 
-        {/* Type Legend (when types exist) */}
-        {nodeTypes.length > 0 && (
-          <div className="type-legend">
-            {nodeTypes.slice(0, 8).map(t => (
-              <button
-                key={t.id}
-                className={`legend-item ${selectedType === t.id ? 'active' : ''}`}
-                onClick={() => handleTypeChange(selectedType === t.id ? '' : t.id)}
-              >
-                <span className="legend-dot" style={{ background: t.color || '#6b7280' }} />
-                <span className="legend-label">{t.label || t.name}</span>
-                <span className="legend-count">
-                  {nodes.filter(n => n.typeId === t.id).length}
-                </span>
-              </button>
-            ))}
-            {nodeTypes.length > 8 && (
-              <span className="legend-more">+{nodeTypes.length - 8} more</span>
+        {/* Collapsible Type Legend - shows when toolbar visible OR when embedded */}
+        {(showToolbar || isEmbedded) && nodeTypes.length > 0 && (
+          <div className={`type-legend glass elevation-1 ${legendExpanded ? 'expanded' : 'collapsed'} ${isEmbedded ? 'embedded' : ''}`}>
+            <button
+              className="legend-toggle"
+              onClick={() => setLegendExpanded(!legendExpanded)}
+              title={legendExpanded ? 'Collapse types' : 'Expand types'}
+            >
+              <span className="legend-toggle-icon">{legendExpanded ? '◀' : '▶'}</span>
+              <span className="legend-toggle-label">Types ({nodeTypes.length})</span>
+            </button>
+            {legendExpanded && (
+              <div className="legend-items">
+                {nodeTypes.map(t => (
+                  <button
+                    key={t.id}
+                    className={`legend-item ${selectedType === t.id ? 'active' : ''}`}
+                    onClick={() => handleTypeChange(selectedType === t.id ? '' : t.id)}
+                  >
+                    <span className="legend-dot" style={{ background: t.color || '#6b7280' }} />
+                    <span className="legend-label">{t.label || t.name}</span>
+                    <span className="legend-count">
+                      {nodes.filter(n => n.typeId === t.id).length}
+                    </span>
+                  </button>
+                ))}
+              </div>
             )}
           </div>
         )}
 
         {/* Graph View */}
-        <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
+        <div className="studio-graph-canvas">
           <GraphView
             readOnly={readOnly}
             reloadKey={reloadKey}
@@ -659,38 +859,83 @@ export default function GraphNavigatorPage() {
               setDetailsOpen(true);
               setRelationshipSignal(s => s + 1);
             }}
+            onContextMenu={handleContextMenu}
             onCyReady={(cy) => { cyRef.current = cy; }}
           />
         </div>
 
-        {/* Empty state */}
+        {/* Canvas Empty State - Onboarding affordance */}
         {!loading && nodes.length === 0 && (
-          <div className="graph-empty-state">
-            <div className="empty-icon">🔗</div>
-            <h3>No nodes in this graph yet</h3>
-            <p>Create your first node to get started, or import data from the Graph Editor.</p>
-            {!readOnly && (
-              <button
-                className="btn"
-                onClick={() => {
-                  if (nodeTypes.length === 0) {
-                    setShowTypeManager(true);
-                  } else {
-                    setQuickCreateOpen(true);
-                    setQuickCreateForm(prev => ({ ...prev, typeId: nodeTypes[0]?.id || '' }));
-                  }
-                }}
-              >
-                {nodeTypes.length === 0 ? 'Create Node Type First' : 'Create First Node'}
-              </button>
-            )}
+          <div className="canvas-empty-state">
+            <div className="empty-state-visual">
+              <div className="empty-state-ring ring-1" />
+              <div className="empty-state-ring ring-2" />
+              <div className="empty-state-ring ring-3" />
+              <div className="empty-state-center">
+                <span className="empty-state-icon">◎</span>
+              </div>
+            </div>
+            <div className="empty-state-content">
+              <h2 className="empty-state-title">Start your knowledge graph</h2>
+              <p className="empty-state-desc">
+                {nodeTypes.length === 0
+                  ? 'First, define a node type to organize your concepts'
+                  : 'Add nodes and connect them to build your graph'
+                }
+              </p>
+              {!readOnly && (
+                <div className="empty-state-actions">
+                  {nodeTypes.length === 0 ? (
+                    <button
+                      className="empty-state-btn primary"
+                      onClick={() => setShowTypeManager(true)}
+                    >
+                      <span className="btn-icon">+</span>
+                      Create Node Type
+                    </button>
+                  ) : (
+                    <>
+                      <button
+                        className="empty-state-btn primary"
+                        onClick={() => {
+                          setQuickCreateOpen(true);
+                          setQuickCreateForm(prev => ({ ...prev, typeId: nodeTypes[0]?.id || '' }));
+                        }}
+                      >
+                        <span className="btn-icon">+</span>
+                        Add First Node
+                        <kbd className="btn-kbd">N</kbd>
+                      </button>
+                      <button
+                        className="empty-state-btn secondary"
+                        onClick={() => setShowImportExport(true)}
+                      >
+                        Import Data
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
+              {readOnly && (
+                <p className="empty-state-hint">
+                  This graph is empty. Ask an admin to add content.
+                </p>
+              )}
+            </div>
+            <div className="empty-state-hint-row">
+              <span className="hint-text">Or press</span>
+              <kbd className="hint-kbd">N</kbd>
+              <span className="hint-text">to create a node, or</span>
+              <kbd className="hint-kbd">⌘K</kbd>
+              <span className="hint-text">for commands</span>
+            </div>
           </div>
         )}
       </div>
 
-      {/* Side Panel */}
+      {/* Side Panel (Level 1 Elevation - Structural Docked) */}
       {detailsOpen && (
-        <div className="studio-sidepanel">
+        <div className="studio-sidepanel glass elevation-1">
           <NodeDetailPanel
             selectedNode={selectedNode}
             selectedEdge={selectedEdge}
@@ -705,10 +950,10 @@ export default function GraphNavigatorPage() {
         </div>
       )}
 
-      {/* Quick Create Modal */}
+      {/* Quick Create Modal (Level 3 Elevation - Contextual) */}
       {quickCreateOpen && (
         <div className="modal-backdrop" onClick={() => setQuickCreateOpen(false)}>
-          <div className="modal quick-create-modal" onClick={e => e.stopPropagation()}>
+          <div className="modal glass elevation-3 quick-create-modal" onClick={e => e.stopPropagation()}>
             <h3 style={{ marginTop: 0 }}>Create Node</h3>
             <form onSubmit={handleQuickCreate}>
               <div className="form-group">
@@ -775,10 +1020,10 @@ export default function GraphNavigatorPage() {
         </div>
       )}
 
-      {/* Type Manager Modal */}
+      {/* Type Manager Modal (Level 3 Elevation - Contextual) */}
       {showTypeManager && (
         <div className="modal-backdrop" onClick={() => setShowTypeManager(false)}>
-          <div className="modal modal-lg" onClick={e => e.stopPropagation()} style={{ maxWidth: 650 }}>
+          <div className="modal glass elevation-3 modal-lg" onClick={e => e.stopPropagation()} style={{ maxWidth: 650 }}>
             <h3 style={{ marginTop: 0 }}>Manage Schema</h3>
 
             <div className="type-tabs">
@@ -870,7 +1115,7 @@ export default function GraphNavigatorPage() {
                             />
                             <input
                               type="color"
-                              value={editingNodeType.color || '#8b5cf6'}
+                              value={editingNodeType.color || '#00d4aa'}
                               onChange={e => setEditingNodeType(prev => ({ ...prev, color: e.target.value }))}
                               style={{ width: 50 }}
                             />
@@ -1029,10 +1274,131 @@ export default function GraphNavigatorPage() {
         }}
       />
 
-      {/* Help Modal */}
+      {/* Context Menu */}
+      {contextMenu && (
+        <>
+          <div
+            className="context-menu-backdrop"
+            onClick={closeContextMenu}
+            onContextMenu={(e) => { e.preventDefault(); closeContextMenu(); }}
+          />
+          <div
+            className="context-menu glass elevation-3"
+            style={{
+              position: 'fixed',
+              left: contextMenu.position.x,
+              top: contextMenu.position.y,
+              zIndex: 9999,
+            }}
+          >
+            {/* Background menu */}
+            {contextMenu.type === 'background' && (
+              <>
+                {!readOnly && (
+                  <>
+                    <button className="context-menu-item" onClick={() => handleContextMenuAction('create-node')}>
+                      <span className="context-menu-icon">+</span>
+                      <span>New Node</span>
+                      <span className="context-menu-shortcut">N</span>
+                    </button>
+                    <div className="context-menu-divider" />
+                  </>
+                )}
+                <button className="context-menu-item" onClick={() => handleContextMenuAction('zoom-in')}>
+                  <span className="context-menu-icon">+</span>
+                  <span>Zoom In</span>
+                </button>
+                <button className="context-menu-item" onClick={() => handleContextMenuAction('zoom-out')}>
+                  <span className="context-menu-icon">−</span>
+                  <span>Zoom Out</span>
+                </button>
+                <button className="context-menu-item" onClick={() => handleContextMenuAction('fit-view')}>
+                  <span className="context-menu-icon">⊡</span>
+                  <span>Fit to View</span>
+                </button>
+                <div className="context-menu-divider" />
+                <button className="context-menu-item" onClick={() => handleContextMenuAction('run-layout')}>
+                  <span className="context-menu-icon">◎</span>
+                  <span>Run Layout</span>
+                </button>
+                <button className="context-menu-item" onClick={() => handleContextMenuAction('refresh')}>
+                  <span className="context-menu-icon">↻</span>
+                  <span>Refresh</span>
+                </button>
+                {!readOnly && (
+                  <>
+                    <div className="context-menu-divider" />
+                    <button className="context-menu-item" onClick={() => handleContextMenuAction('manage-types')}>
+                      <span className="context-menu-icon">⚙</span>
+                      <span>Manage Types</span>
+                    </button>
+                    <button className="context-menu-item" onClick={() => handleContextMenuAction('import-export')}>
+                      <span className="context-menu-icon">↕</span>
+                      <span>Import / Export</span>
+                    </button>
+                  </>
+                )}
+              </>
+            )}
+
+            {/* Node menu */}
+            {contextMenu.type === 'node' && (
+              <>
+                <button className="context-menu-item" onClick={() => handleContextMenuAction('select-node')}>
+                  <span className="context-menu-icon">◉</span>
+                  <span>View Details</span>
+                </button>
+                <button className="context-menu-item" onClick={() => handleContextMenuAction('focus-node')}>
+                  <span className="context-menu-icon">◎</span>
+                  <span>Focus on Node</span>
+                </button>
+                {!readOnly && (
+                  <>
+                    <div className="context-menu-divider" />
+                    <button className="context-menu-item" onClick={() => handleContextMenuAction('edit-node')}>
+                      <span className="context-menu-icon">✎</span>
+                      <span>Edit Node</span>
+                    </button>
+                    <button className="context-menu-item" onClick={() => handleContextMenuAction('add-relationship')}>
+                      <span className="context-menu-icon">→</span>
+                      <span>Add Relationship</span>
+                    </button>
+                    <div className="context-menu-divider" />
+                    <button className="context-menu-item context-menu-item-danger" onClick={() => handleContextMenuAction('delete-node')}>
+                      <span className="context-menu-icon">×</span>
+                      <span>Delete Node</span>
+                    </button>
+                  </>
+                )}
+              </>
+            )}
+
+            {/* Edge menu */}
+            {contextMenu.type === 'edge' && (
+              <>
+                <button className="context-menu-item" onClick={() => handleContextMenuAction('edit-edge')}>
+                  <span className="context-menu-icon">◉</span>
+                  <span>View Details</span>
+                </button>
+                {!readOnly && (
+                  <>
+                    <div className="context-menu-divider" />
+                    <button className="context-menu-item context-menu-item-danger" onClick={() => handleContextMenuAction('delete-edge')}>
+                      <span className="context-menu-icon">×</span>
+                      <span>Delete Relationship</span>
+                    </button>
+                  </>
+                )}
+              </>
+            )}
+          </div>
+        </>
+      )}
+
+      {/* Help Modal (Level 3 Elevation - Contextual) */}
       {infoOpen && (
         <div className="modal-backdrop" onClick={() => setInfoOpen(false)}>
-          <div className="modal" onClick={e => e.stopPropagation()}>
+          <div className="modal glass elevation-3" onClick={e => e.stopPropagation()}>
             <h3 style={{ marginTop: 0 }}>Graph Navigator Guide</h3>
             <div className="help-sections">
               <div className="help-section">
@@ -1047,7 +1413,7 @@ export default function GraphNavigatorPage() {
               <div className="help-section">
                 <h4>Creating</h4>
                 <ul>
-                  <li><strong>New node:</strong> Press <kbd>N</kbd> or click "+ Node" button</li>
+                  <li><strong>New node:</strong> Press <kbd>N</kbd> or click the + button</li>
                   <li><strong>New link:</strong> Select a node, then click "Link" button</li>
                   <li><strong>Manage types:</strong> Click "Types" to add/edit node and relationship types</li>
                 </ul>
@@ -1077,6 +1443,40 @@ export default function GraphNavigatorPage() {
           </div>
         </div>
       )}
+
+      {/* Simple FAB - Opens Command Palette (Level 2 Elevation) - hide when embedded */}
+      {!isEmbedded && (
+        <div className="fab-container">
+          <Tooltip title="Commands (⌘K)" placement="left">
+            <button
+              className="fab-main glass elevation-2-glow"
+              onClick={() => setCommandPaletteOpen(true)}
+              aria-label="Open command palette"
+            >
+              <span className="fab-icon" style={{ fontSize: '20px', fontWeight: 600 }}>⌘</span>
+            </button>
+          </Tooltip>
+        </div>
+      )}
+
+      {/* Command Palette */}
+      <CommandPalette
+        isOpen={commandPaletteOpen}
+        onClose={() => setCommandPaletteOpen(false)}
+        onCreateNode={() => {
+          setQuickCreateOpen(true);
+          setQuickCreateForm(prev => ({ ...prev, typeId: nodeTypes[0]?.id || '' }));
+        }}
+        onCreateRelationship={() => {
+          if (selectedNode) {
+            setDetailsOpen(true);
+            setRelationshipSignal(s => s + 1);
+          }
+        }}
+        nodes={nodes}
+        nodeTypes={nodeTypes}
+        recentNodes={nodes.slice(0, 10)}
+      />
     </div>
   );
 }

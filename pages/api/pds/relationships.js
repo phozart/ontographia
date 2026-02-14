@@ -8,6 +8,7 @@
 
 import { query } from '../../../lib/pg';
 import { getUserFromRequest, checkProjectAccess } from '../../../lib/projectAccess';
+import { errorResponse } from '../../../lib/api/errorResponse';
 import { PDS_RELATIONSHIP_TYPES } from '../../../lib/pds-types';
 
 // Check if type is a valid PDS type
@@ -96,7 +97,7 @@ export default async function handler(req, res) {
       });
     } catch (err) {
       console.error('Error listing PDS relationships:', err);
-      return res.status(500).json({ error: 'Failed to list relationships', details: err.message });
+      return errorResponse(res, 500, 'Failed to list relationships', err);
     }
   }
 
@@ -177,7 +178,7 @@ export default async function handler(req, res) {
       return res.status(201).json(result.rows[0]);
     } catch (err) {
       console.error('Error creating PDS relationship:', err);
-      return res.status(500).json({ error: 'Failed to create relationship', details: err.message });
+      return errorResponse(res, 500, 'Failed to create relationship', err);
     }
   }
 
@@ -248,7 +249,7 @@ export default async function handler(req, res) {
       return res.status(200).json({ success: true, deleted: result.rows[0] });
     } catch (err) {
       console.error('Error deleting PDS relationship:', err);
-      return res.status(500).json({ error: 'Failed to delete relationship', details: err.message });
+      return errorResponse(res, 500, 'Failed to delete relationship', err);
     }
   }
 

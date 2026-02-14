@@ -1,56 +1,106 @@
-import { runRead, runWrite } from '../../../lib/neo4j';
+// pages/api/relationship-types/index.js
+// Graph relationship types API - PostgreSQL implementation
+
+import { query } from '../../../lib/pg';
+import { getUserFromRequest } from '../../../lib/projectAccess';
+
+// Auto-create table if it doesn't exist
+async function ensureTableExists() {
+  try {
+    await query(`
+      CREATE TABLE IF NOT EXISTS graph_relationship_types (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        label TEXT,
+        description TEXT,
+        color TEXT DEFAULT '#6b7280',
+        domain TEXT DEFAULT 'core',
+        properties JSONB DEFAULT '{}',
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      )
+    `);
+    await query(`CREATE INDEX IF NOT EXISTS idx_graph_rel_types_domain ON graph_relationship_types(domain)`);
+  } catch (err) {
+    if (!err.message.includes('already exists')) {
+      console.error('[relationship-types] Error ensuring table:', err.message);
+    }
+  }
+}
 
 export default async function handler(req, res) {
+  // Authentication required for write operations
+  const { user, role } = getUserFromRequest(req);
+  if (req.method !== 'GET' && !user) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+
   try {
     if (req.method === 'GET') {
       const { domain, domainName } = req.query;
-      let query = 'MATCH (r:RelationshipType)';
-      const params = {};
+
+      // Ensure table exists
+      await ensureTableExists();
+
+      let sql = 'SELECT * FROM graph_relationship_types WHERE 1=1';
+      const params = [];
+      let paramIdx = 1;
+
       if (domain) {
-        const domains = [domain, domainName].filter(Boolean);
-        if (domains.length) {
-          query += ' WHERE coalesce(r.domain, "core") IN $domains';
-          params.domains = domains;
+        const domainFilters = [domain, domainName].filter(Boolean);
+        if (domainFilters.length) {
+          sql += ` AND COALESCE(domain, 'core') = ANY($${paramIdx})`;
+          params.push(domainFilters);
+          paramIdx++;
         }
       }
-      query += ' RETURN r ORDER BY r.name';
-      const records = await runRead(query, params);
-      const data = records.map(r => {
-        const rt = r.get('r').properties;
-        return {
-          id: rt.id,
-          name: rt.name,
-          label: rt.label,
-          description: rt.description || '',
-          color: rt.color || '#9ca3af',
-          domain: rt.domain || 'core',
-        };
-      });
+
+      sql += ' ORDER BY name';
+
+      const result = await query(sql, params);
+
+      const data = result.rows.map(row => ({
+        id: row.id,
+        name: row.name,
+        label: row.label || row.name,
+        description: row.description || '',
+        color: row.color || '#9ca3af',
+        domain: row.domain || 'core',
+      }));
+
       return res.status(200).json(data);
     }
 
     if (req.method === 'POST') {
       const { name, label, description, color, domain } = req.body || {};
-      if (!name) return res.status(400).json({ error: 'name is required' });
+
+      if (!name) {
+        return res.status(400).json({ error: 'name is required' });
+      }
+
       const id = `rt_${Date.now()}`;
-      await runWrite(
-        `
-        MERGE (r:RelationshipType {id: $id})
-        SET r.name = $name,
-            r.label = coalesce($label, $name),
-            r.description = coalesce($description, ''),
-            r.color = coalesce($color, '#9ca3af'),
-            r.domain = coalesce($domain, 'core')
-        RETURN r
-        `,
-        { id, name, label, description, color, domain }
-      );
+
+      // Ensure table exists
+      await ensureTableExists();
+
+      await query(`
+        INSERT INTO graph_relationship_types (id, name, label, description, color, domain)
+        VALUES ($1, $2, $3, $4, $5, $6)
+      `, [
+        id,
+        name,
+        label || name,
+        description || '',
+        color || '#9ca3af',
+        domain || 'core',
+      ]);
+
       return res.status(201).json({ id });
     }
 
     return res.status(405).json({ error: 'Method not allowed' });
   } catch (e) {
-    console.error(e);
-    return res.status(500).json({ error: 'Internal server error' });
+    console.error('[relationship-types API error]', e);
+    return res.status(500).json({ error: 'Internal server error', details: e.message });
   }
 }

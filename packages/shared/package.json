@@ -1,0 +1,20 @@
+{
+  "name": "@ontographia/shared",
+  "version": "1.0.0",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./ui": "./components/ui/index.js",
+    "./ui/*": "./components/ui/*.js",
+    "./contexts": "./contexts/index.js",
+    "./contexts/*": "./contexts/*.js",
+    "./lib": "./lib/index.js",
+    "./lib/*": "./lib/*.js"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "next": "^16.0.0",
+    "@mui/material": "^5.0.0",
+    "@mui/icons-material": "^5.0.0"
+  }
+}

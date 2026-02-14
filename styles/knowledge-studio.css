@@ -2,15 +2,11 @@
 
 .knowledge-studio-page {
   display: flex;
-  height: calc(100vh - 0px);
+  height: 100%;
   width: 100%;
   background: var(--bg);
   overflow: hidden;
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  position: relative;
 }
 
 /* Sidebar */

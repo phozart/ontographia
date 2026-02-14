@@ -1,0 +1,481 @@
+/* CrossStageView.module.css */
+/* Visual cross-stage relationship view - "The Project Story" */
+
+.container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+  background: var(--panel);
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.titleIcon {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  border-radius: 12px;
+  color: white;
+}
+
+.titleIcon svg {
+  font-size: 24px;
+}
+
+.titleText h1 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.titleText p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.viewToggle {
+  display: flex;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.viewBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 14px;
+  background: transparent;
+  border: none;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.viewBtn:hover {
+  color: var(--text);
+}
+
+.viewBtn.active {
+  background: var(--accent);
+  color: white;
+}
+
+.viewBtn svg {
+  font-size: 18px;
+  margin-right: 6px;
+}
+
+/* Main content area */
+.content {
+  flex: 1;
+  overflow: auto;
+  padding: 24px;
+  background: var(--bg);
+}
+
+/* Timeline view */
+.timeline {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 20px 0;
+}
+
+/* Vertical line connecting stages */
+.timelineTrack {
+  position: absolute;
+  left: 140px;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--border);
+  border-radius: 2px;
+}
+
+/* Stage row */
+.stageRow {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  padding: 24px 0;
+  min-height: 120px;
+}
+
+.stageRow::before {
+  content: '';
+  position: absolute;
+  left: 140px;
+  top: 0;
+  right: 0;
+  height: 1px;
+  background: var(--border);
+}
+
+.stageRow:first-child::before {
+  display: none;
+}
+
+/* Stage label */
+.stageLabel {
+  width: 120px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding-right: 20px;
+}
+
+.stageDot {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--panel);
+  border: 3px solid var(--stage-color, var(--border));
+  border-radius: 50%;
+  margin-bottom: 8px;
+  z-index: 1;
+  position: relative;
+}
+
+.stageDot svg {
+  font-size: 22px;
+  color: var(--stage-color, var(--text-muted));
+}
+
+.stageRow.active .stageDot {
+  background: var(--stage-color);
+  box-shadow: 0 0 0 4px rgba(var(--stage-color-rgb), 0.2);
+}
+
+.stageRow.active .stageDot svg {
+  color: white;
+}
+
+.stageName {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-align: right;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stageProgress {
+  font-size: 11px;
+  color: var(--stage-color, var(--text-muted));
+  margin-top: 2px;
+}
+
+/* Artefacts in stage */
+.stageContent {
+  flex: 1;
+  padding-left: 40px;
+}
+
+.artefactGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.artefactCard {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  max-width: 280px;
+}
+
+.artefactCard:hover {
+  border-color: var(--stage-color, var(--accent));
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+.artefactIcon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--stage-color, var(--accent));
+  border-radius: 8px;
+  color: white;
+  flex-shrink: 0;
+}
+
+.artefactIcon svg {
+  font-size: 16px;
+}
+
+.artefactInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.artefactName {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.artefactType {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.artefactStatus {
+  display: inline-block;
+  padding: 2px 6px;
+  background: var(--bg);
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.artefactStatus.active {
+  background: rgba(34, 197, 94, 0.1);
+  color: #22c55e;
+}
+
+.artefactStatus.risk {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+/* Connection lines between artefacts */
+.connectionLine {
+  position: absolute;
+  stroke: var(--accent);
+  stroke-width: 2;
+  fill: none;
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.connectionLine:hover {
+  opacity: 0.8;
+  stroke-width: 3;
+}
+
+/* Empty stage */
+.stageEmpty {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 20px;
+  background: var(--panel);
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.stageEmpty svg {
+  font-size: 18px;
+  opacity: 0.5;
+}
+
+.addBtn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  background: transparent;
+  border: 1px dashed var(--border);
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.addBtn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.addBtn svg {
+  font-size: 14px;
+}
+
+/* Summary stats */
+.summary {
+  display: flex;
+  gap: 16px;
+  padding: 16px 24px;
+  background: var(--panel);
+  border-top: 1px solid var(--border);
+}
+
+.summaryItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--bg);
+  border-radius: 8px;
+}
+
+.summaryIcon {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  color: white;
+}
+
+.summaryIcon svg {
+  font-size: 14px;
+}
+
+.summaryInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.summaryValue {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.summaryLabel {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* Animation */
+.stageRow {
+  animation: fadeInUp 0.4s ease forwards;
+  opacity: 0;
+}
+
+.stageRow:nth-child(1) { animation-delay: 0.1s; }
+.stageRow:nth-child(2) { animation-delay: 0.2s; }
+.stageRow:nth-child(3) { animation-delay: 0.3s; }
+.stageRow:nth-child(4) { animation-delay: 0.4s; }
+.stageRow:nth-child(5) { animation-delay: 0.5s; }
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.artefactCard {
+  animation: popIn 0.3s ease forwards;
+  opacity: 0;
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Reduce motion */
+@media (prefers-reduced-motion: reduce) {
+  .stageRow,
+  .artefactCard {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .stageRow {
+    flex-direction: column;
+  }
+
+  .stageLabel {
+    width: auto;
+    flex-direction: row;
+    align-items: center;
+    padding-right: 0;
+    padding-bottom: 12px;
+  }
+
+  .stageDot {
+    margin-bottom: 0;
+    margin-right: 12px;
+  }
+
+  .stageContent {
+    padding-left: 0;
+  }
+
+  .timelineTrack {
+    display: none;
+  }
+
+  .stageRow::before {
+    left: 0;
+  }
+
+  .artefactGrid {
+    flex-direction: column;
+  }
+
+  .artefactCard {
+    max-width: none;
+  }
+}

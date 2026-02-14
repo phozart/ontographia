@@ -1,0 +1,39 @@
+# =============================================================================
+# Ontographia V2 - Grafana Datasources
+# Auto-provisioned datasources for Prometheus and Loki
+# =============================================================================
+
+apiVersion: 1
+
+datasources:
+  # ==========================================================================
+  # Prometheus - Metrics
+  # ==========================================================================
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    editable: false
+    jsonData:
+      timeInterval: "15s"
+      httpMethod: POST
+      manageAlerts: true
+      prometheusType: Prometheus
+      prometheusVersion: "2.48.0"
+
+  # ==========================================================================
+  # Loki - Logs
+  # ==========================================================================
+  - name: Loki
+    type: loki
+    access: proxy
+    url: http://loki:3100
+    editable: false
+    jsonData:
+      maxLines: 1000
+      derivedFields:
+        - datasourceUid: Prometheus
+          matcherRegex: '"correlationId":"([a-f0-9-]+)"'
+          name: CorrelationId
+          url: '$${__value.raw}'

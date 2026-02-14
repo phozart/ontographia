@@ -49,8 +49,8 @@ export default async function handler(req, res) {
           u.username as owner_username,
           cb.username as created_by_username
         FROM artefacts a
-        LEFT JOIN users u ON u.id = a.owner_id
-        LEFT JOIN users cb ON cb.id = a.created_by
+        LEFT JOIN users u ON u.username = a.owner_id
+        LEFT JOIN users cb ON cb.username = a.created_by
         WHERE a.id = $1 AND a.artefact_type LIKE 'dwd_%'`,
         [id]
       );
